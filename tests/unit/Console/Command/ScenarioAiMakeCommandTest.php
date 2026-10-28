@@ -61,6 +61,7 @@ use function count;
 use function file_get_contents;
 use function file_put_contents;
 use function mkdir;
+use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
 #[CoversClass(ScenarioAiMakeCommand::class)]
@@ -118,7 +119,7 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
         $directory = $type === 'scenario' ? 'scenario/main' : 'scenario/parameter';
         if ($existingDraft) {
             mkdir($directory, 0777, true);
-            file_put_contents($directory . '/Generated.php.ai', 'Existing draft');
+            file_put_contents($directory . DIRECTORY_SEPARATOR . 'Generated.php.ai', 'Existing draft');
         }
         $client = $this->createMock(AiClient::class);
         $client->expects(self::once())->method('request')
@@ -131,17 +132,17 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
         $output->expects(self::once())->method('ask')->with('Please describe the scenario or parameter type.')->willReturn('Generate code');
         $output->expects(self::never())->method('confirm');
         $output->expects(self::never())->method('error');
-        $path = $directory . '/Generated.php' . ($existingDraft ? '.1.ai' : '.ai');
+        $path = $directory . DIRECTORY_SEPARATOR . 'Generated.php' . ($existingDraft ? '.1.ai' : '.ai');
         $output->expects(self::once())->method('success')->with(self::logicalAnd(
             self::stringContains('Code "' . $path . '" generated successfully.'),
-            self::stringContains('rename the file to "' . $directory . '/Generated.php"'),
+            self::stringContains('rename the file to "' . $directory . DIRECTORY_SEPARATOR . 'Generated.php"'),
         ));
 
         self::assertSame(Command::Success, (new ScenarioAiMakeCommand())->run($this->input(), $output));
         self::assertSame($response->php, file_get_contents($path));
-        self::assertFileDoesNotExist($directory . '/Generated.php');
+        self::assertFileDoesNotExist($directory . DIRECTORY_SEPARATOR . 'Generated.php');
         if ($existingDraft) {
-            self::assertSame('Existing draft', file_get_contents($directory . '/Generated.php.ai'));
+            self::assertSame('Existing draft', file_get_contents($directory . DIRECTORY_SEPARATOR . 'Generated.php.ai'));
         }
     }
 
