@@ -71,5 +71,5 @@ If no project documentation is configured, Scenario AI continues to use the Scen
 
 ## Next Steps
 
-- [Code Generation Process](docs/generation.md)
-- [AI Providers](docs/providers.md)
+- [Code Generation Process](generation.md)
+- [AI Providers](providers.md)

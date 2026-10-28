@@ -22,7 +22,7 @@ Example configuration:
 
 ## Claude
 
-The initial implementation includes an Claude adapter.
+The initial implementation includes a Claude adapter.
 
 The adapter communicates with the Claude API and processes structured responses.
 

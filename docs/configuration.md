@@ -54,6 +54,6 @@ Each variable uses a `name` attribute and a text value.
 
 ## Next Steps
 
-- [Interactive Conversation](docs/conversation.md)
-- [Code Generation Process](docs/generation.md)
-- [AI Providers](docs/providers.md)
+- [Interactive Conversation](conversation.md)
+- [Code Generation Process](generation.md)
+- [AI Providers](providers.md)

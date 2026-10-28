@@ -106,7 +106,7 @@ If additional information is required, the AI may ask follow-up questions or req
 
 ## Next Steps
 
-- [Configuration](docs/configuration.md)
-- [Interactive Conversation](docs/conversation.md)
-- [Code Generation Process](docs/generation.md)
-- [AI Providers](docs/providers.md)****
+- [Configuration](configuration.md)
+- [Interactive Conversation](conversation.md)
+- [Code Generation Process](generation.md)
+- [AI Providers](providers.md)****

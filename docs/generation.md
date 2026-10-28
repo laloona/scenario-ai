@@ -133,4 +133,4 @@ Developers remain responsible for reviewing and testing generated implementation
 
 ## Next Steps
 
-- [AI Providers](docs/providers.md)
+- [AI Providers](providers.md)
