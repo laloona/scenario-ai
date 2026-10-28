@@ -34,7 +34,10 @@
   "autoload": {
     "psr-4": {
       "Stateforge\\Scenario\\Ai\\": "src/"
-    }
+    },
+    "classmap": [
+      "tests/files"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
@@ -63,7 +66,7 @@
       }
     },
     "branch-alias": {
-      "dev-main": "1.2-dev"
+      "dev-main": "1.0-dev"
     }
   }
 }
