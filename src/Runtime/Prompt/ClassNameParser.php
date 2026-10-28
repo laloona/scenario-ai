@@ -11,11 +11,10 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Prompt;
 
-use function array_map;
-use function array_unique;
 use function array_values;
 use function ltrim;
 use function preg_match_all;
+use function strtolower;
 
 final class ClassNameParser
 {
@@ -30,11 +29,15 @@ final class ClassNameParser
             $matches,
         );
 
-        return array_values(array_unique(
-            array_map(
-                static fn (string $name): string => ltrim($name, '\\'),
-                $matches[0],
-            ),
-        ));
+        $classes = [];
+        foreach ($matches[0] as $match) {
+            $name = ltrim($match, '\\');
+            $key = strtolower($name);
+            if (isset($classes[$key]) === false) {
+                $classes[$key] = $name;
+            }
+        }
+
+        return array_values($classes);
     }
 }
