@@ -60,8 +60,8 @@ use Stateforge\Scenario\Core\Runtime\Application\Configuration\Value\SuiteValue;
 use function count;
 use function file_get_contents;
 use function file_put_contents;
-use function mkdir;
 use function implode;
+use function mkdir;
 use function str_replace;
 use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
@@ -160,7 +160,7 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
             'Code "' . $directory . '/Generated.php' . ($existingDraft ? '.1.ai' : '.ai') . '" generated successfully.' . "\n" .
             'The generated code has been validated and saved.' . "\n" .
             'Review the implementation and rename the file to "' . $directory . '/Generated.php" to activate it.',
-            str_replace(["\\", "\r\n"], ['/', "\n"], $messages[0]),
+            str_replace(['\\', "\r\n"], ['/', "\n"], $messages[0]),
         );
         $path = $directory . DIRECTORY_SEPARATOR . 'Generated.php' . ($existingDraft ? '.1.ai' : '.ai');
         self::assertSame($response->php, file_get_contents($path));
