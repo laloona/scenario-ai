@@ -92,16 +92,11 @@ use function unlink;
 final class ContextTest extends TestCase
 {
     private string $rootDir;
-    private mixed $previousRoot;
-    private mixed $previousConfiguration;
-    private mixed $previousAiConfiguration;
 
     protected function setUp(): void
     {
         $core = new ReflectionClass(Application::class);
-        $this->previousRoot = $core->getProperty('rootDir')->getValue();
-        $this->previousConfiguration = $core->getProperty('configuration')->getValue();
-        $this->previousAiConfiguration = (new ReflectionClass(Ai::class))->getProperty('config')->getValue();
+        (new ReflectionClass(Ai::class))->getProperty('config')->setValue(null, null);
         $this->rootDir = sys_get_temp_dir() . '/scenario-ai-context-' . uniqid();
         mkdir($this->rootDir . '/vendor/stateforge/scenario-core/docs', 0777, true);
         mkdir($this->rootDir . '/vendor/stateforge/scenario-core/blueprint', 0777, true);
@@ -117,9 +112,9 @@ final class ContextTest extends TestCase
     protected function tearDown(): void
     {
         $core = new ReflectionClass(Application::class);
-        $core->getProperty('rootDir')->setValue(null, $this->previousRoot);
-        $core->getProperty('configuration')->setValue(null, $this->previousConfiguration);
-        (new ReflectionClass(Ai::class))->getProperty('config')->setValue(null, $this->previousAiConfiguration);
+        $core->getProperty('rootDir')->setValue(null, null);
+        $core->getProperty('configuration')->setValue(null, null);
+        (new ReflectionClass(Ai::class))->getProperty('config')->setValue(null, null);
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($this->rootDir, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::CHILD_FIRST,

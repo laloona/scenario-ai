@@ -43,20 +43,17 @@ use function var_export;
 #[Small]
 final class CustomAdapterTest extends FilesystemTestCase
 {
-    private mixed $previousRoot;
-
     protected function setUp(): void
     {
         parent::setUp();
         mkdir($this->testDirectory . '/adapters');
         $property = (new ReflectionClass(Application::class))->getProperty('rootDir');
-        $this->previousRoot = $property->getValue();
         $property->setValue(null, $this->testDirectory);
     }
 
     protected function tearDown(): void
     {
-        (new ReflectionClass(Application::class))->getProperty('rootDir')->setValue(null, $this->previousRoot);
+        (new ReflectionClass(Application::class))->getProperty('rootDir')->setValue(null, null);
         parent::tearDown();
     }
 
