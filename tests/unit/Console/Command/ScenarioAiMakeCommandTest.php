@@ -61,6 +61,8 @@ use function count;
 use function file_get_contents;
 use function file_put_contents;
 use function mkdir;
+use function implode;
+use function str_replace;
 use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
@@ -121,24 +123,46 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
             mkdir($directory, 0777, true);
             file_put_contents($directory . DIRECTORY_SEPARATOR . 'Generated.php.ai', 'Existing draft');
         }
+        $requests = [];
         $client = $this->createMock(AiClient::class);
-        $client->expects(self::once())->method('request')
-            ->with(self::callback(static fn (AiRequest $request): bool => $request->prompt === 'Generate code' . PHP_EOL), [])
-            ->willReturn($response);
+        $client->expects(self::once())->method('request')->willReturnCallback(
+            /** @param list<AiAudit> $audits */
+            function (AiRequest $request, array $audits) use (&$requests, $response): AiResponse {
+                $requests[] = ['request' => $request, 'audits' => $audits];
+                return $response;
+            },
+        );
         $this->configureAi($client);
         $output = $this->createMock(CliOutput::class);
         $output->expects(self::once())->method('note')->with(self::stringContains('Welcome to Scenario AI!'));
         $output->expects(self::once())->method('warn')->with(self::stringContains('configure your project doc'));
         $output->expects(self::once())->method('ask')->with('Please describe the scenario or parameter type.')->willReturn('Generate code');
         $output->expects(self::never())->method('confirm');
-        $output->expects(self::never())->method('error');
-        $path = $directory . DIRECTORY_SEPARATOR . 'Generated.php' . ($existingDraft ? '.1.ai' : '.ai');
-        $output->expects(self::once())->method('success')->with(self::logicalAnd(
-            self::stringContains('Code "' . $path . '" generated successfully.'),
-            self::stringContains('rename the file to "' . $directory . DIRECTORY_SEPARATOR . 'Generated.php"'),
-        ));
+        $errors = [];
+        $output->method('error')->willReturnCallback(static function (string $message) use (&$errors): void {
+            $errors[] = $message;
+        });
+        $messages = [];
+        $output->expects(self::once())->method('success')->willReturnCallback(static function (string $message) use (&$messages): void {
+            $messages[] = $message;
+        });
 
-        self::assertSame(Command::Success, (new ScenarioAiMakeCommand())->run($this->input(), $output));
+        $result = (new ScenarioAiMakeCommand())->run($this->input(), $output);
+
+        self::assertSame([], $errors, implode(PHP_EOL, $errors));
+        self::assertSame(Command::Success, $result);
+        self::assertCount(1, $requests);
+        self::assertInstanceOf(AiRequest::class, $requests[0]['request']);
+        self::assertSame("Generate code\n", str_replace("\r\n", "\n", $requests[0]['request']->prompt));
+        self::assertSame([], $requests[0]['audits']);
+        self::assertCount(1, $messages);
+        self::assertSame(
+            'Code "' . $directory . '/Generated.php' . ($existingDraft ? '.1.ai' : '.ai') . '" generated successfully.' . "\n" .
+            'The generated code has been validated and saved.' . "\n" .
+            'Review the implementation and rename the file to "' . $directory . '/Generated.php" to activate it.',
+            str_replace(["\\", "\r\n"], ['/', "\n"], $messages[0]),
+        );
+        $path = $directory . DIRECTORY_SEPARATOR . 'Generated.php' . ($existingDraft ? '.1.ai' : '.ai');
         self::assertSame($response->php, file_get_contents($path));
         self::assertFileDoesNotExist($directory . DIRECTORY_SEPARATOR . 'Generated.php');
         if ($existingDraft) {
