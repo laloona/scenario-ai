@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -32,9 +33,6 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiFormat;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
-use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
-use function chdir;
-use function getcwd;
 use function json_decode;
 use function json_encode;
 use const JSON_THROW_ON_ERROR;
@@ -49,25 +47,8 @@ use const JSON_THROW_ON_ERROR;
 #[UsesClass(ResponseBuilder::class)]
 #[Group('runtime')]
 #[Small]
-final class OpenAiClientTest extends FilesystemTestCase
+final class OpenAiClientTest extends TestCase
 {
-    private string $previousDirectory;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $directory = getcwd();
-        self::assertIsString($directory);
-        $this->previousDirectory = $directory;
-        chdir($this->testDirectory);
-    }
-
-    protected function tearDown(): void
-    {
-        chdir($this->previousDirectory);
-        parent::tearDown();
-    }
-
     #[DataProvider('historyProvider')]
     public function testSendsConfiguredRequestAndDecodesResponse(bool $withHistory): void
     {

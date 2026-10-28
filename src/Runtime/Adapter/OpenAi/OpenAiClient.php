@@ -21,7 +21,6 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
-use function file_put_contents;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -44,7 +43,6 @@ final class OpenAiClient implements AiClient
      */
     public function request(AiRequest $request, array $audits): AiResponse
     {
-        file_put_contents('instruction.txt', $this->instruction->instruct());
         $payload = [
             'model' => $this->config->model,
             'store' => true,
