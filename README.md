@@ -1,8 +1,11 @@
 <img src="docs/scenario-ai.png" alt="Stateforge\Scenario\Core" width="600px" />
 
-![CI](https://github.com/laloona/scenario-core/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/laloona/scenario-ai/actions/workflows/ci.yml/badge.svg)
 ![PHPStan](https://img.shields.io/badge/PHPStan-level%2010-brightgreen)
-![License](https://img.shields.io/github/license/laloona/scenario-core)
+![Stability](https://img.shields.io/badge/stability-stable-brightgreen)
+![Latest Version](https://img.shields.io/packagist/v/stateforge/scenario-ai)
+![PHP Version](https://img.shields.io/packagist/php-v/stateforge/scenario-ai)
+![License](https://img.shields.io/github/license/laloona/scenario-ai)
 # Stateforge Scenario AI
 
 **Generate Scenarios and Parameter Types using artificial intelligence.**
