@@ -20,6 +20,7 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\DocumentationFinder;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use function file_put_contents;
 use function mkdir;
+use const DIRECTORY_SEPARATOR;
 
 #[CoversClass(DocumentationFinder::class)]
 #[UsesClass(DirectoryNotFoundException::class)]
@@ -37,9 +38,9 @@ final class DocumentationFinderTest extends FilesystemTestCase
         file_put_contents($this->testDirectory . '/ignored.txt', 'Ignored');
 
         self::assertSame([
-            $this->testDirectory . '/a.MD',
-            $this->testDirectory . '/nested/b.md',
-            $this->testDirectory . '/z.md',
+            $this->testDirectory . DIRECTORY_SEPARATOR . 'a.MD',
+            $this->testDirectory . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'b.md',
+            $this->testDirectory . DIRECTORY_SEPARATOR . 'z.md',
         ], (new DocumentationFinder())->find($this->testDirectory));
     }
 
