@@ -13,5 +13,5 @@ namespace Stateforge\Scenario\Ai\Tests\Files;
 
 final class SharedProjectClass
 {
-    public const DESCRIPTION = 'Shared project class source marker';
+    public string $description = 'Shared project class source marker';
 }
