@@ -6,6 +6,9 @@
 ![Latest Version](https://img.shields.io/packagist/v/stateforge/scenario-ai)
 ![PHP Version](https://img.shields.io/packagist/php-v/stateforge/scenario-ai)
 ![License](https://img.shields.io/github/license/laloona/scenario-ai)
+
+---
+
 # Stateforge Scenario AI
 
 **Generate Scenarios and Parameter Types using artificial intelligence.**
@@ -15,6 +18,16 @@ Stateforge Scenario AI extends the Stateforge Scenario framework with AI-assiste
 Instead of writing every Scenario or Parameter Type manually, describe what you want to achieve in natural language. Scenario AI uses the framework documentation, predefined code blueprints, and optional project-specific information to generate PHP code that follows the conventions of the Scenario framework.
 
 The generated code is validated and saved for review before activation.
+
+## Philosophy
+
+Stateforge Scenario AI is intended to assist developers, not replace their judgment.
+The developer describes the desired application state or Parameter Type.
+The AI helps translate that description into framework-compatible PHP code.
+The Scenario framework provides the structure, conventions, and validation mechanisms.
+The developer remains responsible for reviewing and approving the generated implementation.
+
+**Describe the state. Generate the code. Review the result.**   
 
 ## Features
 
@@ -29,152 +42,21 @@ The generated code is validated and saved for review before activation.
 
 ## Requirements
 
-Stateforge Scenario AI requires an existing Stateforge Scenario installation.
+Stateforge Scenario AI requires an existing Stateforge Scenario installation:
+- [stateforge/scenario-core](https://github.com/laloona/scenario-core) >= 1.2
 
 The Scenario AI extension uses the framework's configuration, Scenario suites, Parameter Type directory, and extension system.
 
 ## Installation
 
-### 1. Install Stateforge Scenario AI
+> This package is intended for test and development use only.
 
-Install the Scenario AI package in a project that already uses Stateforge Scenario.
-
-### 2. Register the Extension
-
-Open your `scenario.xml` configuration file and register the Scenario AI extension:
-
-```xml
-<extensions>
-    <bootstrap class="Stateforge\Scenario\Ai\Extension" />
-</extensions>
-```
-
-A complete configuration might look like this:
-
-```xml
-<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="vendor/stateforge/scenario-core/xsd/scenario.xsd"
-    cacheDirectory=".scenario.cache"
-    parameterDirectory="scenario/parameter"
->
-    <database>
-        <connection>migration.php</connection>
-    </database>
-
-    <suites>
-        <suite name="main" description="Main Scenario Suite">
-            <directory>scenario/main</directory>
-        </suite>
-    </suites>
-
-    <extensions>
-        <bootstrap class="Stateforge\Scenario\Ai\Extension" />
-    </extensions>
-</scenario>
-```
-
-The extension integrates Scenario AI into the existing Scenario application.
-
-### 3. Initialize Scenario AI
-
-Run the installation command:
-
+Install the Scenario AI package in a project that already uses Stateforge Scenario via Composer as a development dependency.
 ```bash
-php vendor/bin/scenario ai-install
+composer require --dev stateforge/scenario-ai
 ```
 
-This command initializes the Scenario AI installation.
-
-### 4. Configure the AI Provider
-
-Scenario AI uses a separate XML configuration file named `scenario-ai.xml`.
-
-For example:
-
-```xml
-<scenario-ai xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="xsd/scenario-ai.xsd"
-    maxQuestions="3"
-    projectDoc="mydocs"
->
-    <adapter type="openai">
-        <var name="apiKey">YOUR_OPENAI_API_KEY</var>
-    </adapter>
-</scenario-ai>
-```
-
-Replace `YOUR_OPENAI_API_KEY` with your own API key.
-
-**Important:** Never commit real API keys or other credentials to a public repository. Keep configuration files containing credentials outside version control.
-
-## Configuration
-
-Scenario AI uses two configuration files:
-
-- `scenario.xml` – Defines the Scenario framework configuration, including suites, directories, and extensions.
-- `scenario-ai.xml` – Defines the AI adapter and AI-specific settings.
-
-### `maxQuestions`
-
-Controls the configured limit for AI follow-up questions.
-
-```xml
-maxQuestions="3"
-```
-
-If the value is missing, invalid, or negative, the default value is `3`.
-
-### `projectDoc`
-
-Specifies the path to optional project-specific documentation.
-
-```xml
-projectDoc="mydocs"
-```
-
-The path is resolved relative to the project root directory.
-
-Project documentation helps the AI understand application-specific conventions, architecture, and requirements.
-
-Only configure documentation that is appropriate to share with the selected AI provider.
-
-### `adapter`
-
-Defines the AI provider used for code generation.
-
-```xml
-<adapter type="openai">
-    <var name="apiKey">YOUR_OPENAI_API_KEY</var>
-</adapter>
-```
-
-The `type` attribute selects the adapter.
-
-Nested `var` elements provide adapter-specific configuration values.
-
-Each variable uses a `name` attribute and a text value.
-
-## Usage
-
-Start the interactive AI code generator:
-
-```bash
-php vendor/bin/scenario ai-make
-```
-
-Scenario AI displays an introduction and asks you to describe the Scenario or Parameter Type you want to generate.
-
-For example:
-
-```text
-Please describe the scenario or parameter type.
-```
-
-Enter your requirements in natural language.
-
-Scenario AI analyzes the request and attempts to generate a corresponding PHP implementation.
-
-If additional information is required, the AI may ask follow-up questions or request access to existing application classes.
+Add it as extension to `scenario.xml`.
 
 ## Generating a Scenario
 
@@ -245,247 +127,6 @@ Generated implementations can include methods such as:
 - `valueType()` – Defines the supported input value type.
 
 As with Scenarios, generated Parameter Types must be reviewed before activation.
-
-## Interactive Conversations
-
-Scenario AI supports interactive conversations during code generation.
-
-The AI can request additional information when the initial description is insufficient.
-
-### Follow-up Questions
-
-For example, the AI might need to know:
-
-- Which application class represents a particular entity.
-- Which fields are required to create an object.
-- Which persistence mechanism the application uses.
-- Which behavior the generated Scenario should implement.
-
-The CLI displays the AI's question and waits for your answer.
-
-The conversation continues until a result is generated or the configured generation process cannot continue.
-
-### Access to Existing Classes
-
-Some Scenarios depend on existing application classes.
-
-Scenario AI can identify relevant class names and request access to their source code.
-
-Before source code is shared, the CLI asks for explicit confirmation:
-
-```text
-Can the source code for class "App\Entity\User" be sent to AI?
-```
-
-You can approve or decline each request.
-
-Only approved source code is included through this interactive mechanism.
-
-This allows the AI to better understand application-specific classes while keeping the developer in control of source code sharing.
-
-**Source code is not shared through this mechanism without explicit confirmation.**
-
-## Project Documentation
-
-Scenario AI can use optional project-specific documentation to improve generated results.
-
-Configure the documentation directory using the `projectDoc` attribute:
-
-```xml
-<scenario-ai
-    maxQuestions="3"
-    projectDoc="mydocs"
->
-    <!-- Adapter configuration -->
-</scenario-ai>
-```
-
-Project documentation can describe:
-
-- Application architecture
-- Entity relationships
-- Coding conventions
-- Persistence mechanisms
-- Domain-specific requirements
-- Common application workflows
-
-This information helps the AI generate code that better matches the application's existing structure.
-
-Project documentation is optional.
-
-If no project documentation is configured, Scenario AI continues to use the Scenario framework documentation and code blueprints.
-
-## Code Generation Process
-
-Scenario AI combines natural language processing with the structure and conventions of the Scenario framework.
-
-The generation process consists of several steps.
-
-### 1. Build Instructions
-
-Scenario AI prepares instructions for the selected AI provider.
-
-These instructions include the relevant Scenario framework documentation, code blueprints, and configuration information.
-
-Optional project documentation can provide additional context.
-
-### 2. Process the Request
-
-The AI analyzes the natural language request and determines which type of code should be generated.
-
-The supported generation types include:
-
-- Scenario
-- Parameter Type
-
-### 3. Request Additional Information
-
-If the request is incomplete or ambiguous, the AI may ask follow-up questions.
-
-It may also request access to existing application classes.
-
-Source code is only shared after explicit confirmation.
-
-### 4. Generate PHP Code
-
-The AI generates PHP code based on the available instructions and project context.
-
-The generated implementation may include:
-
-- Namespace declarations
-- Class definitions
-- Required imports
-- Framework attributes
-- Method implementations
-- TODO comments for missing application-specific details
-
-### 5. Validate the Result
-
-Scenario AI validates the generated result before accepting it.
-
-If validation fails, the generation process can request a corrected response.
-
-Validation helps ensure that generated code follows the expected structure and conventions of the Scenario framework.
-
-### 6. Determine the Destination
-
-The generated PHP code is analyzed using an Abstract Syntax Tree (AST).
-
-Scenario AI uses the generated namespace and class name together with the Scenario configuration to determine the destination directory.
-
-### 7. Save the Generated Code
-
-Once the result has been accepted, the generated PHP code is saved to a file.
-
-The file receives an `.ai` suffix to prevent immediate activation.
-
-### 8. Review and Activate
-
-Review the generated implementation carefully.
-
-When you are satisfied with the result, remove the `.ai` suffix to activate the file.
-
-## Generated Files
-
-Scenario AI uses the configured Scenario suites and Parameter Type directory to determine where generated files belong.
-
-For example, the following Scenario configuration:
-
-```xml
-<suites>
-    <suite name="main" description="Main Scenario Suite">
-        <directory>scenario/main</directory>
-    </suite>
-</suites>
-```
-
-defines the directory for the `main` Scenario suite.
-
-A generated Scenario might be saved as:
-
-```text
-scenario/main/CreateThreeUsersInFreshDatabase.php.ai
-```
-
-After reviewing the implementation, rename the file:
-
-```text
-scenario/main/CreateThreeUsersInFreshDatabase.php
-```
-
-The same principle applies to generated Parameter Types.
-
-For example:
-
-```text
-scenario/parameter/BirthDateType.php.ai
-```
-
-After review:
-
-```text
-scenario/parameter/BirthDateType.php
-```
-
-**Generated files must be reviewed before activation.**
-
-## Validation
-
-Scenario AI includes a validation system for generated code.
-
-The validation process is designed to check generated implementations against the requirements of the Scenario framework.
-
-Validation is independent of the AI provider.
-
-This allows the same validation process to be used with different AI adapters.
-
-If validation fails, Scenario AI can request a corrected response.
-
-However, validation does not guarantee that generated code is logically correct, secure, or suitable for production.
-
-Developers remain responsible for reviewing and testing generated implementations.
-
-## AI Providers
-
-Scenario AI separates the code generation workflow from the AI provider.
-
-This architecture allows different AI providers to be integrated through adapters.
-
-### OpenAI
-
-The initial implementation includes an OpenAI adapter.
-
-The adapter communicates with the OpenAI API and processes structured responses.
-
-Example configuration:
-
-```xml
-<adapter type="openai">
-    <var name="apiKey">YOUR_OPENAI_API_KEY</var>
-</adapter>
-```
-
-### Custom Adapters
-
-Scenario AI supports custom adapters.
-
-Custom adapters allow alternative AI providers or implementations to be integrated without changing the core generation workflow.
-
-The adapter system separates provider-specific communication from:
-
-- Instruction generation
-- Conversation management
-- Response processing
-- Code validation
-- File generation
-
-Custom adapter implementations must follow the contracts defined by Scenario AI.
-
-### Planned Providers
-
-Support for Claude is planned.
-
-The adapter architecture is intended to make additional providers possible without redesigning the complete generation workflow.
 
 ## Architecture
 
@@ -576,12 +217,19 @@ Its architecture separates framework-specific generation logic from provider-spe
 This makes it possible to integrate additional AI providers while retaining the same core generation workflow.
 Custom adapters can implement alternative communication mechanisms without changing the existing Scenario generation and validation components.
 
-## Philosophy
+## Framework Integration
+Scenario AI is framework-agnostic and can be integrated into any PHP application.
 
-Stateforge Scenario AI is intended to assist developers, not replace their judgment.
-The developer describes the desired application state or Parameter Type.
-The AI helps translate that description into framework-compatible PHP code.
-The Scenario framework provides the structure, conventions, and validation mechanisms.
-The developer remains responsible for reviewing and approving the generated implementation.
+It works particularly well with:
+- Symfony-based AI extension: ([stateforge/scenario-symfony-ai](https://github.com/laloona/scenario-symfony-ai))
+- Laravel-based AI extension: ([stateforge/scenario-laravel-ai](https://github.com/laloona/scenario-laravel-ai))
 
-**Describe the state. Generate the code. Review the result.**
+Framework-specific integration layers may be provided separately.
+
+## Next Steps
+
+- [Getting Started](docs/getting-started.md)
+- [Configuration](docs/configuration.md)
+- [Interactive Conversation](docs/conversation.md)
+- [Code Generation Process](docs/generation.md)
+- [AI Providers](docs/providers.md)
