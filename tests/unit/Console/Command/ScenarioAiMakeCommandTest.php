@@ -50,7 +50,7 @@ use Stateforge\Scenario\Ai\Runtime\Validation\CodeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\InheritanceValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\SyntaxValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
-use Stateforge\Scenario\Ai\Tests\Unit\Fixtures\SharedProjectClass;
+use Stateforge\Scenario\Ai\Tests\Files\SharedProjectClass;
 use Stateforge\Scenario\Core\Console\Command\Command;
 use Stateforge\Scenario\Core\Contract\CliInput;
 use Stateforge\Scenario\Core\Contract\CliOutput;
