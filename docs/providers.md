@@ -60,7 +60,7 @@ A custom adapter implements `Stateforge\Scenario\Ai\Contract\AiAdapter`. Its `cl
 
 The client implements `request(AiRequest $request, array $audits): AiResponse`. The `$audits` argument contains the preceding conversation exchanges, so your client can preserve the conversation history when sending requests to its provider.
 
-For example, place an adapter class in `src/Ai/MyProviderAdapter.php` within your project:
+For example, place an adapter class in `scenario/Ai/MyProviderAdapter.php` within your project:
 
 ```php
 <?php declare(strict_types=1);
