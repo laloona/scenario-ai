@@ -17,7 +17,7 @@ use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Stateforge\Scenario\Ai\Console\CliApplication;
-use Stateforge\Scenario\Ai\Console\Command\InstallScenarioAiCommand;
+use Stateforge\Scenario\Ai\Console\Command\ScenarioAiConfigCommand;
 use Stateforge\Scenario\Ai\Console\Command\ScenarioAiMakeCommand;
 use Stateforge\Scenario\Core\Console\CliApplication as CoreCliApplication;
 use Stateforge\Scenario\Core\Console\Command\CliCommand;
@@ -39,7 +39,7 @@ final class CliApplicationTest extends TestCase
         self::assertIsArray($commands);
         self::assertCount(3, $commands);
         self::assertSame($existing, $commands['custom']);
-        self::assertInstanceOf(InstallScenarioAiCommand::class, $commands['ai-install']);
+        self::assertInstanceOf(ScenarioAiConfigCommand::class, $commands['ai-config']);
         self::assertInstanceOf(ScenarioAiMakeCommand::class, $commands['ai-make']);
     }
 
@@ -53,7 +53,7 @@ final class CliApplicationTest extends TestCase
         $commands = (new ReflectionClass(CoreCliApplication::class))->getProperty('commands')->getValue($cli);
         self::assertIsArray($commands);
         self::assertCount(2, $commands);
-        self::assertInstanceOf(InstallScenarioAiCommand::class, $commands['ai-install']);
+        self::assertInstanceOf(ScenarioAiConfigCommand::class, $commands['ai-config']);
         self::assertInstanceOf(ScenarioAiMakeCommand::class, $commands['ai-make']);
     }
 }

@@ -21,7 +21,7 @@ use function file_put_contents;
 use function is_file;
 use const DIRECTORY_SEPARATOR;
 
-final class InstallScenarioAiCommand extends CliCommand
+final class ScenarioAiConfigCommand extends CliCommand
 {
     public function description(): string
     {

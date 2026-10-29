@@ -5,12 +5,22 @@ The configuration defines how Scenario AI uses project data and which AI is used
 
 ---
 
+## Configure Scenario AI
+
 Scenario AI uses two configuration files:
 
-- `scenario.xml` – Defines the Scenario framework configuration, including suites, directories, and extensions.
+- `scenario.xml` – Defines the Scenario framework configuration, including suites, directories, and extensions. (see [stateforge/scenario-core](https://github.com/laloona/scenario-core))
 - `scenario-ai.xml` – Defines the AI adapter and AI-specific settings.
 
-## `maxQuestions`
+Generate the `scenario-ai.xml` configuration file:
+
+```bash
+php vendor/bin/scenario ai-config
+```
+This command creates the Scenario AI configuration file in the project root directory.
+Edit the generated file to configure your preferred AI provider and project-specific settings.
+
+### `maxQuestions`
 
 Controls the configured limit for AI follow-up questions.
 
@@ -20,7 +30,7 @@ maxQuestions="3"
 
 If the value is missing, invalid, or negative, the default value is `3`.
 
-## `projectDoc`
+### `projectDoc`
 
 Specifies the path to optional project-specific documentation.
 

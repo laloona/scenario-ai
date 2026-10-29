@@ -11,7 +11,7 @@
 
 namespace Stateforge\Scenario\Ai\Console;
 
-use Stateforge\Scenario\Ai\Console\Command\InstallScenarioAiCommand;
+use Stateforge\Scenario\Ai\Console\Command\ScenarioAiConfigCommand;
 use Stateforge\Scenario\Ai\Console\Command\ScenarioAiMakeCommand;
 use Stateforge\Scenario\Core\Console\CliApplication as CoreCliApplication;
 use Stateforge\Scenario\Core\Console\CliApplicationExtension;
@@ -20,7 +20,7 @@ final class CliApplication implements CliApplicationExtension
 {
     public function boot(CoreCliApplication $cli): void
     {
-        $cli->command('ai-install', new InstallScenarioAiCommand());
+        $cli->command('ai-config', new ScenarioAiConfigCommand());
         $cli->command('ai-make', new ScenarioAiMakeCommand());
     }
 }

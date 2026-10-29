@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Stateforge\Scenario\Ai\Console\Command\InstallScenarioAiCommand;
+use Stateforge\Scenario\Ai\Console\Command\ScenarioAiConfigCommand;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
 use Stateforge\Scenario\Core\Console\Command\Command;
 use Stateforge\Scenario\Core\Contract\CliOutput;
@@ -24,15 +24,15 @@ use function file_get_contents;
 use function file_put_contents;
 use function mkdir;
 
-#[CoversClass(InstallScenarioAiCommand::class)]
+#[CoversClass(ScenarioAiConfigCommand::class)]
 #[UsesClass(AdapterRegistry::class)]
 #[Group('runtime')]
 #[Small]
-final class InstallScenarioAiCommandTest extends CommandTestCase
+final class ScenarioAiConfigCommandTest extends CommandTestCase
 {
     public function testDescription(): void
     {
-        self::assertSame('Add the AI config for Scenario.', (new InstallScenarioAiCommand())->description());
+        self::assertSame('Add the AI config for Scenario.', (new ScenarioAiConfigCommand())->description());
     }
 
     public function testReportsMissingBlueprint(): void
@@ -41,7 +41,7 @@ final class InstallScenarioAiCommandTest extends CommandTestCase
         $output->expects(self::once())->method('error')->with('Config file generation failed.');
         $output->expects(self::never())->method('success');
 
-        self::assertSame(Command::Error, (new InstallScenarioAiCommand())->run($this->input(), $output));
+        self::assertSame(Command::Error, (new ScenarioAiConfigCommand())->run($this->input(), $output));
         self::assertFileDoesNotExist($this->testDirectory . '/scenario.dist.xml');
     }
 
@@ -57,7 +57,7 @@ final class InstallScenarioAiCommandTest extends CommandTestCase
         $output->expects(self::once())->method('success')->with('Config file generated, please modify to your needs.');
         $output->expects(self::never())->method('error');
 
-        self::assertSame(Command::Success, (new InstallScenarioAiCommand())->run($this->input(), $output));
+        self::assertSame(Command::Success, (new ScenarioAiConfigCommand())->run($this->input(), $output));
         self::assertSame('<scenario-ai><adapter type="test" /></scenario-ai>', file_get_contents($target));
     }
 
@@ -76,7 +76,7 @@ final class InstallScenarioAiCommandTest extends CommandTestCase
         $output->expects(self::never())->method('success');
 
         // Suppress the expected file_put_contents warning for a directory target.
-        self::assertSame(Command::Error, @(new InstallScenarioAiCommand())->run($this->input(), $output));
+        self::assertSame(Command::Error, @(new ScenarioAiConfigCommand())->run($this->input(), $output));
     }
 
     private function writeBlueprint(): void
