@@ -80,7 +80,7 @@ INSTRUCTION;
             }
 
             if (count($packageTypes) > 0) {
-                $instruction .= 'Package parameter types' . PHP_EOL . PHP_EOL;
+                $instruction .= PHP_EOL . 'Package parameter types' . PHP_EOL . PHP_EOL;
                 foreach ($packageTypes as $class => $parameterType) {
                     $instruction .= $class . ': ' . $parameterType->description . PHP_EOL;
                 }
@@ -88,7 +88,7 @@ INSTRUCTION;
 
             if ($this->useProjectTypes === true
                 && count($projectTypes) > 0) {
-                $instruction .= 'Project parameter types' . PHP_EOL . PHP_EOL;
+                $instruction .= PHP_EOL . 'Project parameter types' . PHP_EOL . PHP_EOL;
                 foreach ($projectTypes as $class => $parameterType) {
                     $instruction .= $class . ': ' . $parameterType->description . PHP_EOL;
                 }

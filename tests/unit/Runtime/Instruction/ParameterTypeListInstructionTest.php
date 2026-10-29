@@ -24,6 +24,7 @@ use Stateforge\Scenario\Core\Attribute\AsParameterType;
 use Stateforge\Scenario\Core\ParameterType;
 use Stateforge\Scenario\Core\Runtime\Metadata\Parameter\ParameterTypeRegistry;
 use function dirname;
+use const PHP_EOL;
 
 #[CoversClass(ParameterTypeListInstruction::class)]
 #[Group('runtime')]
@@ -59,10 +60,10 @@ final class ParameterTypeListInstructionTest extends TestCase
         $this->registerTypes();
         $text = (new ParameterTypeListInstruction(dirname(__DIR__, 3) . '/files/Project', $allowed))->instruct();
 
-        self::assertStringContainsString('Package parameter types', $text);
+        self::assertStringContainsString(PHP_EOL . PHP_EOL . 'Package parameter types' . PHP_EOL . PHP_EOL, $text);
         self::assertStringContainsString(PackageParameterType::class . ': Package type description', $text);
         if ($allowed) {
-            self::assertStringContainsString('Project parameter types', $text);
+            self::assertStringContainsString(PHP_EOL . PHP_EOL . 'Project parameter types' . PHP_EOL . PHP_EOL, $text);
             self::assertStringContainsString(ProjectParameterType::class . ': Project type description', $text);
         } else {
             self::assertStringNotContainsString('Project parameter types', $text);
