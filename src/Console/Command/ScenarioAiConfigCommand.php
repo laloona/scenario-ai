@@ -25,7 +25,7 @@ final class ScenarioAiConfigCommand extends CliCommand
 {
     public function description(): string
     {
-        return 'Add the AI config for Scenario.';
+        return 'Add the AI config for Scenario AI.';
     }
 
     protected function execute(CliInput $input, CliOutput $output): Command

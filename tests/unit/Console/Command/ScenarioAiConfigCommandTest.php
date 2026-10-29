@@ -31,7 +31,7 @@ final class ScenarioAiConfigCommandTest extends CommandTestCase
 {
     public function testDescription(): void
     {
-        self::assertSame('Add the AI config for Scenario.', (new ScenarioAiConfigCommand())->description());
+        self::assertSame('Add the AI config for Scenario AI.', (new ScenarioAiConfigCommand())->description());
     }
 
     public function testReportsMissingBlueprint(): void
