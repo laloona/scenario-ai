@@ -1,4 +1,4 @@
-<img src="docs/scenario-ai.png" alt="Stateforge\Scenario\Core" width="600px" />
+<img src="docs/scenario-ai.png" alt="Stateforge\Scenario\Ai" width="600px" />
 
 ![CI](https://github.com/laloona/scenario-ai/actions/workflows/ci.yml/badge.svg)
 ![PHPStan](https://img.shields.io/badge/PHPStan-level%2010-brightgreen)

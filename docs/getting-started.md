@@ -50,10 +50,10 @@ The extension integrates Scenario AI into the existing Scenario application.
 
 ## 3. Initialize Scenario AI
 
-Run the installation command:
+Run the config command:
 
 ```bash
-php vendor/bin/scenario ai-install
+php vendor/bin/scenario ai-config
 ```
 
 This command initializes the Scenario AI installation and drops the `scenario-ai.xml` into project root.
