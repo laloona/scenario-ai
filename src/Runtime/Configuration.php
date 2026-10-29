@@ -15,6 +15,7 @@ final class Configuration
 {
     public function __construct(
         public readonly ?string $projectDoc,
+        public readonly bool $allowProjectInformation,
         public readonly int $maxQuestions,
         public readonly AdapterConfiguration $adapter,
     ) {

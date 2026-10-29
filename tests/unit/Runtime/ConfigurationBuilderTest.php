@@ -87,11 +87,26 @@ XML);
         $configuration = $this->builder()->build();
 
         self::assertNull($configuration->projectDoc);
+        self::assertFalse($configuration->allowProjectInformation);
         self::assertSame(3, $configuration->maxQuestions);
         self::assertSame('openai', $configuration->adapter->adapter);
         self::assertNull($configuration->adapter->class);
         self::assertNull($configuration->adapter->path);
         self::assertSame([], $configuration->adapter->vars);
+    }
+
+    #[DataProvider('projectPermissionProvider')]
+    public function testBuildParsesProjectInformationPermission(string $value, bool $expected): void
+    {
+        $this->writeConfiguration('<scenario-ai allowProjectInformation="' . $value . '"><adapter type="openai" /></scenario-ai>');
+
+        self::assertSame($expected, $this->builder()->build()->allowProjectInformation);
+    }
+
+    /** @return array<string, array{string, bool}> */
+    public static function projectPermissionProvider(): array
+    {
+        return ['true' => ['true', true], 'one' => ['1', true], 'false' => ['false', false], 'zero' => ['0', false]];
     }
 
     #[DataProvider('questionLimitProvider')]
@@ -138,6 +153,7 @@ XML);
     public static function invalidXmlProvider(): array
     {
         return [
+            'invalid project permission' => ['<scenario-ai allowProjectInformation="invalid"><adapter type="openai" /></scenario-ai>'],
             'missing adapter' => ['<scenario-ai />'],
             'missing adapter type' => ['<scenario-ai><adapter /></scenario-ai>'],
             'invalid question limit' => ['<scenario-ai maxQuestions="invalid"><adapter type="openai" /></scenario-ai>'],

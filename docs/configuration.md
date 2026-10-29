@@ -34,6 +34,20 @@ Project documentation helps the AI understand application-specific conventions, 
 
 Only configure documentation that is appropriate to share with the selected AI provider.
 
+## `allowProjectInformation`
+
+Controls whether Scenario AI is allowed to include project-specific information in the context sent to the selected AI provider.
+
+```xml
+allowProjectInformation="true"
+```
+
+Set this attribute to `false` to disable the use of project-specific information. Use `true` only when you are comfortable sharing the relevant project context with the configured provider.
+
+This setting is separate from `projectDoc`, which specifies the location of optional project documentation. Review what information your project supplies before enabling it.
+
+> **Note:** The default value when this attribute is omitted is not specified here; check the application configuration implementation before relying on a default. This setting should not be assumed to replace the separate confirmation process for sharing individual source files.
+
 ## `adapter`
 
 Defines the AI provider used for code generation. You can use `claude` or `openai` or implement use a `custom` adapter.

@@ -54,6 +54,8 @@ final class Context implements AiContext
                 $aiConfig->projectDoc === null
                     ? null
                     : Application::getRootDir() . DIRECTORY_SEPARATOR . $aiConfig->projectDoc,
+                Application::getRootDir() . DIRECTORY_SEPARATOR . $config->getParameterDirectory(),
+                $aiConfig->allowProjectInformation,
             ),
         );
         $instructions->add(

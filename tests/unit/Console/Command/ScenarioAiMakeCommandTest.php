@@ -37,7 +37,9 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\GeneralInstructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterTypeListInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioListInstruction;
 use Stateforge\Scenario\Ai\Runtime\Maker\CodeMaker;
 use Stateforge\Scenario\Ai\Runtime\Maker\CodeWriter;
 use Stateforge\Scenario\Ai\Runtime\Maker\DirectoryResolver;
@@ -80,6 +82,8 @@ use const PHP_EOL;
 #[UsesClass(ScenarioAst::class)]
 #[UsesClass(Instructions::class)]
 #[UsesClass(GeneralInstructions::class)]
+#[UsesClass(ScenarioListInstruction::class)]
+#[UsesClass(ParameterTypeListInstruction::class)]
 #[UsesClass(BlueprintInstruction::class)]
 #[UsesClass(ScenarioBlueprintInstruction::class)]
 #[UsesClass(ParameterBlueprintInstruction::class)]
@@ -339,6 +343,7 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
         $reflection->getProperty('registry')->setValue(null, $registry);
         $reflection->getProperty('config')->setValue(null, new Configuration(
             $projectDoc,
+            false,
             $limit,
             new AdapterConfiguration('local-test', null, null, []),
         ));

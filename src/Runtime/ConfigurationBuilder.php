@@ -19,6 +19,7 @@ use Stateforge\Scenario\Ai\Runtime\Exception\NoConfigException;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\ConfigurationFinder;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\XMLParser;
 use function filter_var;
+use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_INT;
 
 final class ConfigurationBuilder
@@ -85,10 +86,8 @@ final class ConfigurationBuilder
         }
 
         $projectDoc = $root->getAttribute('projectDoc');
-        $maxQuestions = filter_var(
-            $root->getAttribute('maxQuestions'),
-            FILTER_VALIDATE_INT,
-        );
+        $allowProjectInformation = $root->getAttribute('allowProjectInformation');
+        $maxQuestions = filter_var($root->getAttribute('maxQuestions'), FILTER_VALIDATE_INT);
 
         if ($maxQuestions === false
             || $maxQuestions < 0) {
@@ -98,6 +97,7 @@ final class ConfigurationBuilder
         return new Configuration(
             adapter: $adapterConfig,
             projectDoc: $projectDoc === '' ? null : $projectDoc,
+            allowProjectInformation: filter_var($allowProjectInformation, FILTER_VALIDATE_BOOLEAN),
             maxQuestions: $maxQuestions,
         );
     }

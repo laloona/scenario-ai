@@ -20,6 +20,8 @@ final class GeneralInstructions implements Instruction
         private readonly int $maxQuestions,
         private readonly int $questionsAsked,
         private readonly ?string $projectDoc,
+        private readonly ?string $parameterPath,
+        private readonly bool $allowProjectInformation,
     ) {
     }
 
@@ -30,7 +32,12 @@ final class GeneralInstructions implements Instruction
             (new AttributeInstruction())->instruct() . PHP_EOL . PHP_EOL .
             (new DocumentationInstruction($this->docPath))->instruct() . PHP_EOL . PHP_EOL .
             (new QuestionLimitInstruction($this->maxQuestions, $this->questionsAsked))->instruct() . PHP_EOL . PHP_EOL .
-            (new ValueTypeInstruction())->instruct() . PHP_EOL . PHP_EOL;
+            (new ValueTypeInstruction())->instruct() . PHP_EOL . PHP_EOL .
+            (new ParameterTypeListInstruction($this->parameterPath, $this->allowProjectInformation))->instruct() . PHP_EOL . PHP_EOL;
+
+        if ($this->allowProjectInformation === true) {
+            $instruction .= (new ScenarioListInstruction())->instruct() . PHP_EOL . PHP_EOL;
+        }
 
         if ($this->projectDoc !== null) {
             $instruction .= (new DocumentationInstruction($this->projectDoc))->instruct() . PHP_EOL . PHP_EOL;

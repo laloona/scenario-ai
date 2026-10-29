@@ -30,8 +30,9 @@
                 </xsd:element>
             </xsd:sequence>
 
-            <xsd:attribute name="maxQuestions" type="xsd:integer"/>
             <xsd:attribute name="projectDoc" type="pathType"/>
+            <xsd:attribute name="allowProjectInformation" type="xsd:boolean"/>
+            <xsd:attribute name="maxQuestions" type="xsd:integer"/>
         </xsd:complexType>
     </xsd:element>
 

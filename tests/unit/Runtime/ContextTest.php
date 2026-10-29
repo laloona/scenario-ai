@@ -39,8 +39,10 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\DocumentationInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\GeneralInstructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterTypeListInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\QuestionLimitInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioListInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ValueTypeInstruction;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
@@ -50,9 +52,14 @@ use Stateforge\Scenario\Ai\Runtime\Validation\CodeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\InheritanceValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\SyntaxValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
+use Stateforge\Scenario\Ai\Tests\Files\ListedScenario;
+use Stateforge\Scenario\Core\Attribute\AsScenario;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Configuration as CoreConfiguration;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Value\SuiteValue;
+use Stateforge\Scenario\Core\Runtime\Metadata\Parameter\ParameterTypeRegistry;
+use Stateforge\Scenario\Core\Runtime\ScenarioDefinition;
+use Stateforge\Scenario\Core\Runtime\ScenarioRegistry;
 use function file_put_contents;
 use function mkdir;
 use function rmdir;
@@ -71,6 +78,8 @@ use function unlink;
 #[UsesClass(SourceCodeReader::class)]
 #[UsesClass(Instructions::class)]
 #[UsesClass(GeneralInstructions::class)]
+#[UsesClass(ScenarioListInstruction::class)]
+#[UsesClass(ParameterTypeListInstruction::class)]
 #[UsesClass(BaseInstruction::class)]
 #[UsesClass(AttributeInstruction::class)]
 #[UsesClass(DocumentationInstruction::class)]
@@ -95,6 +104,8 @@ final class ContextTest extends TestCase
 
     protected function setUp(): void
     {
+        ScenarioRegistry::getInstance()->clear();
+        (new ReflectionClass(ParameterTypeRegistry::class))->getProperty('instance')->setValue(null, null);
         $core = new ReflectionClass(Application::class);
         (new ReflectionClass(Ai::class))->getProperty('config')->setValue(null, null);
         $this->rootDir = sys_get_temp_dir() . '/scenario-ai-context-' . uniqid();
@@ -111,6 +122,8 @@ final class ContextTest extends TestCase
 
     protected function tearDown(): void
     {
+        ScenarioRegistry::getInstance()->clear();
+        (new ReflectionClass(ParameterTypeRegistry::class))->getProperty('instance')->setValue(null, null);
         $core = new ReflectionClass(Application::class);
         $core->getProperty('rootDir')->setValue(null, null);
         $core->getProperty('configuration')->setValue(null, null);
@@ -140,7 +153,7 @@ final class ContextTest extends TestCase
     }
 
     #[DataProvider('projectDocumentationProvider')]
-    public function testInstructionIncludesConfiguredDocumentationAndBlueprints(?string $projectDoc): void
+    public function testInstructionIncludesConfiguredDocumentationAndBlueprints(?string $projectDoc, bool $allowed): void
     {
         $configuration = self::createStub(CoreConfiguration::class);
         $configuration->method('getSuites')->willReturn([
@@ -150,10 +163,12 @@ final class ContextTest extends TestCase
         (new ReflectionClass(Application::class))->getProperty('configuration')->setValue(null, $configuration);
         (new ReflectionClass(Ai::class))->getProperty('config')->setValue(null, new Configuration(
             $projectDoc,
+            $allowed,
             7,
             new AdapterConfiguration('test', null, null, []),
         ));
 
+        ScenarioRegistry::getInstance()->register(new ScenarioDefinition('main', ListedScenario::class, new AsScenario('listed', 'Project scenario marker'), []));
         $instruction = (new Context())->instruction(new AiRequest(null, 'Generate a scenario', 2))->instruct();
 
         self::assertStringContainsString('Framework documentation marker', $instruction);
@@ -163,6 +178,11 @@ final class ContextTest extends TestCase
         self::assertStringContainsString('directory: custom/parameters, namespace: Custom\\Parameters', $instruction);
         self::assertStringContainsString('Maximum clarification questions: 7', $instruction);
         self::assertStringContainsString('Clarification questions already asked: 2', $instruction);
+        if ($allowed) {
+            self::assertStringContainsString('Project scenario marker', $instruction);
+        } else {
+            self::assertStringNotContainsString('Project scenario marker', $instruction);
+        }
         if ($projectDoc === null) {
             self::assertStringNotContainsString('Project documentation marker', $instruction);
         } else {
@@ -170,10 +190,10 @@ final class ContextTest extends TestCase
         }
     }
 
-    /** @return array<string, array{?string}> */
+    /** @return array<string, array{?string, bool}> */
     public static function projectDocumentationProvider(): array
     {
-        return ['without project docs' => [null], 'with project docs' => ['project-docs']];
+        return ['without project docs' => [null, false], 'with project docs' => ['project-docs', false], 'allow project information' => [null, true], 'allow with docs' => ['project-docs', true]];
     }
 
     #[DataProvider('generationProvider')]

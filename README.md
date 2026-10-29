@@ -34,7 +34,7 @@ The developer remains responsible for reviewing and approving the generated impl
 - **Natural language code generation** – Generate Scenarios and Parameter Types by describing their intended behavior.
 - **Framework-aware generation** – Uses Scenario documentation, configuration, and code blueprints to guide the AI.
 - **Interactive conversations** – The AI can ask follow-up questions when additional information is required.
-- **Project context** – Optionally provide project-specific documentation to improve generated results.
+- **Project context** – Optionally provide project-specific documentation to improve generated results. Control the use of project-specific information with `allowProjectInformation` in `scenario-ai.xml`.
 - **Controlled source code access** – The AI can request access to existing PHP classes. Source code is only shared after explicit user confirmation.
 - **Code validation** – Generated PHP code is validated before being saved.
 - **Review before activation** – Generated files remain inactive until reviewed and renamed.
@@ -187,6 +187,16 @@ Declining the request prevents that class from being shared through this mechani
 
 Project-specific documentation is optional.
 Only configure documentation that is appropriate to share with the selected AI provider.
+
+The `allowProjectInformation` attribute in `scenario-ai.xml` controls whether project-specific information may be included in the AI context:
+
+```xml
+<scenario-ai allowProjectInformation="true">
+    <!-- Adapter configuration -->
+</scenario-ai>
+```
+
+Set it to `false` to disable project-specific information. This setting does not replace the separate confirmation step described above for sharing individual source files.
 
 ### API Credentials
 

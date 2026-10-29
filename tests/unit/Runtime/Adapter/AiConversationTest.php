@@ -99,7 +99,7 @@ final class AiConversationTest extends TestCase
             ->willReturn($client);
         $registry = new AdapterRegistry();
         $registry->register('test', $adapter);
-        $conversation = new AiConversation($context, new Configuration(null, 5, $adapterConfiguration), $registry);
+        $conversation = new AiConversation($context, new Configuration(null, false, 5, $adapterConfiguration), $registry);
 
         $conversation->talk('Create a scenario');
         self::assertSame($first, $conversation->response());
@@ -221,6 +221,7 @@ final class AiConversationTest extends TestCase
 
         return new AiConversation($context, new Configuration(
             null,
+            false,
             $limit,
             new AdapterConfiguration('test', null, null, []),
         ), $registry);
