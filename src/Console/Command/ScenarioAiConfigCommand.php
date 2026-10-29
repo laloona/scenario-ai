@@ -42,7 +42,12 @@ final class ScenarioAiConfigCommand extends CliCommand
             return Command::Error;
         }
 
-        $configFile = Application::getRootDir() . DIRECTORY_SEPARATOR . 'scenario.dist.xml';
+        $configFile = Application::getRootDir() . DIRECTORY_SEPARATOR . 'scenario-ai.dist.xml';
+        if (is_file($configFile) === true) {
+            $output->error('Config file already exists.');
+            return Command::Error;
+        }
+
         file_put_contents($configFile, file_get_contents($file));
 
         if (is_file($configFile) === false) {

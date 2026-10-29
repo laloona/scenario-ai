@@ -12,7 +12,6 @@
 namespace Stateforge\Scenario\Ai\Tests\Unit\Console\Command;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -42,35 +41,39 @@ final class ScenarioAiConfigCommandTest extends CommandTestCase
         $output->expects(self::never())->method('success');
 
         self::assertSame(Command::Error, (new ScenarioAiConfigCommand())->run($this->input(), $output));
-        self::assertFileDoesNotExist($this->testDirectory . '/scenario.dist.xml');
+        self::assertFileDoesNotExist($this->testDirectory . '/scenario-ai.dist.xml');
     }
 
-    #[DataProvider('existingConfigurationProvider')]
-    public function testCopiesBlueprintToProjectRoot(bool $existing): void
+    public function testCopiesBlueprintToProjectRoot(): void
     {
         $this->writeBlueprint();
-        $target = $this->testDirectory . '/scenario.dist.xml';
-        if ($existing) {
-            file_put_contents($target, 'Old configuration');
-        }
+        $target = $this->testDirectory . '/scenario-ai.dist.xml';
         $output = $this->createMock(CliOutput::class);
         $output->expects(self::once())->method('success')->with('Config file generated, please modify to your needs.');
         $output->expects(self::never())->method('error');
 
         self::assertSame(Command::Success, (new ScenarioAiConfigCommand())->run($this->input(), $output));
         self::assertSame('<scenario-ai><adapter type="test" /></scenario-ai>', file_get_contents($target));
+        self::assertFileDoesNotExist($this->testDirectory . '/scenario.dist.xml');
     }
 
-    /** @return array<string, array{bool}> */
-    public static function existingConfigurationProvider(): array
+    public function testPreservesExistingConfiguration(): void
     {
-        return ['new file' => [false], 'existing file' => [true]];
+        $this->writeBlueprint();
+        $target = $this->testDirectory . '/scenario-ai.dist.xml';
+        file_put_contents($target, 'Existing configuration');
+        $output = $this->createMock(CliOutput::class);
+        $output->expects(self::once())->method('error')->with('Config file already exists.');
+        $output->expects(self::never())->method('success');
+
+        self::assertSame(Command::Error, (new ScenarioAiConfigCommand())->run($this->input(), $output));
+        self::assertSame('Existing configuration', file_get_contents($target));
     }
 
     public function testReportsFailureWhenTargetIsDirectory(): void
     {
         $this->writeBlueprint();
-        mkdir($this->testDirectory . '/scenario.dist.xml');
+        mkdir($this->testDirectory . '/scenario-ai.dist.xml');
         $output = $this->createMock(CliOutput::class);
         $output->expects(self::once())->method('error')->with('Config file generation failed.');
         $output->expects(self::never())->method('success');
