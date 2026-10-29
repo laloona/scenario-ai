@@ -34,15 +34,15 @@
   "autoload": {
     "psr-4": {
       "Stateforge\\Scenario\\Ai\\": "src/"
-    },
-    "classmap": [
-      "tests/files"
-    ]
+    }
   },
   "autoload-dev": {
     "psr-4": {
       "Stateforge\\Scenario\\Ai\\Tests\\Unit\\": "tests/unit/"
-    }
+    },
+    "classmap": [
+      "tests/files"
+    ]
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
