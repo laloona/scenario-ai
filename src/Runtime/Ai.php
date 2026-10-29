@@ -16,8 +16,10 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiConversation;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiAdapter;
+use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\ConfigurationFinder;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\XMLParser;
+use const DIRECTORY_SEPARATOR;
 
 final class Ai
 {
@@ -39,9 +41,15 @@ final class Ai
     public static function config(): Configuration
     {
         if (self::$config === null) {
+            $vendorPath = Application::getRootDir() . DIRECTORY_SEPARATOR .
+                'vendor' . DIRECTORY_SEPARATOR .
+                'stateforge' . DIRECTORY_SEPARATOR .
+                'scenario-ai' . DIRECTORY_SEPARATOR .
+                'xsd' . DIRECTORY_SEPARATOR . 'scenario-ai.xsd';
+
             self::$config = (new ConfigurationBuilder(
                 new ConfigurationFinder(),
-                new XMLParser('./xsd/scenario-ai.xsd'),
+                new XMLParser($vendorPath),
             ))->build();
         }
 
