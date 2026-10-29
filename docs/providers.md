@@ -154,10 +154,3 @@ Custom adapters do not need to reimplement Scenario AI's validation, AST process
 
 Never commit real API keys to version control. Keep credentials in configuration files excluded from the repository or use an appropriate secrets-management mechanism. Review which instructions, project documentation, and approved source files are transmitted to your chosen provider.
 
----
-
-## Next Steps
-
-- [Configuration](configuration.md)
-- [Interactive Conversations](conversation.md)
-- [Code Generation Process](generation.md)
