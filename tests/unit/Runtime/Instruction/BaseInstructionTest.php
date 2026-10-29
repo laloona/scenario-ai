@@ -32,4 +32,38 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('Return responses exclusively using the provided JSON schema.', $text);
         self::assertStringContainsString('These three response states are mutually exclusive.', $text);
     }
+
+    public function testIncludesRulesForAccessToExistingProjectClasses(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringContainsString('Access to Existing Project Classes', $text);
+        self::assertStringContainsString('Existing class names and descriptions may be provided as project context.', $text);
+        self::assertStringContainsString('Source code of existing project classes must only be requested when additional implementation details are required.', $text);
+        self::assertStringContainsString('Never assume that access to a class name or description also grants permission to access its source code.', $text);
+        self::assertStringContainsString("Use the framework's existing source code request mechanism to request additional information.", $text);
+        self::assertStringContainsString('If access to a class is denied, continue using the available information without inventing missing implementation details.', $text);
+    }
+
+    public function testIncludesRulesForEvaluatingExistingImplementations(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringContainsString("Before generating new code, check whether an existing implementation already fulfills the user's requirements.", $text);
+        self::assertStringContainsString('If an existing implementation appears suitable but additional information is required to verify its compatibility, request access to its source code.', $text);
+        self::assertStringContainsString('Prefer reusing existing implementations when they satisfy the requirements and their usage is supported by the framework.', $text);
+        self::assertStringContainsString("If an existing implementation already fulfills the user's requirements, inform the user about the existing class, including its name and description.", $text);
+        self::assertStringContainsString('If the user provides new requirements, evaluate them against the available implementations before generating code.', $text);
+        self::assertStringContainsString('Never assume the existence of methods, properties, constructor arguments, or other implementation details that have not been provided or verified.', $text);
+    }
+
+    public function testIncludesRulesForConfirmingDuplicateImplementation(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringContainsString('Ask the user whether a new implementation should still be generated.', $text);
+        self::assertStringContainsString('If the user confirms, proceed with generating the new implementation.', $text);
+        self::assertStringContainsString('If the user declines, ask for new or modified requirements instead of generating duplicate code.', $text);
+        self::assertStringContainsString('Do not repeatedly ask for confirmation once the user has explicitly decided to create a new implementation.', $text);
+    }
 }

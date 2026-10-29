@@ -44,7 +44,8 @@ final class ParameterTypeListInstructionTest extends TestCase
     {
         $text = (new ParameterTypeListInstruction(null, false))->instruct();
 
-        self::assertStringStartsWith('Built-in parameter types', $text);
+        self::assertStringStartsWith('Existing Parameter Types', $text);
+        self::assertStringContainsString('Built-in parameter types', $text);
         foreach (ParameterType::cases() as $type) {
             self::assertStringContainsString(ParameterType::class . '::' . $type->name . ': ' . $type->value, $text);
         }
@@ -92,6 +93,17 @@ final class ParameterTypeListInstructionTest extends TestCase
 
         self::assertStringContainsString(PackageParameterType::class . ': Package type description', $text);
         self::assertStringNotContainsString('Project parameter types', $text);
+    }
+
+    public function testIncludesParameterTypeReuseAndCompatibilityRules(): void
+    {
+        $text = (new ParameterTypeListInstruction(null, false))->instruct();
+
+        self::assertStringContainsString('Prefer using existing Parameter Types over creating duplicate implementations.', $text);
+        self::assertStringContainsString('Only request source code when necessary to verify compatibility or determine how the Parameter Type should be used.', $text);
+        self::assertStringContainsString('Do not assume supported value types, conversion behavior, validation rules, methods, or constructor arguments that have not been documented or verified.', $text);
+        self::assertStringContainsString("If an existing Parameter Type already fulfills the user's requirements, inform the user instead of generating a duplicate implementation.", $text);
+        self::assertStringContainsString('If no suitable Parameter Type exists, generate a new implementation according to the framework instructions.', $text);
     }
 
     private function registerTypes(): void

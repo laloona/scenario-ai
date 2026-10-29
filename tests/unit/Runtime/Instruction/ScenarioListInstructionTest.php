@@ -62,7 +62,8 @@ final class ScenarioListInstructionTest extends TestCase
 
         $text = (new ScenarioListInstruction())->instruct();
 
-        self::assertStringStartsWith('Registered Scenarios' . PHP_EOL . PHP_EOL, $text);
+        self::assertStringStartsWith('Existing Scenarios', $text);
+        self::assertStringContainsString('Registered Scenarios' . PHP_EOL . PHP_EOL, $text);
         self::assertStringContainsString(ListedScenario::class . ': name: listed, description: Listed scenario description, suites: main, parameters: ', $text);
         self::assertSame(1, substr_count($text, ListedScenario::class . ':'));
     }
@@ -87,4 +88,22 @@ final class ScenarioListInstructionTest extends TestCase
         self::assertStringContainsString('name: labels, description: Labels, type: String, required: no, repeatable: yes, default: ["first","second"]', $text);
         self::assertStringContainsString('name: custom, description: Custom value, type: ProjectParameterType, required: no, repeatable: no, default: null', $text);
     }
+    public function testIncludesScenarioReuseAndSourceAccessRules(): void
+    {
+        ScenarioRegistry::getInstance()->register(new ScenarioDefinition(
+            'main',
+            ListedScenario::class,
+            new AsScenario(),
+            [],
+        ));
+
+        $text = (new ScenarioListInstruction())->instruct();
+
+        self::assertStringContainsString('Prefer reusing existing Scenarios over duplicating their functionality, provided that the Scenario framework supports the intended reuse.', $text);
+        self::assertStringContainsString('Only request source code when necessary to determine whether and how an existing Scenario can be reused.', $text);
+        self::assertStringContainsString('Do not assume the existence of methods, properties, constructor arguments, or mechanisms for executing or composing existing Scenarios.', $text);
+        self::assertStringContainsString("If an existing Scenario already fulfills the user's requirements, inform the user instead of generating a duplicate implementation.", $text);
+        self::assertStringContainsString('If no suitable Scenario exists, generate a new implementation according to the framework instructions.', $text);
+    }
+
 }

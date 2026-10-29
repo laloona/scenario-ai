@@ -28,7 +28,23 @@ final class ScenarioListInstruction implements Instruction
             return '';
         }
 
-        $instruction = 'Registered Scenarios' . PHP_EOL . PHP_EOL;
+        $instruction = <<<INSTRUCTION
+Existing Scenarios
+
+- The project provides a list of existing Scenarios, including their fully qualified class names and descriptions.
+- Before generating a new Scenario, examine the available Scenarios to determine whether an existing implementation already provides the requested functionality or could support the new Scenario.
+- Prefer reusing existing Scenarios over duplicating their functionality, provided that the Scenario framework supports the intended reuse.
+- If an existing Scenario appears relevant but its description does not provide sufficient information, request access to its source code.
+- Only request source code when necessary to determine whether and how an existing Scenario can be reused.
+- Do not assume the existence of methods, properties, constructor arguments, or mechanisms for executing or composing existing Scenarios.
+- Only reuse existing Scenarios when their compatibility and the required integration mechanism can be established from the available information.
+- If an existing Scenario already fulfills the user's requirements, inform the user instead of generating a duplicate implementation.
+- If no suitable Scenario exists, generate a new implementation according to the framework instructions.
+
+
+INSTRUCTION;
+
+        $instruction .= 'Registered Scenarios' . PHP_EOL . PHP_EOL;
         $listed = [];
         foreach ($scenarios as $scenario) {
             if (isset($listed[$scenario->class])) {

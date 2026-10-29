@@ -31,7 +31,23 @@ final class ParameterTypeListInstruction implements Instruction
 
     public function instruct(): string
     {
-        $instruction  = 'Built-in parameter types' . PHP_EOL . PHP_EOL;
+        $instruction = <<<INSTRUCTION
+Existing Parameter Types
+
+- The project may provide a list of existing Parameter Types, including their fully qualified class names and descriptions.
+- Before generating a new Parameter Type or using a Parameter Type in a Scenario, examine the available Parameter Types to determine whether an existing implementation supports the required value type or conversion.
+- Prefer using existing Parameter Types over creating duplicate implementations.
+- If an existing Parameter Type appears suitable but its description does not provide sufficient information about its behavior or usage, request access to its source code.
+- Only request source code when necessary to verify compatibility or determine how the Parameter Type should be used.
+- Do not assume supported value types, conversion behavior, validation rules, methods, or constructor arguments that have not been documented or verified.
+- When generating a Scenario, use an existing Parameter Type if it provides the required functionality and is compatible with the Scenario framework's parameter handling mechanism.
+- If an existing Parameter Type already fulfills the user's requirements, inform the user instead of generating a duplicate implementation.
+- If no suitable Parameter Type exists, generate a new implementation according to the framework instructions.
+
+
+INSTRUCTION;
+
+        $instruction .= 'Built-in parameter types' . PHP_EOL . PHP_EOL;
         $instruction .= ParameterType::class . '::Boolean: ' . ParameterType::Boolean->value . PHP_EOL;
         $instruction .= ParameterType::class . '::Float: ' . ParameterType::Float->value . PHP_EOL;
         $instruction .= ParameterType::class . '::Integer: ' . ParameterType::Integer->value . PHP_EOL;
