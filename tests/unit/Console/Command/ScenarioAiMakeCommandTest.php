@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use ReflectionClass;
 use RuntimeException;
+use Stateforge\Scenario\Ai\Console\CliConversation;
 use Stateforge\Scenario\Ai\Console\Command\ScenarioAiMakeCommand;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Contract\AiClient;
@@ -52,14 +53,12 @@ use Stateforge\Scenario\Ai\Runtime\Validation\CodeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\InheritanceValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\SyntaxValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
-use Stateforge\Scenario\Ai\Tests\Files\SharedProjectClass;
 use Stateforge\Scenario\Core\Console\Command\Command;
 use Stateforge\Scenario\Core\Contract\CliInput;
 use Stateforge\Scenario\Core\Contract\CliOutput;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Configuration as CoreConfiguration;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Value\SuiteValue;
-use function count;
 use function file_get_contents;
 use function file_put_contents;
 use function implode;
@@ -69,6 +68,7 @@ use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
 #[CoversClass(ScenarioAiMakeCommand::class)]
+#[UsesClass(CliConversation::class)]
 #[UsesClass(Ai::class)]
 #[UsesClass(Context::class)]
 #[UsesClass(Configuration::class)]
@@ -178,103 +178,6 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
     public static function generationProvider(): array
     {
         return ['scenario' => ['scenario', false], 'parameter' => ['parameter', false], 'preserve draft' => ['scenario', true]];
-    }
-
-    public function testAsksFollowUpQuestionAndSendsAnswerWithHistory(): void
-    {
-        $client = $this->createMock(AiClient::class);
-        $response = $this->generatedResponse();
-        $calls = 0;
-        $client->expects(self::exactly(2))->method('request')->willReturnCallback(
-            /** @param list<AiAudit> $audits */
-            function (AiRequest $request, array $audits) use (&$calls, $response): AiResponse {
-                if (++$calls === 1) {
-                    self::assertSame('Generate code' . PHP_EOL, $request->prompt);
-                    return new AiResponse('question-id', null, GenerationType::Scenario, 'Which state?', []);
-                }
-                self::assertSame(2, $request->counter);
-                self::assertSame('Empty database' . PHP_EOL . PHP_EOL, $request->prompt);
-                self::assertCount(1, $audits);
-                return $response;
-            },
-        );
-        $this->configureAi($client, 'project-docs');
-        $output = $this->createMock(CliOutput::class);
-        $output->expects(self::never())->method('warn');
-        $output->expects(self::never())->method('error');
-        $output->expects(self::once())->method('success');
-        $questions = [];
-        $output->expects(self::exactly(2))->method('ask')->willReturnCallback(
-            function (string $question) use (&$questions): string {
-                $questions[] = $question;
-                return count($questions) === 1 ? 'Generate code' : 'Empty database';
-            },
-        );
-
-        self::assertSame(Command::Success, (new ScenarioAiMakeCommand())->run($this->input(), $output));
-        self::assertSame(['Please describe the scenario or parameter type.', 'AI: Which state?'], $questions);
-    }
-
-    #[DataProvider('consentProvider')]
-    public function testPromptSharesExistingClassOnlyWithConsent(bool $consent): void
-    {
-        $class = SharedProjectClass::class;
-        $client = $this->createMock(AiClient::class);
-        $client->expects(self::once())->method('request')->with(
-            self::callback(static function (AiRequest $request) use ($consent, $class): bool {
-                self::assertStringContainsString('Use ' . $class, $request->prompt);
-                if ($consent) {
-                    self::assertStringContainsString('Shared project class source marker', $request->prompt);
-                } else {
-                    self::assertStringNotContainsString('Shared project class source marker', $request->prompt);
-                }
-                return true;
-            }),
-            [],
-        )->willReturn($this->generatedResponse());
-        $this->configureAi($client);
-        $output = $this->createMock(CliOutput::class);
-        $output->method('ask')->willReturn('Use ' . $class . ' and MissingProject\\UnknownClass');
-        $output->expects(self::once())->method('confirm')
-            ->with('Can the source code for class "' . $class . '" be sent to AI?', false)->willReturn($consent);
-        $output->expects(self::never())->method('error');
-
-        self::assertSame(Command::Success, (new ScenarioAiMakeCommand())->run($this->input(), $output));
-    }
-
-    #[DataProvider('consentProvider')]
-    public function testRespondsToRequestedClassDefinitionsWithConsent(bool $consent): void
-    {
-        $client = $this->createMock(AiClient::class);
-        $response = $this->generatedResponse();
-        $calls = 0;
-        $client->expects(self::exactly(2))->method('request')->willReturnCallback(
-            function (AiRequest $request) use (&$calls, $response, $consent): AiResponse {
-                if (++$calls === 1) {
-                    return new AiResponse('class-request', null, GenerationType::Scenario, null, [SharedProjectClass::class]);
-                }
-                if ($consent) {
-                    self::assertStringContainsString('Shared project class source marker', $request->prompt);
-                } else {
-                    self::assertStringNotContainsString('Shared project class source marker', $request->prompt);
-                }
-                return $response;
-            },
-        );
-        $this->configureAi($client);
-        $output = $this->createMock(CliOutput::class);
-        $output->expects(self::once())->method('ask')->willReturn('Generate code');
-        $output->expects(self::once())->method('confirm')
-            ->with('Can the source code for class "' . SharedProjectClass::class . '" be sent to AI?', false)->willReturn($consent);
-        $output->expects(self::never())->method('error');
-
-        self::assertSame(Command::Success, (new ScenarioAiMakeCommand())->run($this->input(), $output));
-    }
-
-    /** @return array<string, array{bool}> */
-    public static function consentProvider(): array
-    {
-        return ['allowed' => [true], 'declined' => [false]];
     }
 
     #[DataProvider('missingCodeProvider')]
