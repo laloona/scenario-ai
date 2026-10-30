@@ -69,6 +69,7 @@ For example:
     xsi:noNamespaceSchemaLocation="xsd/scenario-ai.xsd"
     maxQuestions="3"
     projectDoc="mydocs"
+    allowProjectInformation="true"
 >
     <adapter type="openai">
         <var name="apiKey">YOUR_OPENAI_API_KEY</var>

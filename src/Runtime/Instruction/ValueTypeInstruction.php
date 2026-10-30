@@ -11,23 +11,23 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
-use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\BooleanType;
 use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\FloatType;
 use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\IntegerType;
 use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\StringType;
-use const PHP_EOL;
 
 final class ValueTypeInstruction implements Instruction
 {
     public function instruct(): string
     {
-        return 'Some class definitions: ' . PHP_EOL . PHP_EOL .
-            (new SourceCodeReader())->read([
+        return (new ClassInstruction(
+            'Some class definitions',
+            [
                 BooleanType::class,
                 FloatType::class,
                 IntegerType::class,
                 StringType::class,
-            ]);
+            ],
+        ))->instruct();
     }
 }

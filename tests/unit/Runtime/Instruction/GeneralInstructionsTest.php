@@ -19,6 +19,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use ReflectionClass;
 use Stateforge\Scenario\Ai\Runtime\Instruction\AttributeInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BaseInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\DocumentationFinder;
 use Stateforge\Scenario\Ai\Runtime\Instruction\DocumentationInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\GeneralInstructions;
@@ -45,6 +46,7 @@ use function mkdir;
 #[UsesClass(DocumentationFinder::class)]
 #[UsesClass(QuestionLimitInstruction::class)]
 #[UsesClass(ValueTypeInstruction::class)]
+#[UsesClass(ClassInstruction::class)]
 #[UsesClass(SourceCodeReader::class)]
 #[Group('runtime')]
 #[Small]

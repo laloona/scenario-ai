@@ -16,10 +16,12 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ValueTypeInstruction;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 
 #[CoversClass(ValueTypeInstruction::class)]
+#[UsesClass(ClassInstruction::class)]
 #[UsesClass(SourceCodeReader::class)]
 #[Group('runtime')]
 #[Small]

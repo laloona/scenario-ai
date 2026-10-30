@@ -34,6 +34,7 @@ use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\AttributeInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BaseInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\DocumentationFinder;
 use Stateforge\Scenario\Ai\Runtime\Instruction\DocumentationInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\GeneralInstructions;
@@ -86,6 +87,7 @@ use function unlink;
 #[UsesClass(DocumentationFinder::class)]
 #[UsesClass(QuestionLimitInstruction::class)]
 #[UsesClass(ValueTypeInstruction::class)]
+#[UsesClass(ClassInstruction::class)]
 #[UsesClass(BlueprintInstruction::class)]
 #[UsesClass(ScenarioBlueprintInstruction::class)]
 #[UsesClass(ParameterBlueprintInstruction::class)]
