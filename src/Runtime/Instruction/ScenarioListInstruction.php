@@ -29,7 +29,7 @@ final class ScenarioListInstruction implements Instruction
         }
 
         $instruction = <<<INSTRUCTION
-Existing Scenarios
+Existing Scenarios:
 
 - The project provides a list of existing Scenarios, including their fully qualified class names and descriptions.
 - Before generating a new Scenario, examine the available Scenarios to determine whether an existing implementation already provides the requested functionality or could support the new Scenario.

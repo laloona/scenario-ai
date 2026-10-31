@@ -62,7 +62,7 @@ final class ScenarioListInstructionTest extends TestCase
 
         $text = (new ScenarioListInstruction())->instruct();
 
-        self::assertStringStartsWith('Existing Scenarios', $text);
+        self::assertStringStartsWith('Existing Scenarios:' . PHP_EOL, $text);
         self::assertStringContainsString('Registered Scenarios' . PHP_EOL . PHP_EOL, $text);
         self::assertStringContainsString(ListedScenario::class . ': name: listed, description: Listed scenario description, suites: main, parameters: ', $text);
         self::assertSame(1, substr_count($text, ListedScenario::class . ':'));

@@ -32,7 +32,7 @@ final class ParameterTypeListInstruction implements Instruction
     public function instruct(): string
     {
         $instruction = <<<INSTRUCTION
-Existing Parameter Types
+Existing Parameter Types:
 
 - The project may provide a list of existing Parameter Types, including their fully qualified class names and descriptions.
 - Before generating a new Parameter Type or using a Parameter Type in a Scenario, examine the available Parameter Types to determine whether an existing implementation supports the required value type or conversion.

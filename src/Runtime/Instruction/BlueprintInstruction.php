@@ -45,8 +45,6 @@ Generated code quality rules:
 
 Namespace rules:
 
-Namespace rules:
-
 - The selected blueprint defines the authoritative PHP namespace declaration.
 - The %nameSpace% placeholder MUST be replaced using literal string substitution.
 - Treat the configured namespace as an opaque string, not as a namespace to be interpreted or optimized.

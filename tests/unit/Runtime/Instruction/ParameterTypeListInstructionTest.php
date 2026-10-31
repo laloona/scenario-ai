@@ -45,7 +45,7 @@ final class ParameterTypeListInstructionTest extends TestCase
     {
         $text = (new ParameterTypeListInstruction(null, false))->instruct();
 
-        self::assertStringStartsWith('Existing Parameter Types', $text);
+        self::assertStringStartsWith('Existing Parameter Types:' . PHP_EOL, $text);
         self::assertStringContainsString('Built-in parameter types', $text);
         foreach (ParameterType::cases() as $type) {
             self::assertStringContainsString(ParameterType::class . '::' . $type->name . ': ' . $type->value, $text);

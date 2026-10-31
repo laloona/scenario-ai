@@ -20,6 +20,8 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use function file_put_contents;
+use function substr_count;
+use const PHP_EOL;
 
 #[CoversClass(BlueprintInstruction::class)]
 #[UsesClass(ScenarioBlueprintInstruction::class)]
@@ -40,6 +42,8 @@ final class BlueprintInstructionTest extends FilesystemTestCase
         ))->instruct();
 
         self::assertStringContainsString('Use only the blueprint corresponding to the selected generation type.', $text);
+        self::assertSame(1, substr_count($text, PHP_EOL . 'Namespace rules:' . PHP_EOL));
+        self::assertStringContainsString('The %nameSpace% placeholder MUST be replaced using literal string substitution.', $text);
         self::assertStringContainsString('SCENARIO_MARKER', $text);
         self::assertStringContainsString('PARAMETER_MARKER', $text);
         self::assertMatchesRegularExpression('/SCENARIO_MARKER[\s\S]*PARAMETER_MARKER/', $text);

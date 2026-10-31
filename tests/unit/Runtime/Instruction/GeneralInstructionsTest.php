@@ -83,7 +83,7 @@ final class GeneralInstructionsTest extends FilesystemTestCase
             $allowProjectInformation,
         ))->instruct();
 
-        self::assertStringContainsString('Generate exactly one PHP class.', $text);
+        self::assertStringContainsString('If code generation is required, generate exactly one PHP class.', $text);
         self::assertStringContainsString('Available attributes:', $text);
         self::assertStringContainsString('FRAMEWORK_MARKER', $text);
         self::assertStringContainsString('Maximum clarification questions: 7', $text);

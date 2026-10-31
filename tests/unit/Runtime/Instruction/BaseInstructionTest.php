@@ -27,7 +27,7 @@ final class BaseInstructionTest extends TestCase
         $text = (new BaseInstruction())->instruct();
 
         self::assertStringContainsString('Generate PHP code compatible with PHP ^8.2.', $text);
-        self::assertStringContainsString('Generate exactly one PHP class.', $text);
+        self::assertStringContainsString('If code generation is required, generate exactly one PHP class.', $text);
         self::assertStringContainsString('Never invent framework methods, attributes or interfaces.', $text);
         self::assertStringContainsString('Return responses exclusively using the provided JSON schema.', $text);
         self::assertStringContainsString('These three response states are mutually exclusive.', $text);
@@ -66,4 +66,26 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('If the user declines, ask for new or modified requirements instead of generating duplicate code.', $text);
         self::assertStringContainsString('Do not repeatedly ask for confirmation once the user has explicitly decided to create a new implementation.', $text);
     }
+    public function testRequiresEvaluatingExistingImplementationsBeforeGeneratingCode(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertMatchesRegularExpression(
+            '/1\. Examine all available existing implementations\.[\s\S]*'
+            . '2\. Compare the user\x27s requested behavior[\s\S]*'
+            . '3\. If an existing implementation fully satisfies the request:[\s\S]*'
+            . 'Do not generate code\.[\s\S]*'
+            . 'Ask whether a new implementation is still desired\.[\s\S]*'
+            . '4\. If an existing implementation might satisfy the request but its description is insufficient:[\s\S]*'
+            . 'Request its source code\.[\s\S]*'
+            . 'Do not generate code until compatibility\s+has been evaluated\.[\s\S]*'
+            . '5\. Only if no suitable existing implementation is available, proceed with code generation\./',
+            $text,
+        );
+        self::assertStringContainsString(
+            'This decision process takes precedence over all general instructions requiring code generation.',
+            $text,
+        );
+    }
+
 }
