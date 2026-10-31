@@ -12,12 +12,14 @@
 namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Instruction;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BaseInstruction;
 use function json_decode;
 use function preg_match_all;
+use function str_replace;
 use const JSON_THROW_ON_ERROR;
 
 #[CoversClass(BaseInstruction::class)]
@@ -86,10 +88,12 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('A completed match response is a successful result, not a generation failure.', $text);
     }
 
-    public function testDefinesFourValidJsonResponseExamplesIncludingAcceptedMatch(): void
+    #[DataProvider('lineEndings')]
+    public function testDefinesFourValidJsonResponseExamplesIncludingAcceptedMatch(string $lineEnding): void
     {
-        $text = (new BaseInstruction())->instruct();
-        self::assertSame(4, preg_match_all('/^\{\n.*?^\}/ms', $text, $matches));
+        $text = str_replace("\r\n", "\n", (new BaseInstruction())->instruct());
+        $text = str_replace("\n", $lineEnding, $text);
+        self::assertSame(4, preg_match_all('/^\{\r?\n.*?^\}/ms', $text, $matches));
 
         $expected = [
             ['php' => null, 'question' => null, 'classes' => ['Fully\\Qualified\\ClassName'], 'type' => 'parameter', 'match' => null],
@@ -102,6 +106,13 @@ final class BaseInstructionTest extends TestCase
             $decoded[] = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         }
         self::assertSame($expected, $decoded);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function lineEndings(): iterable
+    {
+        yield 'Unix LF' => ["\n"];
+        yield 'Windows CRLF' => ["\r\n"];
     }
 
     public function testRequiresExclusiveResponseStatesAndConfirmationBeforeSettingMatch(): void
