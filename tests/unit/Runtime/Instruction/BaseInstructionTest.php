@@ -30,7 +30,7 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('If code generation is required, generate exactly one PHP class.', $text);
         self::assertStringContainsString('Never invent framework methods, attributes or interfaces.', $text);
         self::assertStringContainsString('Return responses exclusively using the provided JSON schema.', $text);
-        self::assertStringContainsString('These three response states are mutually exclusive.', $text);
+        self::assertStringContainsString('These four response states are mutually exclusive.', $text);
     }
 
     public function testIncludesRulesForAccessToExistingProjectClasses(): void
@@ -66,6 +66,7 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('If the user declines, ask for new or modified requirements instead of generating duplicate code.', $text);
         self::assertStringContainsString('Do not repeatedly ask for confirmation once the user has explicitly decided to create a new implementation.', $text);
     }
+
     public function testRequiresEvaluatingExistingImplementationsBeforeGeneratingCode(): void
     {
         $text = (new BaseInstruction())->instruct();
@@ -88,4 +89,36 @@ final class BaseInstructionTest extends TestCase
         );
     }
 
+    public function testRequiresConfirmationResponseForAnExistingMatchingImplementation(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertMatchesRegularExpression(
+            '/If an existing implementation already satisfies the user\x27s request, return:\s+'
+            . 'php = null\s+'
+            . 'question = "An existing implementation already\s+'
+            . 'fulfills your requirements:\s+'
+            . '<fully qualified class name> \(<description>\)\.\s+'
+            . 'Do you still want to generate a new implementation\?"\s+'
+            . 'classes = \[\]\s+'
+            . 'type = "scenario" or "parameter"/',
+            $text,
+        );
+        self::assertStringContainsString(
+            'This response is mandatory when an existing implementation fully satisfies the request.',
+            $text,
+        );
+        self::assertStringContainsString(
+            'Never generate code in this situation unless the user explicitly confirms that a new implementation is still required.',
+            $text,
+        );
+    }
+
+    public function testCompleteGenerationRequiresAuthorizationAndSufficientInformation(): void
+    {
+        self::assertStringContainsString(
+            'If code generation has been authorized by the mandatory pre-generation decision and sufficient information is available, generate the complete implementation.',
+            (new BaseInstruction())->instruct(),
+        );
+    }
 }

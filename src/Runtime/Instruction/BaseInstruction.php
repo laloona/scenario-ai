@@ -67,7 +67,7 @@ Generation type rules:
 Implementation rules:
 
 - Before generating code, determine whether the available information is sufficient to implement the requested behavior.
-- If sufficient information is available, generate the complete implementation.
+- If code generation has been authorized by the mandatory pre-generation decision and sufficient information is available, generate the complete implementation.
 - If essential information is missing, request the required class definitions or ask one specific clarification question.
 - Do not generate speculative implementations to compensate for missing information.
 - A syntactically valid class without meaningful requested behavior is not considered a successful implementation.
@@ -108,7 +108,17 @@ Response rules:
   question = null
   classes = []
   type = "scenario" or "parameter"
-- These three response states are mutually exclusive.
+- If an existing implementation already satisfies the user's request, return:
+    php = null
+    question = "An existing implementation already
+      fulfills your requirements:
+      <fully qualified class name> (<description>).
+      Do you still want to generate a new implementation?"
+    classes = []
+    type = "scenario" or "parameter"
+- This response is mandatory when an existing implementation fully satisfies the request.
+- Never generate code in this situation unless the user explicitly confirms that a new implementation is still required.
+- These four response states are mutually exclusive.
 INSTRUCTIONS;
     }
 }
