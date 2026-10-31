@@ -11,11 +11,11 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 
-use RuntimeException;
+use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
+use Stateforge\Scenario\Ai\Runtime\Exception\WrongResponseStructureException;
 use function is_array;
 use function is_string;
 use function json_decode;
-use const JSON_THROW_ON_ERROR;
 
 final class ResponseDecoder
 {
@@ -30,18 +30,17 @@ final class ResponseDecoder
             $answer,
             true,
             512,
-            JSON_THROW_ON_ERROR,
         );
 
         if (is_array($result) === false) {
-            throw new RuntimeException('Claude output is not a JSON object.');
+            throw new InvalidJsonResponseException();
         }
 
         /** @var array<string, mixed> $validatedResult */
         $validatedResult = [];
         foreach ($result as $key => $value) {
             if (is_string($key) === false) {
-                throw new RuntimeException('Invalid Claude output structure.');
+                throw new WrongResponseStructureException();
             }
 
             $validatedResult[$key] = $value;

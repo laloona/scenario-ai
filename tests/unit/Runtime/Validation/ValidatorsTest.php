@@ -30,7 +30,7 @@ final class ValidatorsTest extends TestCase
     public function testEmptyCollectionAcceptsResponse(): void
     {
         $validators = new Validators();
-        $response = new AiResponse(null, null, null, null, []);
+        $response = new AiResponse(null, null, null, null, [], null);
         $validators->validate($response);
 
         self::assertNull($response->php);
@@ -38,7 +38,7 @@ final class ValidatorsTest extends TestCase
 
     public function testCallsEveryValidatorInInsertionOrderWithSameResponse(): void
     {
-        $response = new AiResponse('id', null, null, null, []);
+        $response = new AiResponse('id', null, null, null, [], null);
         $calls = [];
         $first = $this->createMock(Validator::class);
         $first->expects(self::once())->method('validate')->with($response)
@@ -61,7 +61,7 @@ final class ValidatorsTest extends TestCase
 
     public function testStopsAfterFirstValidationFailure(): void
     {
-        $response = new AiResponse(null, null, null, null, []);
+        $response = new AiResponse(null, null, null, null, [], null);
         $first = $this->createMock(Validator::class);
         $first->expects(self::once())->method('validate')->with($response)
             ->willThrowException(new RuntimeException('Invalid response'));

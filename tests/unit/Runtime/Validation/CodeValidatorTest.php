@@ -48,7 +48,7 @@ final class CodeValidatorTest extends TestCase
     #[DataProvider('incompleteResponseProvider')]
     public function testSkipsResponseWithoutCodeOrGenerationType(?string $php, ?string $type): void
     {
-        $response = new AiResponse(null, $php, $type === null ? null : GenerationType::from($type), null, []);
+        $response = new AiResponse(null, $php, $type === null ? null : GenerationType::from($type), null, [], null);
         $this->validator()->validate($response);
 
         self::assertSame($php, $response->php);
@@ -63,7 +63,7 @@ final class CodeValidatorTest extends TestCase
     #[DataProvider('validCodeProvider')]
     public function testValidatesSelectedGenerationType(string $type, string $code): void
     {
-        $response = new AiResponse(null, $code, GenerationType::from($type), null, []);
+        $response = new AiResponse(null, $code, GenerationType::from($type), null, [], null);
         $this->validator()->validate($response);
 
         self::assertSame($code, $response->php);
@@ -81,19 +81,19 @@ final class CodeValidatorTest extends TestCase
     public function testRejectsInvalidSyntax(): void
     {
         $this->expectException(InvalidGeneratedCodeException::class);
-        $this->validator()->validate(new AiResponse(null, '<?php class {', GenerationType::Scenario, null, []));
+        $this->validator()->validate(new AiResponse(null, '<?php class {', GenerationType::Scenario, null, [], null));
     }
 
     public function testRejectsWrongInheritance(): void
     {
         $this->expectException(InheritanceValidatorException::class);
-        $this->validator()->validate(new AiResponse(null, '<?php #[\\Attribute] class Demo extends \\stdClass {}', GenerationType::Scenario, null, []));
+        $this->validator()->validate(new AiResponse(null, '<?php #[\\Attribute] class Demo extends \\stdClass {}', GenerationType::Scenario, null, [], null));
     }
 
     public function testRejectsMissingAttribute(): void
     {
         $this->expectException(AttributeValidatorException::class);
-        $this->validator()->validate(new AiResponse(null, '<?php class Demo extends \\RuntimeException {}', GenerationType::Scenario, null, []));
+        $this->validator()->validate(new AiResponse(null, '<?php class Demo extends \\RuntimeException {}', GenerationType::Scenario, null, [], null));
     }
 
     private function validator(): CodeValidator

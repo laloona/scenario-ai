@@ -11,7 +11,10 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 
-use function array_filter;
+use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
+use Stateforge\Scenario\Ai\Runtime\Exception\MissingResponseElementException;
+use Stateforge\Scenario\Ai\Runtime\Exception\WrongResponseTypeException;
+use function array_key_exists;
 use function array_values;
 use function class_exists;
 use function is_array;
@@ -25,31 +28,73 @@ final class ResponseBuilder
     public function build(string $id, array $response): AiResponse
     {
         $response['id'] = $id;
-        $response['type'] = isset($response['type']) && is_string($response['type'])
-            ? GenerationType::from($response['type'])
-            : null;
+        $response['type'] = $this->extractString($response, 'type');
+        if ($response['type'] !== null) {
+            $type = GenerationType::tryFrom($response['type']);
+            if ($type === null) {
+                throw new WrongResponseTypeException($response['type'], GenerationType::class . ' for "type"');
+            }
 
-        $response['php'] = isset($response['php']) && is_string($response['php'])
-            ? $response['php']
-            : null;
+            $response['type'] = $type;
+        }
 
-        $response['question'] = isset($response['question']) && is_string($response['question'])
-            ? $response['question']
-            : null;
+        $response['php'] = $this->extractString($response, 'php');
+        $response['question'] = $this->extractString($response, 'question');
 
-        $response['classes'] = isset($response['classes']) && is_array($response['classes'])
-            ? array_values(array_filter(
-                $response['classes'],
-                static fn (mixed $class): bool => is_string($class) && class_exists($class),
-            ))
-            : [];
+        if (array_key_exists('classes', $response) === false) {
+            throw new MissingResponseElementException('classes');
+        }
+
+        if (is_array($response['classes']) === false) {
+            throw new WrongResponseTypeException($response['classes'], 'array for "classes"');
+        }
+
+        foreach ($response['classes'] as $class) {
+            if (is_string($class) === false) {
+                throw new WrongResponseTypeException($class, 'string in [classes]');
+            }
+
+            if (class_exists($class) === false) {
+                throw new ClassDoesNotExistException($class);
+            }
+        }
+
+        $response['match'] = $this->extractString($response, 'match');
+        if ($response['match'] !== null
+            && class_exists($response['match']) === false) {
+            throw new ClassDoesNotExistException($response['match']);
+        }
 
         return new AiResponse(
             $response['id'],
             $response['php'],
             $response['type'],
             $response['question'],
-            $response['classes'],
+            array_values($response['classes']),
+            $response['match'],
         );
+    }
+
+    /**
+     * @param array<string, mixed> $response
+     */
+    private function extractString(array $response, string $name): ?string
+    {
+        if (array_key_exists($name, $response) === false) {
+            throw new MissingResponseElementException($name);
+        }
+
+        return $this->getString($response[$name], $name);
+    }
+
+    private function getString(mixed $value, string $name): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return is_string($value) === true
+            ? $value
+            : throw new WrongResponseTypeException($value, 'string for "' . $name . '"');
     }
 }

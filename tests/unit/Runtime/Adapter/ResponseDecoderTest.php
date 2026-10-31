@@ -11,22 +11,26 @@
 
 namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Adapter;
 
-use JsonException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
+use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
+use Stateforge\Scenario\Ai\Runtime\Exception\MissingResponseElementException;
+use Stateforge\Scenario\Ai\Runtime\Exception\WrongResponseStructureException;
 
 #[CoversClass(ResponseDecoder::class)]
 #[UsesClass(ResponseBuilder::class)]
 #[UsesClass(AiResponse::class)]
+#[UsesClass(InvalidJsonResponseException::class)]
+#[UsesClass(MissingResponseElementException::class)]
+#[UsesClass(WrongResponseStructureException::class)]
 #[Group('runtime')]
 #[Small]
 final class ResponseDecoderTest extends TestCase
@@ -35,7 +39,7 @@ final class ResponseDecoderTest extends TestCase
     {
         $response = (new ResponseDecoder(new ResponseBuilder()))->decode(
             'conversation-id',
-            '{"id":"ignored","type":"parameter","php":"<?php class Demo {}","question":null,"classes":[]}',
+            '{"id":"ignored","type":"parameter","php":"<?php class Demo {}","question":null,"classes":[],"match":null}',
         );
 
         self::assertSame('conversation-id', $response->id);
@@ -43,22 +47,44 @@ final class ResponseDecoderTest extends TestCase
         self::assertSame('<?php class Demo {}', $response->php);
         self::assertNull($response->question);
         self::assertSame([], $response->classes);
+        self::assertNull($response->match);
     }
 
-    public function testEmptyObjectUsesDefaultResponseFields(): void
+    public function testAcceptsExplicitNullFieldsAndEmptyClasses(): void
     {
-        $response = (new ResponseDecoder(new ResponseBuilder()))->decode('id', '{}');
+        $response = (new ResponseDecoder(new ResponseBuilder()))->decode('id', '{"type":null,"php":null,"question":null,"classes":[],"match":null}');
 
         self::assertSame('id', $response->id);
         self::assertNull($response->php);
         self::assertNull($response->type);
         self::assertNull($response->question);
         self::assertSame([], $response->classes);
+        self::assertNull($response->match);
+    }
+
+    public function testRejectsEmptyObjectWithMissingRequiredFields(): void
+    {
+        $this->expectException(MissingResponseElementException::class);
+        $this->expectExceptionMessage('element type is missing in response.');
+
+        (new ResponseDecoder(new ResponseBuilder()))->decode('id', '{}');
+    }
+
+    public function testRejectsResponseWithoutMatch(): void
+    {
+        $this->expectException(MissingResponseElementException::class);
+        $this->expectExceptionMessage('element match is missing in response.');
+
+        (new ResponseDecoder(new ResponseBuilder()))->decode(
+            'id',
+            '{"type":null,"php":null,"question":null,"classes":[]}',
+        );
     }
 
     public function testRejectsMalformedJson(): void
     {
-        $this->expectException(JsonException::class);
+        $this->expectException(InvalidJsonResponseException::class);
+        $this->expectExceptionMessage('AI output is not a JSON object.');
 
         (new ResponseDecoder(new ResponseBuilder()))->decode('id', '{invalid');
     }
@@ -66,8 +92,8 @@ final class ResponseDecoderTest extends TestCase
     #[DataProvider('nonObjectProvider')]
     public function testRejectsNonObjectJson(string $json): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Claude output is not a JSON object.');
+        $this->expectException(InvalidJsonResponseException::class);
+        $this->expectExceptionMessage('AI output is not a JSON object.');
 
         (new ResponseDecoder(new ResponseBuilder()))->decode('id', $json);
     }
@@ -81,8 +107,8 @@ final class ResponseDecoderTest extends TestCase
     #[DataProvider('numericKeyProvider')]
     public function testRejectsNumericKeys(string $json): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Invalid Claude output structure.');
+        $this->expectException(WrongResponseStructureException::class);
+        $this->expectExceptionMessage('Invalid AI output structure.');
 
         (new ResponseDecoder(new ResponseBuilder()))->decode('id', $json);
     }

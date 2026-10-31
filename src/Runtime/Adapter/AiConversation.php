@@ -86,7 +86,8 @@ final class AiConversation
     public function completed(): bool
     {
         $audit = $this->lastAudit();
-        return $audit->request->counter >= $this->configuration->maxQuestions
+        return $audit->response->match !== null
+            || $audit->request->counter >= $this->configuration->maxQuestions
             || ($audit->response->php !== null
                     && $audit->response->type !== null
                     && $audit->response->question === null

@@ -32,6 +32,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiConfig;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiFormat;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
+use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use function json_decode;
 use function json_encode;
@@ -44,6 +45,7 @@ use const JSON_THROW_ON_ERROR;
 #[UsesClass(AiRequest::class)]
 #[UsesClass(AiResponse::class)]
 #[UsesClass(ResponseDecoder::class)]
+#[UsesClass(InvalidJsonResponseException::class)]
 #[UsesClass(ResponseBuilder::class)]
 #[Group('runtime')]
 #[Small]
@@ -71,10 +73,10 @@ final class OpenAiClientTest extends TestCase
                 } else {
                     self::assertArrayNotHasKey('previous_response_id', $payload);
                 }
-                return new Response(200, [], $this->validResponseBody('{"php":"<?php class Demo {}","type":"scenario","question":null,"classes":[]}'));
+                return new Response(200, [], $this->validResponseBody('{"php":"<?php class Demo {}","type":"scenario","question":null,"classes":[],"match":null}'));
             },
         );
-        $audits = $withHistory ? [new AiAudit(new AiRequest(null, 'Initial prompt', 1), new AiResponse('previous-id', null, null, 'Which state?', []))] : [];
+        $audits = $withHistory ? [new AiAudit(new AiRequest(null, 'Initial prompt', 1), new AiResponse('previous-id', null, null, 'Which state?', [], null))] : [];
         $response = $this->client($http)->request(new AiRequest($withHistory ? 'previous-id' : null, 'Generate a scenario', 2), $audits);
 
         self::assertSame('answer-id', $response->id);
@@ -82,6 +84,7 @@ final class OpenAiClientTest extends TestCase
         self::assertSame(GenerationType::Scenario, $response->type);
         self::assertNull($response->question);
         self::assertSame([], $response->classes);
+        self::assertNull($response->match);
     }
 
     /** @return array<string, array{bool}> */
@@ -149,7 +152,7 @@ final class OpenAiClientTest extends TestCase
     {
         $http = self::createStub(HttpClient::class);
         $http->method('sendRequest')->willReturn(new Response(200, [], $this->validResponseBody('{invalid')));
-        $this->expectException(JsonException::class);
+        $this->expectException(InvalidJsonResponseException::class);
 
         $this->client($http)->request(new AiRequest(null, 'Generate', 1), []);
     }

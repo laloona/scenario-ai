@@ -31,6 +31,6 @@ final class CustomTestClient implements AiClient
     /** @param list<AiAudit> $audits */
     public function request(AiRequest $request, array $audits): AiResponse
     {
-        return new AiResponse($request->id, null, null, $request->prompt, []);
+        return new AiResponse($request->id, null, null, $request->prompt, [], null);
     }
 }

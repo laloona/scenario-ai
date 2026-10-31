@@ -32,12 +32,12 @@ final class ClaudeAiFormatTest extends TestCase
         self::assertIsArray($format['schema']);
         $schema = $format['schema'];
         self::assertSame('object', $schema['type']);
-        self::assertSame(['php', 'type', 'question', 'classes'], $schema['required']);
+        self::assertSame(['php', 'type', 'question', 'classes', 'match'], $schema['required']);
         self::assertFalse($schema['additionalProperties']);
         self::assertIsArray($schema['properties']);
         $properties = $schema['properties'];
-        self::assertSame(['php', 'type', 'question', 'classes'], array_keys($properties));
-        foreach (['php', 'type', 'question'] as $field) {
+        self::assertSame(['php', 'type', 'question', 'classes', 'match'], array_keys($properties));
+        foreach (['php', 'type', 'question', 'match'] as $field) {
             self::assertIsArray($properties[$field]);
             self::assertSame(['string', 'null'], $properties[$field]['type']);
         }

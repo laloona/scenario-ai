@@ -16,13 +16,16 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BaseInstruction;
+use function json_decode;
+use function preg_match_all;
+use const JSON_THROW_ON_ERROR;
 
 #[CoversClass(BaseInstruction::class)]
 #[Group('runtime')]
 #[Small]
 final class BaseInstructionTest extends TestCase
 {
-    public function testIncludesFrameworkGenerationAndResponseRules(): void
+    public function testIncludesFrameworkAndGenerationTypeRules(): void
     {
         $text = (new BaseInstruction())->instruct();
 
@@ -30,41 +33,8 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('If code generation is required, generate exactly one PHP class.', $text);
         self::assertStringContainsString('Never invent framework methods, attributes or interfaces.', $text);
         self::assertStringContainsString('Return responses exclusively using the provided JSON schema.', $text);
-        self::assertStringContainsString('These four response states are mutually exclusive.', $text);
-    }
-
-    public function testIncludesRulesForAccessToExistingProjectClasses(): void
-    {
-        $text = (new BaseInstruction())->instruct();
-
-        self::assertStringContainsString('Access to Existing Project Classes', $text);
-        self::assertStringContainsString('Existing class names and descriptions may be provided as project context.', $text);
-        self::assertStringContainsString('Source code of existing project classes must only be requested when additional implementation details are required.', $text);
-        self::assertStringContainsString('Never assume that access to a class name or description also grants permission to access its source code.', $text);
-        self::assertStringContainsString("Use the framework's existing source code request mechanism to request additional information.", $text);
-        self::assertStringContainsString('If access to a class is denied, continue using the available information without inventing missing implementation details.', $text);
-    }
-
-    public function testIncludesRulesForEvaluatingExistingImplementations(): void
-    {
-        $text = (new BaseInstruction())->instruct();
-
-        self::assertStringContainsString("Before generating new code, check whether an existing implementation already fulfills the user's requirements.", $text);
-        self::assertStringContainsString('If an existing implementation appears suitable but additional information is required to verify its compatibility, request access to its source code.', $text);
-        self::assertStringContainsString('Prefer reusing existing implementations when they satisfy the requirements and their usage is supported by the framework.', $text);
-        self::assertStringContainsString("If an existing implementation already fulfills the user's requirements, inform the user about the existing class, including its name and description.", $text);
-        self::assertStringContainsString('If the user provides new requirements, evaluate them against the available implementations before generating code.', $text);
-        self::assertStringContainsString('Never assume the existence of methods, properties, constructor arguments, or other implementation details that have not been provided or verified.', $text);
-    }
-
-    public function testIncludesRulesForConfirmingDuplicateImplementation(): void
-    {
-        $text = (new BaseInstruction())->instruct();
-
-        self::assertStringContainsString('Ask the user whether a new implementation should still be generated.', $text);
-        self::assertStringContainsString('If the user confirms, proceed with generating the new implementation.', $text);
-        self::assertStringContainsString('If the user declines, ask for new or modified requirements instead of generating duplicate code.', $text);
-        self::assertStringContainsString('Do not repeatedly ask for confirmation once the user has explicitly decided to create a new implementation.', $text);
+        self::assertStringContainsString('The “type” field MUST always represent the original requested generation type.', $text);
+        self::assertStringContainsString('Missing project information MUST NOT cause a change of generation type.', $text);
     }
 
     public function testRequiresEvaluatingExistingImplementationsBeforeGeneratingCode(): void
@@ -72,53 +42,78 @@ final class BaseInstructionTest extends TestCase
         $text = (new BaseInstruction())->instruct();
 
         self::assertMatchesRegularExpression(
-            '/1\. Examine all available existing implementations\.[\s\S]*'
-            . '2\. Compare the user\x27s requested behavior[\s\S]*'
-            . '3\. If an existing implementation fully satisfies the request:[\s\S]*'
+            '/1\. Determine the requested generation type\.[\s\S]*'
+            . '2\. Examine all available existing implementations of that generation type\.[\s\S]*'
+            . '3\. Compare the user’s requested behavior[\s\S]*'
+            . '4\. If an existing implementation fully satisfies the request:[\s\S]*'
             . 'Do not generate code\.[\s\S]*'
-            . 'Ask whether a new implementation is still desired\.[\s\S]*'
-            . '4\. If an existing implementation might satisfy the request but its description is insufficient:[\s\S]*'
-            . 'Request its source code\.[\s\S]*'
-            . 'Do not generate code until compatibility\s+has been evaluated\.[\s\S]*'
-            . '5\. Only if no suitable existing implementation is available, proceed with code generation\./',
+            . 'Do not set “match” until the user confirms[\s\S]*'
+            . '5\. If an existing implementation might satisfy the request but its description is insufficient:[\s\S]*'
+            . 'Request its source code[\s\S]*'
+            . '6\. If the user accepts the proposed existing implementation:[\s\S]*'
+            . '7\. If the user explicitly requests a new implementation:[\s\S]*'
+            . '8\. If no suitable existing implementation is available:/',
             $text,
         );
-        self::assertStringContainsString(
-            'This decision process takes precedence over all general instructions requiring code generation.',
-            $text,
-        );
+        self::assertStringContainsString('This decision process takes precedence over all instructions requiring code generation.', $text);
+        self::assertStringContainsString('Generate code only when authorized by the mandatory pre-generation decision.', $text);
+        self::assertStringContainsString('If code generation is authorized and sufficient information is available, generate the complete implementation.', $text);
     }
 
-    public function testRequiresConfirmationResponseForAnExistingMatchingImplementation(): void
+    public function testRequiresVerifiedProjectInformationAndPermissionForSourceAccess(): void
     {
         $text = (new BaseInstruction())->instruct();
 
-        self::assertMatchesRegularExpression(
-            '/If an existing implementation already satisfies the user\x27s request, return:\s+'
-            . 'php = null\s+'
-            . 'question = "An existing implementation already\s+'
-            . 'fulfills your requirements:\s+'
-            . '<fully qualified class name> \(<description>\)\.\s+'
-            . 'Do you still want to generate a new implementation\?"\s+'
-            . 'classes = \[\]\s+'
-            . 'type = "scenario" or "parameter"/',
-            $text,
-        );
-        self::assertStringContainsString(
-            'This response is mandatory when an existing implementation fully satisfies the request.',
-            $text,
-        );
-        self::assertStringContainsString(
-            'Never generate code in this situation unless the user explicitly confirms that a new implementation is still required.',
-            $text,
-        );
+        self::assertStringContainsString('Only consider implementations compatible with the originally requested generation type.', $text);
+        self::assertStringContainsString('Compare requested functionality against documented behavior, not class names alone.', $text);
+        self::assertStringContainsString('Source code of existing project classes must only be requested when additional implementation details are required.', $text);
+        self::assertStringContainsString('Never assume that access to a class name or description also grants permission to access its source code.', $text);
+        self::assertStringContainsString('Use the framework’s existing source code request mechanism to request additional information.', $text);
+        self::assertStringContainsString('If access to a class is denied, continue using the available information without inventing missing implementation details.', $text);
     }
 
-    public function testCompleteGenerationRequiresAuthorizationAndSufficientInformation(): void
+    public function testAcceptedImplementationCompletesTheRequestWithoutFurtherGeneration(): void
     {
-        self::assertStringContainsString(
-            'If code generation has been authorized by the mandatory pre-generation decision and sufficient information is available, generate the complete implementation.',
-            (new BaseInstruction())->instruct(),
-        );
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringContainsString('Resolve the user’s response according to the actual question asked, not merely the presence of “yes” or “no”.', $text);
+        self::assertStringContainsString('If the user accepts an existing implementation, return the completed match response immediately.', $text);
+        self::assertStringContainsString('Do not repeat the existing implementation search after acceptance.', $text);
+        self::assertStringContainsString('Do not generate code after acceptance.', $text);
+        self::assertStringContainsString('Do not change the generation type after acceptance.', $text);
+        self::assertStringContainsString('Do not ask additional questions after acceptance.', $text);
+        self::assertStringContainsString('Do not repeatedly ask for confirmation once the user has made a decision.', $text);
+        self::assertStringContainsString('A completed match response is a successful result, not a generation failure.', $text);
+    }
+
+    public function testDefinesFourValidJsonResponseExamplesIncludingAcceptedMatch(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+        self::assertSame(4, preg_match_all('/^\{\n.*?^\}/ms', $text, $matches));
+
+        $expected = [
+            ['php' => null, 'question' => null, 'classes' => ['Fully\\Qualified\\ClassName'], 'type' => 'parameter', 'match' => null],
+            ['php' => null, 'question' => 'One specific question', 'classes' => [], 'type' => 'parameter', 'match' => null],
+            ['php' => 'Generated PHP code', 'question' => null, 'classes' => [], 'type' => 'parameter', 'match' => null],
+            ['php' => null, 'question' => null, 'classes' => [], 'type' => 'parameter', 'match' => 'Fully\\Qualified\\ClassName'],
+        ];
+        $decoded = [];
+        foreach ($matches[0] as $json) {
+            $decoded[] = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        }
+        self::assertSame($expected, $decoded);
+    }
+
+    public function testRequiresExclusiveResponseStatesAndConfirmationBeforeSettingMatch(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringContainsString('The four response states are mutually exclusive.', $text);
+        self::assertStringContainsString('Exactly one response state MUST be selected per response.', $text);
+        self::assertStringContainsString('The “match” field MUST only be set after the user has accepted the proposed existing implementation.', $text);
+        self::assertStringContainsString('The “php” and “match” fields MUST NEVER contain non-null values simultaneously.', $text);
+        self::assertStringContainsString('Do not set “match” while waiting for confirmation.', $text);
+        self::assertStringContainsString('The “match” field MUST NOT contain a description or explanatory text.', $text);
+        self::assertStringContainsString('Always preserve the originally requested generation type.', $text);
     }
 }

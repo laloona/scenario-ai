@@ -15,6 +15,7 @@ final class AiResponse
 {
     /**
      * @param list<class-string> $classes
+     * @param class-string|null $match
      */
     public function __construct(
         public readonly ?string $id,
@@ -22,6 +23,7 @@ final class AiResponse
         public readonly ?GenerationType $type,
         public readonly ?string $question,
         public readonly array $classes,
+        public readonly ?string $match,
     ) {
     }
 }

@@ -58,8 +58,8 @@ final class AiConversationTest extends TestCase
 
     public function testTalkPassesPromptInstructionsConfigurationAndAuditHistory(): void
     {
-        $first = new AiResponse('first-id', null, null, 'Which state?', [], );
-        $second = new AiResponse('second-id', '<?php class Demo {}', GenerationType::Scenario, null, []);
+        $first = new AiResponse('first-id', null, null, 'Which state?', [], null, );
+        $second = new AiResponse('second-id', '<?php class Demo {}', GenerationType::Scenario, null, [], null);
         $instruction = self::createStub(Instruction::class);
         $context = $this->createMock(AiContext::class);
         $context->method('validator')->willReturn(self::createStub(Validator::class));
@@ -116,7 +116,7 @@ final class AiConversationTest extends TestCase
     public function testCompletionDependsOnResponseAndQuestionLimit(?string $php, ?string $type, ?string $question, bool $requestClasses, int $limit, bool $completed): void
     {
         $classes = $requestClasses ? [self::class] : [];
-        $response = new AiResponse('id', $php, $type === null ? null : GenerationType::from($type), $question, $classes);
+        $response = new AiResponse('id', $php, $type === null ? null : GenerationType::from($type), $question, $classes, null);
         $client = self::createStub(AiClient::class);
         $client->method('request')->willReturn($response);
         $conversation = $this->conversation($client, limit: $limit);
@@ -143,8 +143,8 @@ final class AiConversationTest extends TestCase
 
     public function testValidationFailureRetriesWithResponseIdAndAuditHistory(): void
     {
-        $invalid = new AiResponse('invalid-id', '<?php', GenerationType::Scenario, null, []);
-        $corrected = new AiResponse('corrected-id', '<?php class Demo {}', GenerationType::Scenario, null, []);
+        $invalid = new AiResponse('invalid-id', '<?php', GenerationType::Scenario, null, [], null);
+        $corrected = new AiResponse('corrected-id', '<?php class Demo {}', GenerationType::Scenario, null, [], null);
         $validator = $this->createMock(Validator::class);
         $validations = 0;
         $validator->expects(self::exactly(2))->method('validate')->willReturnCallback(
@@ -184,7 +184,7 @@ final class AiConversationTest extends TestCase
 
     public function testSecondValidationFailurePropagatesWithoutFurtherRetry(): void
     {
-        $response = new AiResponse('id', '<?php', GenerationType::Scenario, null, []);
+        $response = new AiResponse('id', '<?php', GenerationType::Scenario, null, [], null);
         $client = $this->createMock(AiClient::class);
         $client->expects(self::exactly(2))->method('request')->willReturn($response);
         $validator = $this->createMock(Validator::class);
@@ -207,6 +207,19 @@ final class AiConversationTest extends TestCase
         $this->expectExceptionMessage('Request failed');
 
         $conversation->talk('Generate');
+    }
+
+    public function testAcceptedMatchCompletesConversationBeforeQuestionLimit(): void
+    {
+        $response = new AiResponse('matched', null, GenerationType::Scenario, null, [], self::class);
+        $client = $this->createMock(AiClient::class);
+        $client->expects(self::once())->method('request')->willReturn($response);
+        $conversation = $this->conversation($client, limit: 3);
+
+        $conversation->talk('Use the existing implementation');
+
+        self::assertTrue($conversation->completed());
+        self::assertSame($response, $conversation->response());
     }
 
     private function conversation(AiClient $client, ?Validator $validator = null, int $limit = 5): AiConversation

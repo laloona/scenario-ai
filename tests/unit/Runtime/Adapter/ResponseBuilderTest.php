@@ -15,24 +15,30 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
+use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
+use Stateforge\Scenario\Ai\Runtime\Exception\MissingResponseElementException;
+use Stateforge\Scenario\Ai\Runtime\Exception\WrongResponseTypeException;
 use stdClass;
-use ValueError;
 
 #[CoversClass(ResponseBuilder::class)]
-#[CoversClass(AiResponse::class)]
+#[UsesClass(AiResponse::class)]
+#[UsesClass(ClassDoesNotExistException::class)]
+#[UsesClass(MissingResponseElementException::class)]
+#[UsesClass(WrongResponseTypeException::class)]
 #[Group('runtime')]
 #[Small]
 final class ResponseBuilderTest extends TestCase
 {
-    public function testBuildMapsFieldsAndOverridesResponseId(): void
+    public function testBuildMapsAllFieldsAndOverridesResponseId(): void
     {
         $response = (new ResponseBuilder())->build('actual-id', [
             'id' => 'ignored-id', 'type' => 'scenario', 'php' => '<?php class Demo {}',
-            'question' => 'Which state?', 'classes' => [stdClass::class],
+            'question' => 'Which state?', 'classes' => [3 => stdClass::class], 'match' => self::class,
         ]);
 
         self::assertSame('actual-id', $response->id);
@@ -40,50 +46,97 @@ final class ResponseBuilderTest extends TestCase
         self::assertSame('<?php class Demo {}', $response->php);
         self::assertSame('Which state?', $response->question);
         self::assertSame([stdClass::class], $response->classes);
+        self::assertSame(self::class, $response->match);
     }
 
-    public function testBuildRecognizesParameterGeneration(): void
+    public function testBuildAcceptsNullValuesAndAnEmptyClassList(): void
     {
-        self::assertSame(GenerationType::Parameter, (new ResponseBuilder())->build('id', ['type' => 'parameter'])->type);
-    }
-
-    /** @param array<string, mixed> $fields */
-    #[DataProvider('invalidFieldsProvider')]
-    public function testMissingNullOrInvalidFieldsUseDefaults(array $fields): void
-    {
-        $response = (new ResponseBuilder())->build('id', $fields);
+        $response = (new ResponseBuilder())->build('id', self::validResponse());
 
         self::assertSame('id', $response->id);
         self::assertNull($response->type);
         self::assertNull($response->php);
         self::assertNull($response->question);
+        self::assertNull($response->match);
         self::assertSame([], $response->classes);
     }
 
-    /** @return array<string, array{array<string, mixed>}> */
-    public static function invalidFieldsProvider(): array
+    public function testBuildRecognizesParameterGeneration(): void
     {
-        return [
-            'missing' => [[]],
-            'null' => [['type' => null, 'php' => null, 'question' => null, 'classes' => null]],
-            'invalid types' => [['type' => 1, 'php' => [], 'question' => false, 'classes' => 'invalid']],
-        ];
+        $fields = self::validResponse();
+        $fields['type'] = 'parameter';
+
+        self::assertSame(GenerationType::Parameter, (new ResponseBuilder())->build('id', $fields)->type);
     }
 
-    public function testFiltersInvalidClassNamesAndReindexesList(): void
+    #[DataProvider('requiredFields')]
+    public function testRejectsMissingRequiredFields(string $field): void
     {
-        $response = (new ResponseBuilder())->build('id', ['classes' => [
-            3 => 'MissingScenarioAiClass', 8 => stdClass::class, 12 => 42,
-            20 => self::class, 25 => null, 30 => new stdClass(),
-        ]]);
+        $fields = self::validResponse();
+        unset($fields[$field]);
 
-        self::assertSame([stdClass::class, self::class], $response->classes);
+        $this->expectException(MissingResponseElementException::class);
+        $this->expectExceptionMessage('element ' . $field . ' is missing in response.');
+
+        (new ResponseBuilder())->build('id', $fields);
     }
 
-    public function testRejectsUnknownGenerationType(): void
+    /** @return iterable<string, array{string}> */
+    public static function requiredFields(): iterable
     {
-        $this->expectException(ValueError::class);
+        foreach (['type', 'php', 'question', 'classes', 'match'] as $field) {
+            yield $field => [$field];
+        }
+    }
 
-        (new ResponseBuilder())->build('id', ['type' => 'unknown']);
+    #[DataProvider('invalidFields')]
+    public function testRejectsInvalidFieldTypes(string $field, mixed $value, string $expected): void
+    {
+        $fields = self::validResponse();
+        $fields[$field] = $value;
+
+        $this->expectException(WrongResponseTypeException::class);
+        $this->expectExceptionMessage('expected ' . $expected . '.');
+
+        (new ResponseBuilder())->build('id', $fields);
+    }
+
+    /** @return iterable<string, array{string, mixed, string}> */
+    public static function invalidFields(): iterable
+    {
+        yield 'unknown generation type' => ['type', 'unknown', GenerationType::class . ' for "type"'];
+        yield 'integer type' => ['type', 42, 'string for "type"'];
+        yield 'array php' => ['php', [], 'string for "php"'];
+        yield 'boolean question' => ['question', false, 'string for "question"'];
+        yield 'integer match' => ['match', 42, 'string for "match"'];
+        yield 'array match' => ['match', [], 'string for "match"'];
+        yield 'null classes' => ['classes', null, 'array for "classes"'];
+        yield 'string classes' => ['classes', 'invalid', 'array for "classes"'];
+        yield 'invalid class entry' => ['classes', [stdClass::class, 42], 'string in [classes]'];
+    }
+
+    #[DataProvider('missingClasses')]
+    public function testRejectsNonexistentClassReferences(string $field, mixed $value): void
+    {
+        $fields = self::validResponse();
+        $fields[$field] = $value;
+
+        $this->expectException(ClassDoesNotExistException::class);
+        $this->expectExceptionMessage('class "Missing\\RequestedClass" does not exist.');
+
+        (new ResponseBuilder())->build('id', $fields);
+    }
+
+    /** @return iterable<string, array{string, mixed}> */
+    public static function missingClasses(): iterable
+    {
+        yield 'requested class' => ['classes', [stdClass::class, 'Missing\\RequestedClass']];
+        yield 'matching class' => ['match', 'Missing\\RequestedClass'];
+    }
+
+    /** @return array<string, mixed> */
+    private static function validResponse(): array
+    {
+        return ['type' => null, 'php' => null, 'question' => null, 'classes' => [], 'match' => null];
     }
 }

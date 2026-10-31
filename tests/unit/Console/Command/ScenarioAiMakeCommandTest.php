@@ -190,6 +190,7 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
             $type === null ? null : GenerationType::from($type),
             'Need details',
             [],
+            null,
         ));
         $this->configureAi($client, limit: 1);
         $output = $this->createMock(CliOutput::class);
@@ -259,6 +260,6 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
         $parent = $type === 'scenario' ? 'Scenario' : 'ParameterTypeDefinition';
         $code = '<?php namespace ' . $namespace . '; #[\\Stateforge\\Scenario\\Core\\Attribute\\' . $attribute . '] final class Generated extends \\Stateforge\\Scenario\\Core\\' . $parent . ' {}';
 
-        return new AiResponse('generated-id', $code, GenerationType::from($type), null, []);
+        return new AiResponse('generated-id', $code, GenerationType::from($type), null, [], null);
     }
 }

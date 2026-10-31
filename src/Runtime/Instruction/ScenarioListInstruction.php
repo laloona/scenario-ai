@@ -31,6 +31,7 @@ final class ScenarioListInstruction implements Instruction
         $instruction = <<<INSTRUCTION
 Existing Scenarios:
 
+- Follow the mandatory pre-generation decision and response rules when evaluating existing Scenarios.
 - The project provides a list of existing Scenarios, including their fully qualified class names and descriptions.
 - Before generating a new Scenario, examine the available Scenarios to determine whether an existing implementation already provides the requested functionality or could support the new Scenario.
 - Prefer reusing existing Scenarios over duplicating their functionality, provided that the Scenario framework supports the intended reuse.

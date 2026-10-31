@@ -201,7 +201,7 @@ final class ContextTest extends TestCase
     #[DataProvider('generationProvider')]
     public function testValidatorAcceptsMatchingBaseClassAndAttribute(string $type, string $parent, string $attribute): void
     {
-        $response = new AiResponse(null, '<?php #[\\' . $attribute . '] class Generated extends \\' . $parent . ' {}', GenerationType::from($type), null, []);
+        $response = new AiResponse(null, '<?php #[\\' . $attribute . '] class Generated extends \\' . $parent . ' {}', GenerationType::from($type), null, [], null);
 
         (new Context())->validator()->validate($response);
 
@@ -211,7 +211,7 @@ final class ContextTest extends TestCase
     #[DataProvider('generationProvider')]
     public function testValidatorRejectsMissingRequiredAttribute(string $type, string $parent, string $attribute): void
     {
-        $response = new AiResponse(null, '<?php class Generated extends \\' . $parent . ' {}', GenerationType::from($type), null, []);
+        $response = new AiResponse(null, '<?php class Generated extends \\' . $parent . ' {}', GenerationType::from($type), null, [], null);
         $this->expectException(AttributeValidatorException::class);
         $this->expectExceptionMessage('Missing required attribute "' . $attribute . '".');
 

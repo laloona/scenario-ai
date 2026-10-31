@@ -45,12 +45,17 @@ final class OpenAiFormat
                                 'type' => 'string',
                             ],
                         ],
+                        'match' => [
+                            'type' => ['string', 'null'],
+                            'description' => 'An already existing class which fulfills the requested needs.',
+                        ],
                     ],
                     'required' => [
                         'php',
                         'type',
                         'question',
                         'classes',
+                        'match',
                     ],
                     'additionalProperties' => false,
                 ],
