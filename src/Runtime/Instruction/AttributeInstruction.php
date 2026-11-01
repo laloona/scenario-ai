@@ -18,6 +18,10 @@ use Stateforge\Scenario\Core\Attribute\AsScenario;
 use Stateforge\Scenario\Core\Attribute\Parameter;
 use Stateforge\Scenario\Core\Attribute\ParameterTypeCondition;
 use Stateforge\Scenario\Core\Attribute\RefreshDatabase;
+use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\BooleanType;
+use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\FloatType;
+use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\IntegerType;
+use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\StringType;
 use const PHP_EOL;
 
 final class AttributeInstruction implements Instruction
@@ -36,14 +40,16 @@ Framework Attribute Rules
 - Never invent attributes or use them on unsupported targets.
 - Do not implement database reset logic manually when the framework already provides a suitable mechanism.
 INSTRUCTION . PHP_EOL . PHP_EOL .
-            'Available attributes:' . PHP_EOL . PHP_EOL .
-            (new SourceCodeReader())->read([
-                AsScenario::class,
-                AsParameterType::class,
-                ApplyScenario::class,
-                Parameter::class,
-                ParameterTypeCondition::class,
-                RefreshDatabase::class,
-            ]);
+            (new ClassInstruction(
+                'Available attributes',
+                [
+                    AsScenario::class,
+                    AsParameterType::class,
+                    ApplyScenario::class,
+                    Parameter::class,
+                    ParameterTypeCondition::class,
+                    RefreshDatabase::class,
+                ],
+            ))->instruct();
     }
 }

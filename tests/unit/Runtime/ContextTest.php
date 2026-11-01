@@ -62,6 +62,18 @@ use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
 use Stateforge\Scenario\Ai\Tests\Files\ListedScenario;
 use Stateforge\Scenario\Ai\Tests\Unit\SourceCodeRegistryMock;
 use Stateforge\Scenario\Core\Attribute\AsScenario;
+use Stateforge\Scenario\Core\Attribute\AsParameterType;
+use Stateforge\Scenario\Core\Attribute\ApplyScenario;
+use Stateforge\Scenario\Core\Attribute\Parameter;
+use Stateforge\Scenario\Core\Attribute\ParameterTypeCondition;
+use Stateforge\Scenario\Core\Attribute\RefreshDatabase;
+use Stateforge\Scenario\Core\Contract\ScenarioInterface;
+use Stateforge\Scenario\Core\ParameterTypeDefinition;
+use Stateforge\Scenario\Core\Scenario;
+use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\BooleanType;
+use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\FloatType;
+use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\IntegerType;
+use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\StringType;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Configuration as CoreConfiguration;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Value\SuiteValue;
@@ -189,6 +201,26 @@ final class ContextTest extends TestCase
 
         ScenarioRegistry::getInstance()->register(new ScenarioDefinition('main', ListedScenario::class, new AsScenario('listed', 'Project scenario marker'), []));
         $instruction = (new Context())->instruction(new AiRequest(null, 'Generate a scenario', 2))->instruct();
+
+        $registry = new SourceCodeRegistry();
+        foreach ([
+            Scenario::class,
+            ScenarioInterface::class,
+            ParameterTypeDefinition::class,
+            AsScenario::class,
+            AsParameterType::class,
+            ApplyScenario::class,
+            Parameter::class,
+            ParameterTypeCondition::class,
+            RefreshDatabase::class,
+            BooleanType::class,
+            FloatType::class,
+            IntegerType::class,
+            StringType::class,
+        ] as $class) {
+            self::assertTrue($registry->hasClass($class), 'Instruction source must be registered: ' . $class);
+        }
+        self::assertFalse($registry->hasClass(ListedScenario::class), 'Scenario metadata does not provide its source code.');
 
         self::assertStringContainsString('Framework documentation marker', $instruction);
         self::assertStringContainsString('Scenario blueprint marker', $instruction);
