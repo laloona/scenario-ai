@@ -15,6 +15,7 @@ use Stateforge\Scenario\Ai\Contract\AiContext;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiConversation;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiAdapter;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiAdapter;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\ConfigurationFinder;
@@ -33,6 +34,7 @@ final class Ai
             self::$registry = new AdapterRegistry();
             self::$registry->register('claude', new ClaudeAiAdapter());
             self::$registry->register('openai', new OpenAiAdapter());
+            self::$registry->register('gemini', new GeminiAdapter());
         }
 
         return self::$registry;
