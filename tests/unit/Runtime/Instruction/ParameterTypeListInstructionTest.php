@@ -45,7 +45,7 @@ final class ParameterTypeListInstructionTest extends TestCase
     {
         $text = (new ParameterTypeListInstruction(null, false))->instruct();
 
-        self::assertStringStartsWith('Existing Parameter Types:' . PHP_EOL, $text);
+        self::assertStringStartsWith('Existing Parameter Types' . PHP_EOL, $text);
         self::assertStringContainsString('Built-in parameter types', $text);
         foreach (ParameterType::cases() as $type) {
             self::assertStringContainsString(ParameterType::class . '::' . $type->name . ': ' . $type->value, $text);
@@ -100,11 +100,12 @@ final class ParameterTypeListInstructionTest extends TestCase
     {
         $text = (new ParameterTypeListInstruction(null, false))->instruct();
 
-        self::assertStringContainsString('Prefer using existing Parameter Types over creating duplicate implementations.', $text);
-        self::assertStringContainsString('Only request source code when necessary to verify compatibility or determine how the Parameter Type should be used.', $text);
-        self::assertStringContainsString('Do not assume supported value types, conversion behavior, validation rules, methods, or constructor arguments that have not been documented or verified.', $text);
-        self::assertStringContainsString("If an existing Parameter Type already fulfills the user's requirements, inform the user instead of generating a duplicate implementation.", $text);
-        self::assertStringContainsString('If no suitable Parameter Type exists, generate a new implementation according to the framework instructions.', $text);
+        self::assertStringContainsString('Follow the mandatory pre-generation decision and response rules when evaluating existing Parameter Types.', $text);
+        self::assertStringContainsString('Prefer existing Parameter Types over duplicate implementations.', $text);
+        self::assertStringContainsString('Request source code only when necessary to verify compatibility.', $text);
+        self::assertStringContainsString('Do not assume undocumented validation rules, conversion behavior, or supported value types.', $text);
+        self::assertStringContainsString('When generating a Scenario, reuse suitable existing Parameter Types if their compatibility and usage are documented.', $text);
+        self::assertStringContainsString('If no suitable ParameterType exists, generate a new implementation according to the selected blueprint.', $text);
     }
 
     private function registerTypes(): void

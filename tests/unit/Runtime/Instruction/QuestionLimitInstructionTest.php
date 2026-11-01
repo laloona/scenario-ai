@@ -31,12 +31,24 @@ final class QuestionLimitInstructionTest extends TestCase
         self::assertStringContainsString('Maximum clarification questions: ' . $limit, $text);
         self::assertStringContainsString('Clarification questions already asked: ' . $asked, $text);
         self::assertStringContainsString('Never exceed the configured clarification question limit.', $text);
-        self::assertStringContainsString('Requests for class definitions are not clarification questions.', $text);
+        self::assertStringContainsString('Requests for existing class definitions are not clarification questions.', $text);
     }
 
     /** @return array<string, array{int, int}> */
     public static function questionProvider(): array
     {
-        return ['initial' => [5, 0], 'in progress' => [7, 2], 'limit reached' => [3, 3], 'no questions' => [0, 0]];
+        return ['initial' => [5, 0], 'in progress' => [7, 2], 'limit reached' => [3, 3], 'no questions' => [0, 0], 'limit exceeded' => [3, 4]];
     }
+
+    public function testExhaustedLimitRequiresAnEmptyResultInsteadOfSpeculativeCode(): void
+    {
+        $text = (new QuestionLimitInstruction(3, 3))->instruct();
+
+        self::assertStringContainsString('If the question limit has been reached, do not ask further clarification questions.', $text);
+        self::assertStringContainsString('If sufficient information is available, generate a complete implementation.', $text);
+        self::assertStringContainsString('If essential information is missing and no further clarification is permitted, return a response with all result fields set to null, except "type", which must preserve the requested generation type, and "classes", which must be an empty array.', $text);
+        self::assertStringContainsString('Never generate incomplete or speculative implementations to compensate for missing information.', $text);
+        self::assertStringContainsString('Never invent missing project-specific APIs to produce executable code.', $text);
+    }
+
 }

@@ -62,7 +62,7 @@ final class ScenarioListInstructionTest extends TestCase
 
         $text = (new ScenarioListInstruction())->instruct();
 
-        self::assertStringStartsWith('Existing Scenarios:' . PHP_EOL, $text);
+        self::assertStringStartsWith('Existing Scenarios' . PHP_EOL, $text);
         self::assertStringContainsString('Registered Scenarios' . PHP_EOL . PHP_EOL, $text);
         self::assertStringContainsString(ListedScenario::class . ': name: listed, description: Listed scenario description, suites: main, parameters: ', $text);
         self::assertSame(1, substr_count($text, ListedScenario::class . ':'));
@@ -99,11 +99,11 @@ final class ScenarioListInstructionTest extends TestCase
 
         $text = (new ScenarioListInstruction())->instruct();
 
-        self::assertStringContainsString('Prefer reusing existing Scenarios over duplicating their functionality, provided that the Scenario framework supports the intended reuse.', $text);
-        self::assertStringContainsString('Only request source code when necessary to determine whether and how an existing Scenario can be reused.', $text);
-        self::assertStringContainsString('Do not assume the existence of methods, properties, constructor arguments, or mechanisms for executing or composing existing Scenarios.', $text);
-        self::assertStringContainsString("If an existing Scenario already fulfills the user's requirements, inform the user instead of generating a duplicate implementation.", $text);
-        self::assertStringContainsString('If no suitable Scenario exists, generate a new implementation according to the framework instructions.', $text);
+        self::assertStringContainsString('Follow the mandatory pre-generation decision and response rules when evaluating existing Scenarios.', $text);
+        self::assertStringContainsString('Prefer reusing existing Scenarios when the framework supports the intended reuse.', $text);
+        self::assertStringContainsString('Request source code only when necessary to verify compatibility.', $text);
+        self::assertStringContainsString('Never assume undocumented execution or composition mechanisms.', $text);
+        self::assertStringContainsString('If no suitable Scenario exists, generate a new implementation according to the selected blueprint.', $text);
     }
 
 }

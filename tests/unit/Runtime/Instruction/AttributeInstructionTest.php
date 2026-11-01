@@ -37,4 +37,15 @@ final class AttributeInstructionTest extends TestCase
         self::assertStringContainsString('class ParameterTypeCondition', $text);
         self::assertStringContainsString('class RefreshDatabase', $text);
     }
+
+    public function testPrefersSupportedAttributesForRequestedFrameworkBehavior(): void
+    {
+        $text = (new AttributeInstruction())->instruct();
+
+        self::assertStringContainsString('When the user requests a fresh or reset database, use #[RefreshDatabase] if the framework supports applying it to the generated class.', $text);
+        self::assertStringContainsString('When the user requests reusable input values, consider #[Parameter].', $text);
+        self::assertStringContainsString('When the user requests existing application states to be combined, consider #[ApplyScenario].', $text);
+        self::assertStringContainsString('Never invent attributes or use them on unsupported targets.', $text);
+    }
+
 }

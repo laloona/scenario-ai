@@ -31,4 +31,15 @@ final class ProjectClassInstructionTest extends TestCase
         self::assertStringContainsString('Never request a class definition that the user has declined to share.', $text);
         self::assertStringContainsString('Add requested fully qualified class names to the classes array.', $text);
     }
+
+    public function testDistinguishesDocumentedFrameworkApisFromUnknownProjectBehavior(): void
+    {
+        $text = (new ProjectClassInstruction())->instruct();
+
+        self::assertStringContainsString('Use documented framework classes without requesting their source code when the documented API is sufficient.', $text);
+        self::assertStringContainsString('Request framework class definitions only when essential API information is missing and the class is explicitly listed as available.', $text);
+        self::assertStringContainsString('Request only the minimum number of class definitions necessary for the current task.', $text);
+        self::assertStringContainsString('If a required class definition is unavailable, do not invent its implementation or API.', $text);
+    }
+
 }

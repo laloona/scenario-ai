@@ -47,5 +47,7 @@ final class ScenarioBlueprintInstructionTest extends FilesystemTestCase
 
         self::assertStringNotContainsString('Available Scenario Suites:', $text);
         self::assertStringContainsString('Empty suites blueprint', $text);
+        self::assertStringContainsString('If essential implementation details remain unavailable, request the missing information instead of generating an incomplete Scenario.', $text);
+        self::assertStringContainsString('Never generate an empty up() method unless the requested state is fully established through supported Scenario composition.', $text);
     }
 }

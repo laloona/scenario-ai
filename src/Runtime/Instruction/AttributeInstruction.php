@@ -25,14 +25,14 @@ final class AttributeInstruction implements Instruction
     public function instruct(): string
     {
         return <<<INSTRUCTION
-Framework attribute rules:
+Framework Attribute Rules
 
-- Before implementing a requested behavior, check whether the Scenario framework already provides an attribute for it.
+- Before implementing requested behavior, check whether the Scenario framework already provides an attribute for it.
 - Prefer documented framework attributes over manually implementing equivalent behavior.
-- Apply framework attributes when the user's request matches their documented purpose and the attribute supports the generated class.
+- Apply framework attributes when the user’s request matches their documented purpose and the attribute supports the generated class.
 - When the user requests a fresh or reset database, use #[RefreshDatabase] if the framework supports applying it to the generated class.
 - When the user requests reusable input values, consider #[Parameter].
-- When the user requests existing application states to be combined,consider #[ApplyScenario].
+- When the user requests existing application states to be combined, consider #[ApplyScenario].
 - Never invent attributes or use them on unsupported targets.
 - Do not implement database reset logic manually when the framework already provides a suitable mechanism.
 INSTRUCTION . PHP_EOL . PHP_EOL .

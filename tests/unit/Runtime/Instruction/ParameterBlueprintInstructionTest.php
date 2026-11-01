@@ -40,7 +40,10 @@ final class ParameterBlueprintInstructionTest extends FilesystemTestCase
         file_put_contents($path, 'Parameter blueprint contents');
         $text = (new ParameterBlueprintInstruction($path, null))->instruct();
 
-        self::assertStringNotContainsString('Configured Parameter Type:', $text);
+        self::assertStringNotContainsString('Configured Parameter Types:', $text);
         self::assertStringContainsString('Parameter blueprint contents', $text);
+        self::assertStringContainsString('Never generate validation rules unrelated to the user’s request.', $text);
+        self::assertStringContainsString('Never derive validation behavior from unrelated existing Parameter Types.', $text);
+        self::assertStringContainsString('Correct result: namespace Stateforge\\Suite\\Scenario\\Parameter;', $text);
     }
 }

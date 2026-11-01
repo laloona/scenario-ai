@@ -26,15 +26,20 @@ final class ParameterBlueprintInstruction implements Instruction
     public function instruct(): string
     {
         $instructions = <<<'INSTRUCTIONS'
-Blueprint ParameterType rules:
+ParameterType Rules
 
 - A ParameterType MUST extend ParameterTypeDefinition as defined by the selected blueprint.
 - A ParameterType MUST use the #[AsParameterType] attribute.
 - The attribute description MUST explain the validation or conversion behavior.
+- Implement the validation behavior requested by the user.
+- Implement the appropriate value conversion.
+- Never generate validation rules unrelated to the user’s request.
+- Never derive validation behavior from unrelated existing Parameter Types.
+- Never reuse an unrelated class name from previous tasks.
 
 INSTRUCTIONS;
         if ($this->parameterDirectory !== null) {
-            $instructions .= PHP_EOL . 'Configured Parameter Type: ';
+            $instructions .= PHP_EOL . 'Configured Parameter Types: ';
             $instructions .= PHP_EOL . "\t" .
                 '- [ directory: ' . $this->parameterDirectory . ', namespace: ' . (new NamespaceResolver())->toNamespace($this->parameterDirectory) . ' ]';
         }
@@ -49,19 +54,6 @@ Correct result: namespace Stateforge\Suite\Scenario\Parameter;
 Incorrect result: namespace Stateforge\Suite\Parameter;
 The configured namespace MUST be inserted without removing or interpreting any of its segments.
 
-ParameterType implementation rules:
-
-- The cast() method MUST implement the requested validation and conversion behavior.
-- The cast() method MUST return a value compatible with its declared return type.
-- Invalid or unsupported input values MUST be handled explicitly.
-- The valueType() method MUST return an instance of the appropriate ValueType class.
-- NEVER return a class name string from valueType().
-- Pass the required constructor arguments when creating ValueType instances.
-- The selected ValueType MUST be consistent with the values returned by cast().
-- Both cast() and valueType() MUST contain complete implementations.
-- Never replace required validation or conversion logic with placeholder comments.
-- If implementation requires unavailable project-specific dependencies, request the necessary information.
-- If meaningful implementation is impossible, return the "Unable to generate" response state.
 INSTRUCTIONS .
             'Parameter Type Blueprint: ' . PHP_EOL . file_get_contents($this->parameterPath);
 

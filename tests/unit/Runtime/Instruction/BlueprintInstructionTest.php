@@ -42,8 +42,10 @@ final class BlueprintInstructionTest extends FilesystemTestCase
         ))->instruct();
 
         self::assertStringContainsString('Use only the blueprint corresponding to the selected generation type.', $text);
-        self::assertSame(1, substr_count($text, PHP_EOL . 'Namespace rules:' . PHP_EOL));
+        self::assertSame(1, substr_count($text, PHP_EOL . 'Namespace Rules' . PHP_EOL));
         self::assertStringContainsString('The %nameSpace% placeholder MUST be replaced using literal string substitution.', $text);
+        self::assertStringContainsString('Do not generate TODO-based implementations for missing essential behavior.', $text);
+        self::assertStringContainsString('Never copy placeholder class names, descriptions, or behavior from the blueprint into the final implementation.', $text);
         self::assertStringContainsString('SCENARIO_MARKER', $text);
         self::assertStringContainsString('PARAMETER_MARKER', $text);
         self::assertMatchesRegularExpression('/SCENARIO_MARKER[\s\S]*PARAMETER_MARKER/', $text);
