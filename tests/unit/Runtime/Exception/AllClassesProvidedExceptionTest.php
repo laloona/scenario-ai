@@ -23,7 +23,7 @@ use Stateforge\Scenario\Ai\Runtime\Exception\ValidatorException;
 #[Small]
 final class AllClassesProvidedExceptionTest extends TestCase
 {
-    public function testIsAValidatorExceptionWithActionableRetryInstructions(): void
+    public function testExceptionContainsMessage(): void
     {
         $exception = new AllClassesProvidedException();
         $message = $exception->getMessage();
