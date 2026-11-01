@@ -19,6 +19,7 @@ use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
+use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use function is_array;
@@ -33,6 +34,7 @@ final class OpenAiClient implements AiClient
     public function __construct(
         private readonly OpenAiConfig $config,
         private readonly HttpClient $httpClient,
+        private readonly MessageBuilder $messageBuilder,
         private readonly Instruction $instruction,
         private readonly ResponseDecoder $responseDecoder,
     ) {
@@ -45,15 +47,11 @@ final class OpenAiClient implements AiClient
     {
         $payload = [
             'model' => $this->config->model,
-            'store' => true,
+            'store' => false,
             'instructions' => $this->instruction->instruct(),
-            'input' => $request->prompt,
+            'input' => $this->messageBuilder->build($request, $audits),
             'text' => (new OpenAiFormat())->format(),
         ];
-
-        if ($request->id !== null) {
-            $payload['previous_response_id'] = $request->id;
-        }
 
         return $this->buildResponse(
             $this->httpClient->sendRequest(

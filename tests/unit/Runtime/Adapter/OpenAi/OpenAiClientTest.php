@@ -27,6 +27,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
+use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiConfig;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiFormat;
@@ -47,6 +48,7 @@ use const JSON_THROW_ON_ERROR;
 #[UsesClass(ResponseDecoder::class)]
 #[UsesClass(InvalidJsonResponseException::class)]
 #[UsesClass(ResponseBuilder::class)]
+#[UsesClass(MessageBuilder::class)]
 #[Group('runtime')]
 #[Small]
 final class OpenAiClientTest extends TestCase
@@ -64,15 +66,18 @@ final class OpenAiClientTest extends TestCase
                 self::assertIsArray($payload);
                 self::assertSame('test-model', $payload['model']);
                 self::assertSame('Bearer test-key', $request->getHeaderLine('Authorization'));
-                self::assertTrue($payload['store']);
+                self::assertFalse($payload['store']);
                 self::assertSame('Test instructions', $payload['instructions']);
-                self::assertSame('Generate a scenario', $payload['input']);
+                $expected = $withHistory ? [
+                    ['role' => 'user', 'content' => 'Initial prompt'],
+                    ['role' => 'assistant', 'content' => json_encode([
+                        'php' => null, 'type' => null, 'question' => 'Which state?', 'classes' => [], 'match' => null,
+                    ], JSON_THROW_ON_ERROR)],
+                ] : [];
+                $expected[] = ['role' => 'user', 'content' => 'Generate a scenario'];
+                self::assertSame($expected, $payload['input']);
                 self::assertSame((new OpenAiFormat())->format(), $payload['text']);
-                if ($withHistory) {
-                    self::assertSame('previous-id', $payload['previous_response_id']);
-                } else {
-                    self::assertArrayNotHasKey('previous_response_id', $payload);
-                }
+                self::assertArrayNotHasKey('previous_response_id', $payload);
                 return new Response(200, [], $this->validResponseBody('{"php":"<?php class Demo {}","type":"scenario","question":null,"classes":[],"match":null}'));
             },
         );
@@ -177,6 +182,6 @@ final class OpenAiClientTest extends TestCase
         $instruction = self::createStub(Instruction::class);
         $instruction->method('instruct')->willReturn('Test instructions');
 
-        return new OpenAiClient(new OpenAiConfig('test-key', 'https://example.test/ai', 'test-model'), $http, $instruction, new ResponseDecoder(new ResponseBuilder()));
+        return new OpenAiClient(new OpenAiConfig('test-key', 'https://example.test/ai', 'test-model'), $http, new MessageBuilder(), $instruction, new ResponseDecoder(new ResponseBuilder()));
     }
 }

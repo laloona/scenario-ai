@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiConfig;
@@ -34,6 +35,7 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 #[UsesClass(OpenAiClient::class)]
 #[UsesClass(ResponseDecoder::class)]
 #[UsesClass(ResponseBuilder::class)]
+#[UsesClass(MessageBuilder::class)]
 #[UsesClass(ConfigBuilderException::class)]
 #[Group('runtime')]
 #[Small]
@@ -58,6 +60,7 @@ final class OpenAiAdapterTest extends TestCase
         self::assertSame('https://example.test/ai', $config->apiEndpoint);
         self::assertSame('test-model', $config->model);
         self::assertSame($instruction, $reflection->getProperty('instruction')->getValue($client));
+        self::assertInstanceOf(MessageBuilder::class, $reflection->getProperty('messageBuilder')->getValue($client));
     }
 
     public function testRejectsMissingRequiredConfiguration(): void

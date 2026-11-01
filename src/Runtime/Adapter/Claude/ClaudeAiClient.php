@@ -19,6 +19,7 @@ use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
+use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use function is_array;
@@ -33,6 +34,7 @@ final class ClaudeAiClient implements AiClient
     public function __construct(
         private readonly ClaudeAiConfig $config,
         private readonly HttpClient $httpClient,
+        private readonly MessageBuilder $messageBuilder,
         private readonly Instruction $instruction,
         private readonly ResponseDecoder $responseDecoder,
     ) {
@@ -50,7 +52,7 @@ final class ClaudeAiClient implements AiClient
                 'type' => 'ephemeral',
             ],
             'system' => $this->instruction->instruct(),
-            'messages' => $this->buildMessages($request, $audits),
+            'messages' => $this->messageBuilder->build($request, $audits),
             'output_config' => (new ClaudeAiFormat())->format(),
         ];
 
@@ -68,41 +70,6 @@ final class ClaudeAiClient implements AiClient
                 ),
             ),
         );
-    }
-
-    /**
-     * @param list<AiAudit> $audits
-     * @return list<array{role: string, content: string}>
-     */
-    private function buildMessages(AiRequest $request, array $audits): array
-    {
-        $messages = [];
-        foreach ($audits as $audit) {
-            $messages[] = [
-                'role' => 'user',
-                'content' => $audit->request->prompt,
-            ];
-
-            $messages[] = [
-                'role' => 'assistant',
-                'content' => json_encode(
-                    [
-                        'php' => $audit->response->php,
-                        'type' => $audit->response->type?->value,
-                        'question' => $audit->response->question,
-                        'classes' => $audit->response->classes,
-                    ],
-                    JSON_THROW_ON_ERROR,
-                ),
-            ];
-        }
-
-        $messages[] = [
-            'role' => 'user',
-            'content' => $request->prompt,
-        ];
-
-        return $messages;
     }
 
     private function buildResponse(ResponseInterface $response): AiResponse

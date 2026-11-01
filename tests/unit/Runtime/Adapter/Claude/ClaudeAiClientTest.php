@@ -30,6 +30,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiConfig;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiFormat;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
+use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
@@ -47,6 +48,7 @@ use const JSON_THROW_ON_ERROR;
 #[UsesClass(ResponseDecoder::class)]
 #[UsesClass(InvalidJsonResponseException::class)]
 #[UsesClass(ResponseBuilder::class)]
+#[UsesClass(MessageBuilder::class)]
 #[Group('runtime')]
 #[Small]
 final class ClaudeAiClientTest extends TestCase
@@ -71,7 +73,7 @@ final class ClaudeAiClientTest extends TestCase
                 self::assertSame((new ClaudeAiFormat())->format(), $payload['output_config']);
                 $expected = $withHistory ? [
                     ['role' => 'user', 'content' => 'Initial prompt'],
-                    ['role' => 'assistant', 'content' => json_encode(['php' => null, 'type' => null, 'question' => 'Which state?', 'classes' => []], JSON_THROW_ON_ERROR)],
+                    ['role' => 'assistant', 'content' => json_encode(['php' => null, 'type' => null, 'question' => 'Which state?', 'classes' => [], 'match' => null], JSON_THROW_ON_ERROR)],
                 ] : [];
                 $expected[] = ['role' => 'user', 'content' => 'Generate a scenario'];
                 self::assertSame($expected, $payload['messages']);
@@ -178,6 +180,6 @@ final class ClaudeAiClientTest extends TestCase
         $instruction = self::createStub(Instruction::class);
         $instruction->method('instruct')->willReturn('Test instructions');
 
-        return new ClaudeAiClient(new ClaudeAiConfig('test-key', 'https://example.test/ai', 'test-model', 'test-version', 1024), $http, $instruction, new ResponseDecoder(new ResponseBuilder()));
+        return new ClaudeAiClient(new ClaudeAiConfig('test-key', 'https://example.test/ai', 'test-model', 'test-version', 1024), $http, new MessageBuilder(), $instruction, new ResponseDecoder(new ResponseBuilder()));
     }
 }

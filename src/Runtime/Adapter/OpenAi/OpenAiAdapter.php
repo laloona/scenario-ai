@@ -15,6 +15,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
@@ -30,6 +31,7 @@ final class OpenAiAdapter implements AiAdapter
         return new OpenAiClient(
             $configBuilder->build(OpenAiConfig::class, $adapterConfiguration->vars),
             new GuzzleClient(),
+            new MessageBuilder(),
             $instruction,
             new ResponseDecoder(new ResponseBuilder()),
         );
