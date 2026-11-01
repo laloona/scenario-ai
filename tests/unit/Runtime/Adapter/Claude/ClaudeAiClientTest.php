@@ -31,6 +31,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiConfig;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiFormat;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
@@ -49,6 +50,7 @@ use const JSON_THROW_ON_ERROR;
 #[UsesClass(InvalidJsonResponseException::class)]
 #[UsesClass(ResponseBuilder::class)]
 #[UsesClass(MessageBuilder::class)]
+#[UsesClass(MessageStringBuilder::class)]
 #[Group('runtime')]
 #[Small]
 final class ClaudeAiClientTest extends TestCase
@@ -180,6 +182,6 @@ final class ClaudeAiClientTest extends TestCase
         $instruction = self::createStub(Instruction::class);
         $instruction->method('instruct')->willReturn('Test instructions');
 
-        return new ClaudeAiClient(new ClaudeAiConfig('test-key', 'https://example.test/ai', 'test-model', 'test-version', 1024), $http, new MessageBuilder(), $instruction, new ResponseDecoder(new ResponseBuilder()));
+        return new ClaudeAiClient(new ClaudeAiConfig('test-key', 'https://example.test/ai', 'test-model', 'test-version', 1024), $http, new MessageBuilder(new MessageStringBuilder()), $instruction, new ResponseDecoder(new ResponseBuilder()));
     }
 }

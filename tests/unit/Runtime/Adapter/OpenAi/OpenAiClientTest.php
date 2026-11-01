@@ -28,6 +28,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiConfig;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiFormat;
@@ -49,6 +50,7 @@ use const JSON_THROW_ON_ERROR;
 #[UsesClass(InvalidJsonResponseException::class)]
 #[UsesClass(ResponseBuilder::class)]
 #[UsesClass(MessageBuilder::class)]
+#[UsesClass(MessageStringBuilder::class)]
 #[Group('runtime')]
 #[Small]
 final class OpenAiClientTest extends TestCase
@@ -182,6 +184,6 @@ final class OpenAiClientTest extends TestCase
         $instruction = self::createStub(Instruction::class);
         $instruction->method('instruct')->willReturn('Test instructions');
 
-        return new OpenAiClient(new OpenAiConfig('test-key', 'https://example.test/ai', 'test-model'), $http, new MessageBuilder(), $instruction, new ResponseDecoder(new ResponseBuilder()));
+        return new OpenAiClient(new OpenAiConfig('test-key', 'https://example.test/ai', 'test-model'), $http, new MessageBuilder(new MessageStringBuilder()), $instruction, new ResponseDecoder(new ResponseBuilder()));
     }
 }
