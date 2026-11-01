@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\Instruction\AttributeInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use Stateforge\Scenario\Ai\Tests\Unit\SourceCodeRegistryMock;
 use Stateforge\Scenario\Core\Attribute\ApplyScenario;
@@ -26,7 +27,6 @@ use Stateforge\Scenario\Core\Attribute\AsScenario;
 use Stateforge\Scenario\Core\Attribute\Parameter;
 use Stateforge\Scenario\Core\Attribute\ParameterTypeCondition;
 use Stateforge\Scenario\Core\Attribute\RefreshDatabase;
-use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 
 #[CoversClass(AttributeInstruction::class)]
 #[UsesClass(SourceCodeReader::class)]

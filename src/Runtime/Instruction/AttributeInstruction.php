@@ -11,17 +11,12 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
-use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 use Stateforge\Scenario\Core\Attribute\ApplyScenario;
 use Stateforge\Scenario\Core\Attribute\AsParameterType;
 use Stateforge\Scenario\Core\Attribute\AsScenario;
 use Stateforge\Scenario\Core\Attribute\Parameter;
 use Stateforge\Scenario\Core\Attribute\ParameterTypeCondition;
 use Stateforge\Scenario\Core\Attribute\RefreshDatabase;
-use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\BooleanType;
-use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\FloatType;
-use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\IntegerType;
-use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\StringType;
 use const PHP_EOL;
 
 final class AttributeInstruction implements Instruction
