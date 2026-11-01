@@ -13,7 +13,7 @@ namespace Stateforge\Scenario\Ai\Runtime\Exception;
 
 use function sprintf;
 
-final class ClassDoesNotExistException extends ResponseException
+final class ClassDoesNotExistException extends ValidatorException
 {
     public function __construct(string $class)
     {
