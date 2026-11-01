@@ -30,6 +30,20 @@ final class ClassNameParserTest extends TestCase
         self::assertSame($expected, (new ClassNameParser())->parse($prompt));
     }
 
+    public function testRepeatedClassReferencesAppearOnlyOnceInTheResult(): void
+    {
+        $prompt = <<<'PROMPT'
+Use App\Model\User together with App\Model\Order.
+App\Model\User is required again; also use \App\Model\User.
+Finally, reference App\Model\Order::class and App\Model\User::class.
+PROMPT;
+
+        self::assertSame(
+            ['App\Model\User', 'App\Model\Order'],
+            (new ClassNameParser())->parse($prompt),
+        );
+    }
+
     /** @return array<string, array{string, list<string>}> */
     public static function promptProvider(): array
     {
