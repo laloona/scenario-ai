@@ -35,6 +35,7 @@ use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Context;
 use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\FinalValidationInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\GeneralInstructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
@@ -92,6 +93,7 @@ use const PHP_EOL;
 #[UsesClass(FinalValidationInstruction::class)]
 #[UsesClass(ParameterImplementationInstruction::class)]
 #[UsesClass(BlueprintInstruction::class)]
+#[UsesClass(ClassInstruction::class)]
 #[UsesClass(ScenarioBlueprintInstruction::class)]
 #[UsesClass(ParameterBlueprintInstruction::class)]
 #[UsesClass(CodeMaker::class)]
