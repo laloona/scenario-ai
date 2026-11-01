@@ -36,7 +36,7 @@ General Rules
 - Prefer complete, executable implementations over speculative code.
 - Never replace required behavior with placeholder comments, TODOs, or exceptions.
 - If code generation is required, generate exactly one PHP class.
-- Never generate a duplicate implementation when the user has accepted an existing one.
+- Never generate a duplicate implementation when a fully compatible existing implementation is available, unless the user explicitly requests a new implementation.
 - Return responses exclusively using the provided JSON schema.
 
 Generation Type Rules

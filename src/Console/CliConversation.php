@@ -72,7 +72,7 @@ final class CliConversation
         if ($response->match !== null) {
             $output->success(
                 'Existing implementation found: ' . $response->match . PHP_EOL .
-                'The implementation fulfills the requirements. No code generation necessary.'
+                'The implementation fulfills the requirements. No code generation necessary.',
             );
             return true;
         }

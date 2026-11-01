@@ -162,7 +162,6 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('Do not generate placeholder code or invent missing functionality.', $text);
     }
 
-
     public function testInitialGenerationRequestAutomaticallyReusesAnExistingFunctionalMatch(): void
     {
         $text = (new BaseInstruction())->instruct();
