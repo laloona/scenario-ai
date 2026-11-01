@@ -16,7 +16,7 @@ final class GeminiConfig
     public function __construct(
         public readonly string $apiKey,
         public readonly string $apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models',
-        public readonly string $model = 'gemini-2.5-flash',
+        public readonly string $model = 'gemini-3.8-flash',
     ) {
     }
 }

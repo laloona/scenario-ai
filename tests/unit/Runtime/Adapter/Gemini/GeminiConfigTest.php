@@ -28,7 +28,7 @@ final class GeminiConfigTest extends TestCase
 
         self::assertSame('test-key', $config->apiKey);
         self::assertSame('https://generativelanguage.googleapis.com/v1beta/models', $config->apiEndpoint);
-        self::assertSame('gemini-2.5-flash', $config->model);
+        self::assertSame('gemini-3.8-flash', $config->model);
     }
 
     public function testAcceptsCustomEndpointAndModel(): void
