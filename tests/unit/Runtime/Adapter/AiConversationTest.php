@@ -58,7 +58,7 @@ final class AiConversationTest extends TestCase
 
     public function testTalkPassesPromptInstructionsConfigurationAndAuditHistory(): void
     {
-        $first = new AiResponse('first-id', null, null, 'Which state?', [], null, );
+        $first = new AiResponse('first-id', null, null, 'Which state?', [], null);
         $second = new AiResponse('second-id', '<?php class Demo {}', GenerationType::Scenario, null, [], null);
         $instruction = self::createStub(Instruction::class);
         $context = $this->createMock(AiContext::class);
@@ -77,13 +77,14 @@ final class AiConversationTest extends TestCase
             /** @param list<AiAudit> $audits */
             function (AiRequest $request, array $audits) use (&$requests, $first, $second): AiResponse {
                 ++$requests;
-                self::assertNull($request->id);
                 self::assertSame($requests, $request->counter);
                 if ($requests === 1) {
+                    self::assertNull($request->id);
                     self::assertSame('Create a scenario', $request->prompt);
                     self::assertSame([], $audits);
                     return $first;
                 }
+                self::assertSame('first-id', $request->id);
                 self::assertSame('An empty database', $request->prompt);
                 self::assertCount(1, $audits);
                 self::assertInstanceOf(AiAudit::class, $audits[0]);
@@ -220,6 +221,50 @@ final class AiConversationTest extends TestCase
 
         self::assertTrue($conversation->completed());
         self::assertSame($response, $conversation->response());
+    }
+
+    public function testFollowUpUsesTheLatestResponseIdAfterValidationRetry(): void
+    {
+        $invalid = new AiResponse('invalid-id', '<?php', GenerationType::Scenario, null, [], null);
+        $corrected = new AiResponse('corrected-id', '<?php class Demo {}', GenerationType::Scenario, null, [], null);
+        $final = new AiResponse('final-id', null, GenerationType::Scenario, 'Which state?', [], null);
+        $validator = $this->createMock(Validator::class);
+        $validations = 0;
+        $validator->expects(self::exactly(3))->method('validate')->willReturnCallback(
+            static function (AiResponse $response) use (&$validations): void {
+                if (++$validations === 1) {
+                    throw new AttributeValidatorException('RequiredAttribute');
+                }
+            },
+        );
+        $client = $this->createMock(AiClient::class);
+        $calls = 0;
+        $client->expects(self::exactly(3))->method('request')->willReturnCallback(
+            /** @param list<AiAudit> $audits */
+            function (AiRequest $request, array $audits) use (&$calls, $invalid, $corrected, $final): AiResponse {
+                ++$calls;
+                if ($calls === 1) {
+                    return $invalid;
+                }
+                if ($calls === 2) {
+                    return $corrected;
+                }
+
+                self::assertSame('corrected-id', $request->id);
+                self::assertSame('Change the state', $request->prompt);
+                self::assertSame(3, $request->counter);
+                self::assertCount(2, $audits);
+                self::assertInstanceOf(AiAudit::class, $audits[1]);
+                self::assertSame($corrected, $audits[1]->response);
+                return $final;
+            },
+        );
+        $conversation = $this->conversation($client, $validator);
+
+        $conversation->talk('Generate');
+        $conversation->talk('Change the state');
+
+        self::assertSame($final, $conversation->response());
     }
 
     private function conversation(AiClient $client, ?Validator $validator = null, int $limit = 5): AiConversation

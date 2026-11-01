@@ -37,7 +37,13 @@ final class AiConversation
 
     public function talk(string $prompt): void
     {
-        $this->run(new AiRequest(null, $prompt, count($this->audits) + 1));
+        if (count($this->audits) === 0) {
+            $this->run(new AiRequest(null, $prompt, count($this->audits) + 1));
+            return;
+        }
+
+        $audit = $this->lastAudit();
+        $this->run(new AiRequest($audit->response->id, $prompt, count($this->audits) + 1));
     }
 
     private function client(Instruction $instruction): AiClient
