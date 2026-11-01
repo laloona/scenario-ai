@@ -30,6 +30,7 @@ use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
 use Stateforge\Scenario\Core\Attribute\AsParameterType;
 use Stateforge\Scenario\Core\Attribute\AsScenario;
 use Stateforge\Scenario\Core\Contract\ScenarioInterface;
+use Stateforge\Scenario\Core\ParameterType;
 use Stateforge\Scenario\Core\ParameterTypeDefinition;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Scenario;
@@ -66,6 +67,7 @@ final class Context implements AiContext
         $instructions->add(new ClassInstruction('Base class definitions', [
             Scenario::class,
             ScenarioInterface::class,
+            ParameterType::class,
             ParameterTypeDefinition::class,
         ]));
         $instructions->add(

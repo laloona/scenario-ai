@@ -68,6 +68,7 @@ use Stateforge\Scenario\Core\Attribute\Parameter;
 use Stateforge\Scenario\Core\Attribute\ParameterTypeCondition;
 use Stateforge\Scenario\Core\Attribute\RefreshDatabase;
 use Stateforge\Scenario\Core\Contract\ScenarioInterface;
+use Stateforge\Scenario\Core\ParameterType;
 use Stateforge\Scenario\Core\ParameterTypeDefinition;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Configuration as CoreConfiguration;
@@ -206,6 +207,7 @@ final class ContextTest extends TestCase
         foreach ([
             Scenario::class,
             ScenarioInterface::class,
+            ParameterType::class,
             ParameterTypeDefinition::class,
             AsScenario::class,
             AsParameterType::class,
@@ -222,6 +224,7 @@ final class ContextTest extends TestCase
         }
         self::assertFalse($registry->hasClass(ListedScenario::class), 'Scenario metadata does not provide its source code.');
 
+        self::assertStringContainsString('enum ParameterType: string', $instruction);
         self::assertStringContainsString('Framework documentation marker', $instruction);
         self::assertStringContainsString('Scenario blueprint marker', $instruction);
         self::assertStringContainsString('name: main, description: Main scenario suite, directory: scenario/main, namespace: Scenario\\Main', $instruction);
