@@ -45,13 +45,15 @@ final class BaseInstructionTest extends TestCase
 
         self::assertMatchesRegularExpression(
             '/Step 1: Determine the Request[\s\S]*'
-            . 'Step 2: Examine Existing Implementations[\s\S]*'
-            . 'Step 3: Evaluate Existing Implementations[\s\S]*'
-            . 'Do not set “match” before the user accepts[\s\S]*'
-            . 'Step 4: Process the User’s Decision/',
+            . 'Step 2: Determine the Current Decision State[\s\S]*'
+            . 'Step 3: Examine Existing Implementations[\s\S]*'
+            . 'Step 4: Evaluate Existing Implementations[\s\S]*'
+            . 'Set “match” to null until the user accepts[\s\S]*'
+            . 'Step 5: Process the User’s Decision[\s\S]*'
+            . 'Step 6: Authorize Code Generation/',
             $text,
         );
-        self::assertStringContainsString('This decision process takes precedence over all instructions requiring code generation.', $text);
+        self::assertStringContainsString('The mandatory pre-generation decision takes precedence over all general instructions requiring code generation.', $text);
         self::assertStringContainsString('Generate code only after the mandatory pre-generation decision authorizes generation.', $text);
         self::assertStringContainsString('If sufficient information is available, generate a complete implementation.', $text);
     }
@@ -130,8 +132,8 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('Confirmation messages MUST NOT replace the original implementation requirements.', $text);
         self::assertStringContainsString('Only modify the original requirements when the user explicitly requests a change.', $text);
         self::assertStringContainsString('Previous tasks MUST NOT influence the implementation requirements of the current task.', $text);
-        self::assertStringContainsString('Continue with the original implementation requirements.', $text);
-        self::assertStringContainsString('Repeat the existing implementation evaluation for the modified requirements.', $text);
+        self::assertStringContainsString('Preserve the original implementation requirements.', $text);
+        self::assertStringContainsString('If the user explicitly changes the requirements, repeat the existing implementation check using the updated requirements.', $text);
     }
 
     public function testQuestionLimitDoesNotAuthorizeIncompleteOrSpeculativeCode(): void
@@ -150,6 +152,27 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('Response state 5: Unable to fulfill request', $text);
         self::assertStringContainsString('This response indicates that no valid implementation could be produced.', $text);
         self::assertStringContainsString('Do not generate placeholder code or invent missing functionality.', $text);
+    }
+
+
+    public function testInitialGenerationRequestCannotBypassAnExistingFunctionalMatch(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringContainsString('The user’s initial request to create or generate code MUST NOT bypass the existing implementation check.', $text);
+        self::assertStringContainsString('An explicitly documented functional match MUST be proposed before generating new code.', $text);
+        self::assertStringContainsString('Do not request source code when the available description already establishes compatibility.', $text);
+        self::assertStringContainsString('The user has explicitly requested a new implementation after being offered a suitable existing implementation.', $text);
+    }
+
+    public function testAmbiguousDecisionKeepsCandidateAndDoesNotAuthorizeGeneration(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringContainsString('Do not assume acceptance or rejection.', $text);
+        self::assertStringContainsString('Preserve the proposed existing implementation as the active candidate.', $text);
+        self::assertStringContainsString('If clarification is not permitted and the decision remains unresolved, return the defined unable-to-fulfill response.', $text);
+        self::assertStringContainsString('A completed decision MUST NOT be repeated unless the requirements change.', $text);
     }
 
 }
