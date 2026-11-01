@@ -45,12 +45,11 @@ final class BaseInstructionTest extends TestCase
 
         self::assertMatchesRegularExpression(
             '/Step 1: Determine the Request[\s\S]*'
-            . 'Step 2: Determine the Current Decision State[\s\S]*'
+            . 'Step 2: Determine the Current Task[\s\S]*'
             . 'Step 3: Examine Existing Implementations[\s\S]*'
             . 'Step 4: Evaluate Existing Implementations[\s\S]*'
-            . 'Set “match” to null until the user accepts[\s\S]*'
-            . 'Step 5: Process the User’s Decision[\s\S]*'
-            . 'Step 6: Authorize Code Generation/',
+            . 'Reuse the existing implementation automatically[\s\S]*'
+            . 'Step 5: Authorize Code Generation/',
             $text,
         );
         self::assertStringContainsString('The mandatory pre-generation decision takes precedence over all general instructions requiring code generation.', $text);
@@ -70,28 +69,29 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('If access to a class is denied, continue using the available information without inventing missing implementation details.', $text);
     }
 
-    public function testAcceptedImplementationCompletesTheRequestWithoutFurtherGeneration(): void
+    public function testCompatibleImplementationCompletesTheRequestWithoutConfirmationOrGeneration(): void
     {
         $text = (new BaseInstruction())->instruct();
 
-        self::assertStringContainsString('Interpret the user’s response according to the question that was actually asked.', $text);
-        self::assertStringContainsString('If the user accepts the existing implementation, return the completed match response immediately.', $text);
-        self::assertStringContainsString('Do not repeat the existing implementation search after the user has made a decision for unchanged requirements.', $text);
-        self::assertStringContainsString('Do not generate PHP code, request additional class definitions, or ask further questions after returning this state.', $text);
-        self::assertStringContainsString('Do not change the generation type after confirmation.', $text);
-        self::assertStringContainsString('Do not ask additional questions after acceptance of an existing implementation.', $text);
-        self::assertStringContainsString('Do not repeatedly ask for confirmation once the user has made a decision.', $text);
-        self::assertStringContainsString('A completed match response is a successful result, not a generation failure.', $text);
+        self::assertStringContainsString('Reuse suitable existing implementations automatically.', $text);
+        self::assertStringContainsString('Do not ask the user whether an existing implementation should be reused.', $text);
+        self::assertStringContainsString('Return the fully qualified class name in "match" when compatibility is established.', $text);
+        self::assertStringContainsString('Returning "match" is a successful terminal response.', $text);
+        self::assertStringContainsString('Do not require previous user acceptance before returning "match".', $text);
+        self::assertStringContainsString('Response State 4: Existing Implementation Reused', $text);
+        self::assertStringContainsString('Do not generate PHP code or ask additional questions.', $text);
+        self::assertStringContainsString('Respect explicit user requests to generate a new implementation instead.', $text);
     }
 
     #[DataProvider('lineEndings')]
-    public function testDefinesFiveValidJsonResponseExamplesIncludingAcceptedMatchAndFailure(string $lineEnding): void
+    public function testDefinesValidJsonExamplesForAutomaticReuseAndAllFiveResponseStates(string $lineEnding): void
     {
         $text = str_replace("\r\n", "\n", (new BaseInstruction())->instruct());
         $text = str_replace("\n", $lineEnding, $text);
-        self::assertSame(5, preg_match_all('/^\{\r?\n.*?^\}/ms', $text, $matches));
+        self::assertSame(6, preg_match_all('/^\{\r?\n.*?^\}/ms', $text, $matches));
 
         $expected = [
+            ['php' => null, 'question' => null, 'classes' => [], 'type' => 'parameter', 'match' => 'Stateforge\\Scenario\\Laravel\\Parameter\\UuidType'],
             ['php' => null, 'question' => null, 'classes' => ['Fully\\Qualified\\ClassName'], 'type' => 'parameter', 'match' => null],
             ['php' => null, 'question' => 'One specific question', 'classes' => [], 'type' => 'parameter', 'match' => null],
             ['php' => 'Generated PHP code', 'question' => null, 'classes' => [], 'type' => 'parameter', 'match' => null],
@@ -112,16 +112,24 @@ final class BaseInstructionTest extends TestCase
         yield 'Windows CRLF' => ["\r\n"];
     }
 
-    public function testRequiresExclusiveResponseStatesAndConfirmationBeforeSettingMatch(): void
+    public function testRequiresExclusiveResponseStatesAndCompatibleMatch(): void
     {
         $text = (new BaseInstruction())->instruct();
 
         self::assertStringContainsString('The five response states are mutually exclusive.', $text);
         self::assertStringContainsString('Exactly one response state MUST be selected per response.', $text);
-        self::assertStringContainsString('The “match” field MUST be null unless the user has accepted an existing implementation.', $text);
+        self::assertStringContainsString('Never return an unrelated implementation in "match".', $text);
         self::assertStringContainsString('The “php” and “match” fields MUST NEVER contain non-null values simultaneously.', $text);
-        self::assertStringContainsString('Do not set “match” while waiting for confirmation.', $text);
-        self::assertStringContainsString('The “match” field contains the fully qualified class name of an accepted existing implementation or null.', $text);
+        self::assertStringContainsString('No user confirmation is required.', $text);
+        self::assertStringContainsString(
+            "The \"match\" field MUST be null unless an existing implementation fully satisfies the user's requirements.",
+            $text,
+        );
+        self::assertStringNotContainsString('The “match” field MUST be null unless the user has accepted an existing implementation.', $text);
+        self::assertStringContainsString(
+            "The \"match\" field contains the fully qualified class name of an existing implementation that fully satisfies the user's requirements, or null.",
+            $text,
+        );
         self::assertStringContainsString('Always preserve the requested generation type.', $text);
     }
 
@@ -132,8 +140,8 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('Confirmation messages MUST NOT replace the original implementation requirements.', $text);
         self::assertStringContainsString('Only modify the original requirements when the user explicitly requests a change.', $text);
         self::assertStringContainsString('Previous tasks MUST NOT influence the implementation requirements of the current task.', $text);
-        self::assertStringContainsString('Preserve the original implementation requirements.', $text);
-        self::assertStringContainsString('If the user explicitly changes the requirements, repeat the existing implementation check using the updated requirements.', $text);
+        self::assertStringContainsString('Preserve the original requirements and generation type.', $text);
+        self::assertStringContainsString('If the user explicitly changes the requirements, evaluate the updated requirements.', $text);
     }
 
     public function testQuestionLimitDoesNotAuthorizeIncompleteOrSpeculativeCode(): void
@@ -155,24 +163,27 @@ final class BaseInstructionTest extends TestCase
     }
 
 
-    public function testInitialGenerationRequestCannotBypassAnExistingFunctionalMatch(): void
+    public function testInitialGenerationRequestAutomaticallyReusesAnExistingFunctionalMatch(): void
     {
         $text = (new BaseInstruction())->instruct();
 
         self::assertStringContainsString('The user’s initial request to create or generate code MUST NOT bypass the existing implementation check.', $text);
-        self::assertStringContainsString('An explicitly documented functional match MUST be proposed before generating new code.', $text);
+        self::assertStringContainsString('An existing implementation that fully satisfies the request MUST be returned in “match” automatically.', $text);
+        self::assertStringContainsString('No user confirmation is required before returning a suitable existing implementation.', $text);
         self::assertStringContainsString('Do not request source code when the available description already establishes compatibility.', $text);
-        self::assertStringContainsString('The user has explicitly requested a new implementation after being offered a suitable existing implementation.', $text);
+        self::assertStringContainsString('If compatibility is confirmed, return the existing implementation in “match” immediately.', $text);
     }
 
-    public function testAmbiguousDecisionKeepsCandidateAndDoesNotAuthorizeGeneration(): void
+    public function testExplicitNewImplementationRequestBypassesReuseWithoutChangingRequirements(): void
     {
         $text = (new BaseInstruction())->instruct();
 
-        self::assertStringContainsString('Do not assume acceptance or rejection.', $text);
-        self::assertStringContainsString('Preserve the proposed existing implementation as the active candidate.', $text);
-        self::assertStringContainsString('If clarification is not permitted and the decision remains unresolved, return the defined unable-to-fulfill response.', $text);
-        self::assertStringContainsString('A completed decision MUST NOT be repeated unless the requirements change.', $text);
+        self::assertStringContainsString('The existing implementation check MUST precede code generation unless the user explicitly requires a new implementation.', $text);
+        self::assertStringContainsString('Generate a new class fulfilling the requested requirements.', $text);
+        self::assertStringContainsString('Do not return an existing implementation in “match”.', $text);
+        self::assertStringContainsString('Do not ask whether an existing implementation should be reused.', $text);
+        self::assertStringContainsString('A previous decision to reuse or generate an implementation does not automatically apply to a new task.', $text);
     }
+
 
 }

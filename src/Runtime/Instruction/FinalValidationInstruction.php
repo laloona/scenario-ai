@@ -25,7 +25,7 @@ Before returning a response, verify the following:
 3. The original requirements have been preserved unless explicitly modified.
 4. The mandatory existing implementation decision has been completed.
 5. The selected response state matches the current conversation state.
-6. If “match” is set, the user has accepted the existing implementation.
+6. If "match" is set, the existing implementation fully satisfies the user's requirements and the user has not explicitly requested a new implementation.
 7. If “match” is set, “php” is null.
 8. If PHP code is generated, the user has authorized generation.
 9. If PHP code is generated, it fulfills the original or explicitly modified requirements.

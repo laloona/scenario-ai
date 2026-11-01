@@ -22,7 +22,7 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\FinalValidationInstruction;
 #[Small]
 final class FinalValidationInstructionTest extends TestCase
 {
-    public function testChecksTaskIdentityAndAcceptedMatchBeforeReturning(): void
+    public function testChecksTaskIdentityAndCompatibleMatchBeforeReturning(): void
     {
         $text = (new FinalValidationInstruction())->instruct();
 
@@ -31,7 +31,11 @@ final class FinalValidationInstructionTest extends TestCase
         self::assertStringContainsString('The original requirements have been preserved unless explicitly modified.', $text);
         self::assertStringContainsString('The mandatory existing implementation decision has been completed.', $text);
         self::assertStringContainsString('The selected response state matches the current conversation state.', $text);
-        self::assertStringContainsString('If “match” is set, the user has accepted the existing implementation.', $text);
+        self::assertStringContainsString(
+            "If \"match\" is set, the existing implementation fully satisfies the user's requirements and the user has not explicitly requested a new implementation.",
+            $text,
+        );
+        self::assertStringNotContainsString('the user has accepted the existing implementation', $text);
         self::assertStringContainsString('If “match” is set, “php” is null.', $text);
     }
 
