@@ -32,7 +32,7 @@ final class FinalValidationInstructionTest extends TestCase
         self::assertStringContainsString('The mandatory existing implementation decision has been completed.', $text);
         self::assertStringContainsString('The selected response state matches the current conversation state.', $text);
         self::assertStringContainsString(
-            "If \"match\" is set, the existing implementation fully satisfies the user's requirements and the user has not explicitly requested a new implementation.",
+            'If “match” is set, the existing implementation fully satisfies ALL requirements of the user and the user has not explicitly requested a new implementation.',
             $text,
         );
         self::assertStringNotContainsString('the user has accepted the existing implementation', $text);
@@ -43,10 +43,21 @@ final class FinalValidationInstructionTest extends TestCase
     {
         $text = (new FinalValidationInstruction())->instruct();
 
-        self::assertStringContainsString('If PHP code is generated, the user has authorized generation.', $text);
+        self::assertStringContainsString('If PHP code is generated, generation has been authorized by the mandatory pre-generation decision.', $text);
         self::assertStringContainsString('If PHP code is generated, it fulfills the original or explicitly modified requirements.', $text);
         self::assertStringContainsString('The generated class name and description match the implemented functionality.', $text);
         self::assertStringContainsString('The generated implementation follows the selected blueprint.', $text);
-        self::assertStringContainsString('The response contains exactly the required JSON fields.', $text);
+        self::assertStringContainsString('The response contains exactly the required five JSON fields.', $text);
     }
+
+    public function testRejectsContradictoryMatchesAndRequestsDefinitionsWhenCompatibilityIsUncertain(): void
+    {
+        $text = (new FinalValidationInstruction())->instruct();
+
+        self::assertStringContainsString('Before returning “match”, compare the requested functionality and validation conditions with the existing implementation’s documented behavior.', $text);
+        self::assertStringContainsString('An existing implementation MUST NOT be returned in “match” if any behavior contradicts the user’s requirements.', $text);
+        self::assertStringContainsString('Semantic similarity alone is insufficient. For example, past and future date validation are incompatible.', $text);
+        self::assertStringContainsString('If compatibility cannot be established from the available information, request the relevant class definition instead of returning “match”.', $text);
+    }
+
 }

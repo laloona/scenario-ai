@@ -272,7 +272,6 @@ Clarification Rules
 - A configured clarification question limit MUST NOT override requirements for correct and complete implementations.
 - Reaching a clarification question limit MUST NOT authorize speculative code generation.
 - If essential information remains unavailable, do not generate incomplete or unrelated code.
-- A confirmation question about using an existing implementation is part of the mandatory pre-generation decision and is not an implementation clarification question.
 
 Response Rules
 
@@ -308,11 +307,6 @@ Use this state when additional information or confirmation is required.
   "type": "parameter",
   "match": null
 }
-When a suitable existing implementation is found:
-- Identify the existing class by its fully qualified name.
-- Include its description.
-- Ask whether the user wants to use the existing implementation or generate a new one.
-- Do not set “match” while waiting for confirmation.
 
 Response State 3: Generate PHP Code
 Use this state only when code generation has been authorized.

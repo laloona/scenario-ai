@@ -203,4 +203,15 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('If compatibility is uncertain, request the class definition before deciding.', $text);
         self::assertStringContainsString('If an implementation is clearly incompatible, exclude it without requesting its source code.', $text);
     }
+
+    public function testDoesNotRequireAConfirmationQuestionForSuitableExistingImplementations(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringNotContainsString('Ask whether the user wants to use the existing implementation or generate a new one.', $text);
+        self::assertStringNotContainsString('Do not set “match” while waiting for confirmation.', $text);
+        self::assertStringNotContainsString('A confirmation question about using an existing implementation is part of the mandatory pre-generation decision', $text);
+        self::assertStringContainsString('Do not ask for confirmation.', $text);
+    }
+
 }

@@ -182,7 +182,7 @@ final class ContextTest extends TestCase
         self::assertStringContainsString('name: main, description: Main scenario suite, directory: scenario/main, namespace: Scenario\\Main', $instruction);
         self::assertStringContainsString('Parameter blueprint marker', $instruction);
         self::assertMatchesRegularExpression('/Scenario blueprint marker[\s\S]*Parameter blueprint marker[\s\S]*ParameterType implementation rules:[\s\S]*Final Validation/', $instruction);
-        self::assertStringContainsString('The response contains exactly the required JSON fields.', $instruction);
+        self::assertStringContainsString('The response contains exactly the required five JSON fields.', $instruction);
         self::assertStringContainsString('directory: custom/parameters, namespace: Custom\\Parameters', $instruction);
         self::assertStringContainsString('Maximum clarification questions: 7', $instruction);
         self::assertStringContainsString('Clarification questions already asked: 2', $instruction);
