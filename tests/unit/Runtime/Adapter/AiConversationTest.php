@@ -31,6 +31,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
+use Stateforge\Scenario\Ai\Runtime\Exception\AllClassesProvidedException;
 use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
@@ -45,6 +46,7 @@ use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 #[UsesClass(AiResponse::class)]
 #[CoversClass(AiAudit::class)]
 #[UsesClass(AttributeValidatorException::class)]
+#[UsesClass(AllClassesProvidedException::class)]
 #[UsesClass(ClassDoesNotExistException::class)]
 #[UsesClass(InvalidJsonResponseException::class)]
 #[Group('runtime')]
@@ -297,6 +299,41 @@ final class AiConversationTest extends TestCase
         $this->expectExceptionObject($failure);
 
         $conversation->talk('Generate');
+    }
+
+    public function testPreviouslyProvidedClassesTriggerARetryWithTheReminder(): void
+    {
+        $requested = new AiResponse('requested', null, GenerationType::Scenario, null, [self::class], null);
+        $matched = new AiResponse('matched', null, GenerationType::Scenario, null, [], self::class);
+        $failure = new AllClassesProvidedException();
+        $validations = 0;
+        $validator = $this->createMock(Validator::class);
+        $validator->expects(self::exactly(2))->method('validate')->willReturnCallback(
+            static function (AiResponse $response) use (&$validations, $failure): void {
+                if (++$validations === 1) {
+                    throw $failure;
+                }
+            },
+        );
+        $calls = 0;
+        $client = $this->createMock(AiClient::class);
+        $client->expects(self::exactly(2))->method('request')->willReturnCallback(
+            function (AiRequest $request) use (&$calls, $requested, $matched, $failure): AiResponse {
+                if (++$calls === 1) {
+                    return $requested;
+                }
+                self::assertSame('requested', $request->id);
+                self::assertSame($failure->getMessage(), $request->prompt);
+                self::assertSame(1, $request->counter);
+                return $matched;
+            },
+        );
+        $conversation = $this->conversation($client, $validator);
+
+        $conversation->talk('Find an implementation');
+
+        self::assertSame($matched, $conversation->response());
+        self::assertTrue($conversation->completed());
     }
 
     private function conversation(AiClient $client, ?Validator $validator = null, int $limit = 5): AiConversation

@@ -15,6 +15,7 @@ use ReflectionClass;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
 use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
+use Stateforge\Scenario\Ai\Tests\Unit\SourceCodeRegistryMock;
 use Stateforge\Scenario\Core\Contract\CliInput;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\ApplicationState;
@@ -23,8 +24,11 @@ use function dirname;
 
 abstract class CommandTestCase extends FilesystemTestCase
 {
+    use SourceCodeRegistryMock;
+
     protected function setUp(): void
     {
+        $this->resetSourceCodeRegistry();
         parent::setUp();
         chdir($this->testDirectory);
         $this->setStaticProperty(Application::class, 'rootDir', $this->testDirectory);
@@ -38,6 +42,7 @@ abstract class CommandTestCase extends FilesystemTestCase
 
     protected function tearDown(): void
     {
+        $this->resetSourceCodeRegistry();
         $this->setStaticProperty(Application::class, 'rootDir', null);
         $this->setStaticProperty(Application::class, 'configuration', null);
         $this->setStaticProperty(ApplicationState::class, 'throwable', null);

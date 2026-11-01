@@ -19,14 +19,29 @@ use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ValueTypeInstruction;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
+use Stateforge\Scenario\Ai\Tests\Unit\SourceCodeRegistryMock;
 
 #[CoversClass(ValueTypeInstruction::class)]
 #[UsesClass(ClassInstruction::class)]
 #[UsesClass(SourceCodeReader::class)]
+#[UsesClass(SourceCodeRegistry::class)]
 #[Group('runtime')]
 #[Small]
 final class ValueTypeInstructionTest extends TestCase
 {
+    use SourceCodeRegistryMock;
+
+    protected function setUp(): void
+    {
+        $this->resetSourceCodeRegistry();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->resetSourceCodeRegistry();
+    }
+
     public function testIncludesSupportedClassDefinitions(): void
     {
         $text = (new ValueTypeInstruction())->instruct();

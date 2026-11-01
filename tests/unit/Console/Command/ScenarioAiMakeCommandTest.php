@@ -50,6 +50,7 @@ use Stateforge\Scenario\Ai\Runtime\Maker\DirectoryResolver;
 use Stateforge\Scenario\Ai\Runtime\Prompt\ClassNameParser;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeFinder;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\ClassValidator;
@@ -99,6 +100,7 @@ use const PHP_EOL;
 #[UsesClass(DirectoryResolver::class)]
 #[UsesClass(ClassNameParser::class)]
 #[UsesClass(SourceCodeReader::class)]
+#[UsesClass(SourceCodeRegistry::class)]
 #[UsesClass(Validators::class)]
 #[UsesClass(ClassValidator::class)]
 #[UsesClass(CodeValidator::class)]

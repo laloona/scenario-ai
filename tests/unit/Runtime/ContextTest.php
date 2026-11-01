@@ -51,6 +51,7 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioListInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ValueTypeInstruction;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeFinder;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\ClassValidator;
@@ -59,6 +60,7 @@ use Stateforge\Scenario\Ai\Runtime\Validation\InheritanceValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\SyntaxValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
 use Stateforge\Scenario\Ai\Tests\Files\ListedScenario;
+use Stateforge\Scenario\Ai\Tests\Unit\SourceCodeRegistryMock;
 use Stateforge\Scenario\Core\Attribute\AsScenario;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Configuration as CoreConfiguration;
@@ -82,6 +84,7 @@ use function unlink;
 #[UsesClass(AstBuilder::class)]
 #[UsesClass(ScenarioAst::class)]
 #[UsesClass(SourceCodeReader::class)]
+#[UsesClass(SourceCodeRegistry::class)]
 #[UsesClass(Instructions::class)]
 #[UsesClass(GeneralInstructions::class)]
 #[UsesClass(ScenarioListInstruction::class)]
@@ -112,10 +115,13 @@ use function unlink;
 #[Small]
 final class ContextTest extends TestCase
 {
+    use SourceCodeRegistryMock;
+
     private string $rootDir;
 
     protected function setUp(): void
     {
+        $this->resetSourceCodeRegistry();
         ScenarioRegistry::getInstance()->clear();
         (new ReflectionClass(ParameterTypeRegistry::class))->getProperty('instance')->setValue(null, null);
         $core = new ReflectionClass(Application::class);
@@ -134,6 +140,7 @@ final class ContextTest extends TestCase
 
     protected function tearDown(): void
     {
+        $this->resetSourceCodeRegistry();
         ScenarioRegistry::getInstance()->clear();
         (new ReflectionClass(ParameterTypeRegistry::class))->getProperty('instance')->setValue(null, null);
         $core = new ReflectionClass(Application::class);

@@ -19,8 +19,10 @@ use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\Exception\ClassFileDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use Stateforge\Scenario\Ai\Tests\Files\PackageParameterType;
 use Stateforge\Scenario\Ai\Tests\Files\Project\ProjectParameterType;
+use Stateforge\Scenario\Ai\Tests\Unit\SourceCodeRegistryMock;
 use stdClass;
 use function dirname;
 use function file_get_contents;
@@ -28,11 +30,24 @@ use const PHP_EOL;
 
 #[CoversClass(ClassInstruction::class)]
 #[UsesClass(SourceCodeReader::class)]
+#[UsesClass(SourceCodeRegistry::class)]
 #[UsesClass(ClassFileDoesNotExistException::class)]
 #[Group('runtime')]
 #[Small]
 final class ClassInstructionTest extends TestCase
 {
+    use SourceCodeRegistryMock;
+
+    protected function setUp(): void
+    {
+        $this->resetSourceCodeRegistry();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->resetSourceCodeRegistry();
+    }
+
     public function testIncludesHeadlineAndSourceFilesInRequestedOrder(): void
     {
         $packageSource = file_get_contents(dirname(__DIR__, 3) . '/files/PackageParameterType.php');
@@ -61,4 +76,15 @@ final class ClassInstructionTest extends TestCase
 
         (new ClassInstruction('Class definitions', [stdClass::class]))->instruct();
     }
+
+    public function testRegistersClassDefinitionsWhenConstructed(): void
+    {
+        new ClassInstruction('Available classes', [ProjectParameterType::class, PackageParameterType::class]);
+        $registry = new SourceCodeRegistry();
+
+        self::assertTrue($registry->hasClass(ProjectParameterType::class));
+        self::assertTrue($registry->hasClass(PackageParameterType::class));
+        self::assertFalse($registry->hasClass(self::class));
+    }
+
 }

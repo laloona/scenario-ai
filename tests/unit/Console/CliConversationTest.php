@@ -33,6 +33,7 @@ use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Context;
+use Stateforge\Scenario\Ai\Runtime\Exception\AllClassesProvidedException;
 use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
@@ -51,6 +52,7 @@ use Stateforge\Scenario\Ai\Runtime\Maker\DirectoryResolver;
 use Stateforge\Scenario\Ai\Runtime\Prompt\ClassNameParser;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeFinder;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\ClassValidator;
@@ -101,6 +103,7 @@ use const PHP_EOL;
 #[UsesClass(DirectoryResolver::class)]
 #[UsesClass(ClassNameParser::class)]
 #[UsesClass(SourceCodeReader::class)]
+#[UsesClass(SourceCodeRegistry::class)]
 #[UsesClass(Validators::class)]
 #[UsesClass(ClassValidator::class)]
 #[UsesClass(CodeValidator::class)]
@@ -109,6 +112,7 @@ use const PHP_EOL;
 #[UsesClass(AttributeValidator::class)]
 #[UsesClass(AttributeFinder::class)]
 #[UsesClass(AttributeValidatorException::class)]
+#[UsesClass(AllClassesProvidedException::class)]
 #[Group('runtime')]
 #[Small]
 final class CliConversationTest extends CommandTestCase
@@ -277,6 +281,7 @@ final class CliConversationTest extends CommandTestCase
         $output->expects(self::never())->method('error');
 
         self::assertSame(true, (new CliConversation('Test AI', 'Test framework'))->talk($output, null));
+        self::assertSame($consent, (new SourceCodeRegistry())->hasClass(SharedProjectClass::class));
     }
 
     /** @return array<string, array{bool}> */
@@ -363,6 +368,62 @@ final class CliConversationTest extends CommandTestCase
         self::assertTrue((new CliConversation('Test AI', 'Test framework'))->talk($output, null));
         self::assertSame(['Please describe the scenario or parameter type.', 'AI: Use the existing implementation?'], $questions);
         self::assertDirectoryDoesNotExist($this->testDirectory . '/scenario');
+    }
+
+    public function testAlreadyProvidedClassTriggersOneReminderWithoutResharingSource(): void
+    {
+        (new SourceCodeRegistry())->addClass(SharedProjectClass::class);
+        $client = $this->createMock(AiClient::class);
+        $calls = 0;
+        $client->expects(self::exactly(2))->method('request')->willReturnCallback(
+            function (AiRequest $request) use (&$calls): AiResponse {
+                if (++$calls === 1) {
+                    return new AiResponse('request', null, GenerationType::Scenario, null, [SharedProjectClass::class], null);
+                }
+                self::assertStringContainsString('All requested class definitions have already been provided', $request->prompt);
+                self::assertStringNotContainsString('Shared project class source marker', $request->prompt);
+                return new AiResponse('match', null, GenerationType::Scenario, null, [], SharedProjectClass::class);
+            },
+        );
+        $this->configureAi($client, 'project-docs');
+        $output = $this->createMock(CliOutput::class);
+        $output->expects(self::once())->method('ask')->willReturn('Use the existing implementation');
+        $output->expects(self::never())->method('confirm');
+        $output->expects(self::once())->method('success');
+        $output->expects(self::never())->method('error');
+
+        self::assertTrue((new CliConversation('Test AI', 'Test framework'))->talk($output, null));
+    }
+
+    public function testSharedProjectSourceIsRegisteredAndNotRequestedAgain(): void
+    {
+        $client = $this->createMock(AiClient::class);
+        $calls = 0;
+        $client->expects(self::exactly(3))->method('request')->willReturnCallback(
+            function (AiRequest $request) use (&$calls): AiResponse {
+                ++$calls;
+                if ($calls === 2) {
+                    self::assertStringContainsString('Shared project class source marker', $request->prompt);
+                    self::assertTrue((new SourceCodeRegistry())->hasClass(SharedProjectClass::class));
+                }
+                if ($calls < 3) {
+                    return new AiResponse('request', null, GenerationType::Scenario, null, [SharedProjectClass::class], null);
+                }
+                self::assertStringContainsString('All requested class definitions have already been provided', $request->prompt);
+                self::assertStringNotContainsString('Shared project class source marker', $request->prompt);
+                return new AiResponse('match', null, GenerationType::Scenario, null, [], SharedProjectClass::class);
+            },
+        );
+        $this->configureAi($client, 'project-docs', limit: 5);
+        $output = $this->createMock(CliOutput::class);
+        $output->expects(self::once())->method('ask')->willReturn('Use an existing scenario');
+        $output->expects(self::once())->method('confirm')->with(
+            'Can the source code for class "' . SharedProjectClass::class . '" be sent to AI?',
+            false,
+        )->willReturn(true);
+        $output->expects(self::once())->method('success');
+
+        self::assertTrue((new CliConversation('Test AI', 'Test framework'))->talk($output, null));
     }
 
     private function configureAi(AiClient $client, ?string $projectDoc = null, int $limit = 3): void

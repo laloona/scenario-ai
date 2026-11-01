@@ -14,6 +14,7 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 use Stateforge\Scenario\Ai\Runtime\Exception\MissingResponseElementException;
 use Stateforge\Scenario\Ai\Runtime\Exception\WrongResponseTypeException;
 use function array_key_exists;
+use function array_unique;
 use function array_values;
 use function is_array;
 use function is_string;
@@ -60,7 +61,7 @@ final class ResponseBuilder
             $response['php'],
             $response['type'],
             $response['question'],
-            array_values($response['classes']),
+            array_values(array_unique($response['classes'])),
             $response['match'],
         );
     }

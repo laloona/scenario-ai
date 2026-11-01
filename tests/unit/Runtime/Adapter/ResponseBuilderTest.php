@@ -134,6 +134,16 @@ final class ResponseBuilderTest extends TestCase
         yield 'matching class' => ['match', 'Missing\\RequestedClass'];
     }
 
+    public function testDeduplicatesClassNamesAndReturnsAContiguousListInFirstSeenOrder(): void
+    {
+        $fields = self::validResponse();
+        $fields['classes'] = [3 => self::class, 7 => self::class, 12 => stdClass::class, 20 => self::class];
+
+        $response = (new ResponseBuilder())->build('id', $fields);
+
+        self::assertSame([self::class, stdClass::class], $response->classes);
+    }
+
     /** @return array<string, mixed> */
     private static function validResponse(): array
     {

@@ -16,6 +16,7 @@ use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\Maker\CodeMaker;
 use Stateforge\Scenario\Ai\Runtime\Prompt\ClassNameParser;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use Stateforge\Scenario\Core\Contract\CliOutput;
 use function class_exists;
 use function count;
@@ -104,8 +105,10 @@ final class CliConversation
     {
         /** @var list<class-string> $sources */
         $sources = [];
+        $registry = new SourceCodeRegistry();
         foreach ($classes as $class) {
-            if (class_exists($class) === false) {
+            if (class_exists($class) === false
+                || $registry->hasClass($class) === true) {
                 continue;
             }
 
@@ -114,6 +117,11 @@ final class CliConversation
             }
         }
 
-        return (new SourceCodeReader())->read($sources);
+        $source = (new SourceCodeReader())->read($sources);
+        foreach ($sources as $class) {
+            $registry->addClass($class);
+        }
+
+        return $source;
     }
 }

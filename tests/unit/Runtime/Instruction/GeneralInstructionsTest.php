@@ -28,8 +28,10 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\QuestionLimitInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioListInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ValueTypeInstruction;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use Stateforge\Scenario\Ai\Tests\Files\ListedScenario;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
+use Stateforge\Scenario\Ai\Tests\Unit\SourceCodeRegistryMock;
 use Stateforge\Scenario\Core\Attribute\AsScenario;
 use Stateforge\Scenario\Core\Runtime\Metadata\Parameter\ParameterTypeRegistry;
 use Stateforge\Scenario\Core\Runtime\ScenarioDefinition;
@@ -48,12 +50,16 @@ use function mkdir;
 #[UsesClass(ValueTypeInstruction::class)]
 #[UsesClass(ClassInstruction::class)]
 #[UsesClass(SourceCodeReader::class)]
+#[UsesClass(SourceCodeRegistry::class)]
 #[Group('runtime')]
 #[Small]
 final class GeneralInstructionsTest extends FilesystemTestCase
 {
+    use SourceCodeRegistryMock;
+
     protected function setUp(): void
     {
+        $this->resetSourceCodeRegistry();
         parent::setUp();
         ScenarioRegistry::getInstance()->clear();
         (new ReflectionClass(ParameterTypeRegistry::class))->getProperty('instance')->setValue(null, null);
@@ -61,6 +67,7 @@ final class GeneralInstructionsTest extends FilesystemTestCase
 
     protected function tearDown(): void
     {
+        $this->resetSourceCodeRegistry();
         ScenarioRegistry::getInstance()->clear();
         (new ReflectionClass(ParameterTypeRegistry::class))->getProperty('instance')->setValue(null, null);
         parent::tearDown();

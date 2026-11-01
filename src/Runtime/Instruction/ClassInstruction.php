@@ -12,6 +12,7 @@
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
+use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use const PHP_EOL;
 
 final class ClassInstruction implements Instruction
@@ -23,6 +24,10 @@ final class ClassInstruction implements Instruction
         private readonly string $headline,
         private readonly array $classes,
     ) {
+        $registry = new SourceCodeRegistry();
+        foreach ($this->classes as $class) {
+            $registry->addClass($class);
+        }
     }
 
     public function instruct(): string
