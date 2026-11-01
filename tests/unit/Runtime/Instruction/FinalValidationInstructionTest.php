@@ -60,4 +60,12 @@ final class FinalValidationInstructionTest extends TestCase
         self::assertStringContainsString('If compatibility cannot be established from the available information, request the relevant class definition instead of returning “match”.', $text);
     }
 
+    public function testExcludesAlreadyAvailableDefinitionsFromClassRequests(): void
+    {
+        $text = (new FinalValidationInstruction())->instruct();
+
+        self::assertStringContainsString('If class definitions are requested, verify that their complete source code is not already available in the current task context.', $text);
+        self::assertStringContainsString('Never include a class in the “classes” response field if its complete definition has already been provided through framework instructions, base class definitions, or previous conversation messages.', $text);
+    }
+
 }

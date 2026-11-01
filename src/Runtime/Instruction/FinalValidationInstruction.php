@@ -34,6 +34,8 @@ Before returning a response, verify the following:
 13. The generated class name and description match the implemented functionality.
 14. The generated implementation follows the selected blueprint.
 15. The response contains exactly the required five JSON fields.
+16. If class definitions are requested, verify that their complete source code is not already available in the current task context.
+17. Never include a class in the “classes” response field if its complete definition has already been provided through framework instructions, base class definitions, or previous conversation messages.
 Instruction;
     }
 }

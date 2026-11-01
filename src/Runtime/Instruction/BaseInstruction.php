@@ -162,6 +162,10 @@ Required response:
 Case B: An Existing Implementation Might Be Suitable
 If an existing implementation might satisfy the request but its documented description does not establish full compatibility:
 - Request the relevant class definition using the existing class source request mechanism.
+- Before requesting the source code of a potentially compatible implementation, check whether its complete class definition is already available.
+- If the class definition is available, evaluate its compatibility directly without requesting it again.
+- Request additional source code only when the available information is insufficient to establish compatibility.
+- Do not repeatedly request the same class definition when its source code has already been provided during the current task.
 - Set “php” to null.
 - Set “question” to null.
 - Set “classes” to the required fully qualified class name or names.
@@ -245,6 +249,11 @@ Access to Existing Project Classes
 - Do not request source code when the available description already establishes compatibility.
 - Never assume that access to a class name or description grants access to its source code.
 - Use the framework’s existing source code request mechanism.
+- Before requesting a class definition, check whether its complete source code is already available in the current task context.
+- Class definitions included in the framework instructions, available attributes, base class definitions, or previously provided conversation messages are considered available.
+- Never request the source code of a class whose complete definition is already available.
+- Reuse available class definitions when evaluating existing implementations or generating PHP code.
+- Only request class definitions whose source code is not already available and whose implementation details are necessary to fulfill the current request.
 - If access to a class is denied, continue using the available information without inventing missing implementation details.
 - Prefer reusing existing implementations when they satisfy the requirements and their usage is supported by the framework.
 - Never propose an unrelated implementation merely because it appears in the available project information.

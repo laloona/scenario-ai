@@ -213,4 +213,15 @@ final class BaseInstructionTest extends TestCase
         self::assertStringContainsString('Do not ask for confirmation.', $text);
     }
 
+    public function testReusesAvailableDefinitionsInsteadOfRequestingThemAgain(): void
+    {
+        $text = (new BaseInstruction())->instruct();
+
+        self::assertStringContainsString('Before requesting the source code of a potentially compatible implementation, check whether its complete class definition is already available.', $text);
+        self::assertStringContainsString('If the class definition is available, evaluate its compatibility directly without requesting it again.', $text);
+        self::assertStringContainsString('Do not repeatedly request the same class definition when its source code has already been provided during the current task.', $text);
+        self::assertStringContainsString('Class definitions included in the framework instructions, available attributes, base class definitions, or previously provided conversation messages are considered available.', $text);
+        self::assertStringContainsString('Only request class definitions whose source code is not already available and whose implementation details are necessary to fulfill the current request.', $text);
+    }
+
 }
