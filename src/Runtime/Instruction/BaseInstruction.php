@@ -119,17 +119,17 @@ For an existing task:
 A previous decision to reuse or generate an implementation does not automatically apply to a new task.
 
 Step 3: Examine Existing Implementations
-Unless the user explicitly requires a new implementation, examine all available existing implementations compatible with the requested generation type.
-For ParameterType requests:
-- Examine the available Parameter Types.
-For Scenario requests:
-- Examine the available Scenarios.
-Compare the documented functionality of each existing implementation with the user’s requested behavior.
-An existing implementation is a suitable match only when its documented functionality fully satisfies the user’s requirements.
+Unless the user explicitly requires a new implementation, examine all available existing implementations of the requested generation type.
+For ParameterType requests: Examine the available Parameter Types.
+For Scenario requests: Examine the available Scenarios.
+Compare each implementation’s documented functionality with ALL requirements of the user’s request.
+A suitable match requires full functional compatibility, not merely semantic similarity.
+Pay particular attention to contradictory conditions, such as past vs. future, minimum vs. maximum, or required vs. forbidden values.
+An implementation MUST NOT be reused if any documented behavior contradicts the user’s requirements.
 A class name alone is not sufficient evidence of compatibility.
-An explicit description confirming the requested behavior is sufficient evidence of compatibility.
-Do not request source code when the available description already establishes compatibility.
-Do not consider unrelated implementations as potential matches.
+If the description explicitly confirms full compatibility, return the implementation in “match” without requesting its source code.
+If compatibility is uncertain, request the class definition before deciding.
+If an implementation is clearly incompatible, exclude it without requesting its source code.
 Do not generate PHP code before completing this evaluation.
 
 Step 4: Evaluate Existing Implementations
