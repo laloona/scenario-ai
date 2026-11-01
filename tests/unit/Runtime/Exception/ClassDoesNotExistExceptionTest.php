@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
-use Stateforge\Scenario\Ai\Runtime\Exception\ResponseException;
+use Stateforge\Scenario\Ai\Runtime\Exception\ValidatorException;
 
 #[CoversClass(ClassDoesNotExistException::class)]
 #[Group('runtime')]
@@ -28,6 +28,6 @@ final class ClassDoesNotExistExceptionTest extends TestCase
         $exception = new ClassDoesNotExistException('Missing\\RequestedClass');
 
         self::assertSame('class "Missing\\RequestedClass" does not exist.', $exception->getMessage());
-        self::assertInstanceOf(ResponseException::class, $exception);
+        self::assertInstanceOf(ValidatorException::class, $exception);
     }
 }

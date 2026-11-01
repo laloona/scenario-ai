@@ -33,6 +33,7 @@ use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
+use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 
@@ -45,6 +46,7 @@ use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 #[CoversClass(AiAudit::class)]
 #[UsesClass(AttributeValidatorException::class)]
 #[UsesClass(ClassDoesNotExistException::class)]
+#[UsesClass(InvalidJsonResponseException::class)]
 #[Group('runtime')]
 #[Small]
 final class AiConversationTest extends TestCase
@@ -272,11 +274,25 @@ final class AiConversationTest extends TestCase
     public function testResponseExceptionFromValidationPropagatesWithoutRetry(): void
     {
         $response = new AiResponse('id', null, GenerationType::Scenario, null, [], null);
-        $failure = new ClassDoesNotExistException('Missing\\RequestedClass');
+        $failure = new InvalidJsonResponseException();
         $client = $this->createMock(AiClient::class);
         $client->expects(self::once())->method('request')->willReturn($response);
         $validator = $this->createMock(Validator::class);
         $validator->expects(self::once())->method('validate')->with($response)->willThrowException($failure);
+        $conversation = $this->conversation($client, $validator);
+        $this->expectExceptionObject($failure);
+
+        $conversation->talk('Generate');
+    }
+
+    public function testMissingClassFailureRetriesOnceAndPropagatesRepeatedFailure(): void
+    {
+        $response = new AiResponse('id', null, GenerationType::Scenario, null, [], null);
+        $failure = new ClassDoesNotExistException('Missing\\RequestedClass');
+        $client = $this->createMock(AiClient::class);
+        $client->expects(self::exactly(2))->method('request')->willReturn($response);
+        $validator = $this->createMock(Validator::class);
+        $validator->expects(self::exactly(2))->method('validate')->with($response)->willThrowException($failure);
         $conversation = $this->conversation($client, $validator);
         $this->expectExceptionObject($failure);
 
