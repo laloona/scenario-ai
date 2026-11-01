@@ -52,6 +52,7 @@ use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeFinder;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeValidator;
+use Stateforge\Scenario\Ai\Runtime\Validation\ClassValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\CodeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\InheritanceValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\SyntaxValidator;
@@ -99,6 +100,7 @@ use const PHP_EOL;
 #[UsesClass(ClassNameParser::class)]
 #[UsesClass(SourceCodeReader::class)]
 #[UsesClass(Validators::class)]
+#[UsesClass(ClassValidator::class)]
 #[UsesClass(CodeValidator::class)]
 #[UsesClass(SyntaxValidator::class)]
 #[UsesClass(InheritanceValidator::class)]

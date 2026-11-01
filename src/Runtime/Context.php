@@ -22,6 +22,7 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\Instructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterImplementationInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
+use Stateforge\Scenario\Ai\Runtime\Validation\ClassValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\CodeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
@@ -81,6 +82,7 @@ final class Context implements AiContext
     public function validator(): Validator
     {
         $validators = new Validators();
+        $validators->add(new ClassValidator());
         $validators->add(new CodeValidator(
             Scenario::class,
             AsScenario::class,

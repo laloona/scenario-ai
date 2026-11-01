@@ -32,6 +32,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 
@@ -43,6 +44,7 @@ use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 #[UsesClass(AiResponse::class)]
 #[CoversClass(AiAudit::class)]
 #[UsesClass(AttributeValidatorException::class)]
+#[UsesClass(ClassDoesNotExistException::class)]
 #[Group('runtime')]
 #[Small]
 final class AiConversationTest extends TestCase
@@ -265,6 +267,20 @@ final class AiConversationTest extends TestCase
         $conversation->talk('Change the state');
 
         self::assertSame($final, $conversation->response());
+    }
+
+    public function testResponseExceptionFromValidationPropagatesWithoutRetry(): void
+    {
+        $response = new AiResponse('id', null, GenerationType::Scenario, null, [], null);
+        $failure = new ClassDoesNotExistException('Missing\\RequestedClass');
+        $client = $this->createMock(AiClient::class);
+        $client->expects(self::once())->method('request')->willReturn($response);
+        $validator = $this->createMock(Validator::class);
+        $validator->expects(self::once())->method('validate')->with($response)->willThrowException($failure);
+        $conversation = $this->conversation($client, $validator);
+        $this->expectExceptionObject($failure);
+
+        $conversation->talk('Generate');
     }
 
     private function conversation(AiClient $client, ?Validator $validator = null, int $limit = 5): AiConversation

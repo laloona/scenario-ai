@@ -11,12 +11,10 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 
-use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Exception\MissingResponseElementException;
 use Stateforge\Scenario\Ai\Runtime\Exception\WrongResponseTypeException;
 use function array_key_exists;
 use function array_values;
-use function class_exists;
 use function is_array;
 use function is_string;
 
@@ -53,17 +51,9 @@ final class ResponseBuilder
             if (is_string($class) === false) {
                 throw new WrongResponseTypeException($class, 'string in [classes]');
             }
-
-            if (class_exists($class) === false) {
-                throw new ClassDoesNotExistException($class);
-            }
         }
 
         $response['match'] = $this->extractString($response, 'match');
-        if ($response['match'] !== null
-            && class_exists($response['match']) === false) {
-            throw new ClassDoesNotExistException($response['match']);
-        }
 
         return new AiResponse(
             $response['id'],

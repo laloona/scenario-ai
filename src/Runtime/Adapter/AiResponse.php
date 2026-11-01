@@ -14,8 +14,7 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 final class AiResponse
 {
     /**
-     * @param list<class-string> $classes
-     * @param class-string|null $match
+     * @param list<string> $classes
      */
     public function __construct(
         public readonly ?string $id,

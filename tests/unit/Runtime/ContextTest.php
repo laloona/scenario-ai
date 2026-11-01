@@ -25,12 +25,14 @@ use SplFileInfo;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
+use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
 use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Context;
 use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\AttributeInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BaseInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
@@ -51,6 +53,7 @@ use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeFinder;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeValidator;
+use Stateforge\Scenario\Ai\Runtime\Validation\ClassValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\CodeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\InheritanceValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\SyntaxValidator;
@@ -96,6 +99,9 @@ use function unlink;
 #[UsesClass(ScenarioBlueprintInstruction::class)]
 #[UsesClass(ParameterBlueprintInstruction::class)]
 #[UsesClass(Validators::class)]
+#[UsesClass(ClassValidator::class)]
+#[UsesClass(ClassDoesNotExistException::class)]
+#[UsesClass(ResponseBuilder::class)]
 #[UsesClass(CodeValidator::class)]
 #[UsesClass(SyntaxValidator::class)]
 #[UsesClass(InheritanceValidator::class)]
@@ -220,6 +226,29 @@ final class ContextTest extends TestCase
         $response = new AiResponse(null, '<?php class Generated extends \\' . $parent . ' {}', GenerationType::from($type), null, [], null);
         $this->expectException(AttributeValidatorException::class);
         $this->expectExceptionMessage('Missing required attribute "' . $attribute . '".');
+
+        (new Context())->validator()->validate($response);
+    }
+
+    public function testValidatorChecksClassReferencesBeforeGeneratedCode(): void
+    {
+        $response = (new ResponseBuilder())->build('id', [
+            'type' => 'scenario', 'php' => '<?php class {', 'question' => null,
+            'classes' => ['Missing\\RequestedClass'], 'match' => null,
+        ]);
+        $this->expectException(ClassDoesNotExistException::class);
+        $this->expectExceptionMessage('class "Missing\\RequestedClass" does not exist.');
+
+        (new Context())->validator()->validate($response);
+    }
+
+    public function testValidatorChecksMatchWithoutGeneratedCode(): void
+    {
+        $response = (new ResponseBuilder())->build('id', [
+            'type' => 'scenario', 'php' => null, 'question' => null,
+            'classes' => [], 'match' => 'Missing\\MatchingClass',
+        ]);
+        $this->expectException(ClassDoesNotExistException::class);
 
         (new Context())->validator()->validate($response);
     }

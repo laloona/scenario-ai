@@ -20,14 +20,12 @@ use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
-use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Exception\MissingResponseElementException;
 use Stateforge\Scenario\Ai\Runtime\Exception\WrongResponseTypeException;
 use stdClass;
 
 #[CoversClass(ResponseBuilder::class)]
 #[UsesClass(AiResponse::class)]
-#[UsesClass(ClassDoesNotExistException::class)]
 #[UsesClass(MissingResponseElementException::class)]
 #[UsesClass(WrongResponseTypeException::class)]
 #[Group('runtime')]
@@ -112,19 +110,21 @@ final class ResponseBuilderTest extends TestCase
         yield 'array match' => ['match', [], 'string for "match"'];
         yield 'null classes' => ['classes', null, 'array for "classes"'];
         yield 'string classes' => ['classes', 'invalid', 'array for "classes"'];
+        yield 'null class entry' => ['classes', [null], 'string in [classes]'];
+        yield 'array class entry' => ['classes', [[]], 'string in [classes]'];
         yield 'invalid class entry' => ['classes', [stdClass::class, 42], 'string in [classes]'];
     }
 
     #[DataProvider('missingClasses')]
-    public function testRejectsNonexistentClassReferences(string $field, mixed $value): void
+    public function testPreservesClassNamesForLaterExistenceValidation(string $field, mixed $value): void
     {
         $fields = self::validResponse();
         $fields[$field] = $value;
 
-        $this->expectException(ClassDoesNotExistException::class);
-        $this->expectExceptionMessage('class "Missing\\RequestedClass" does not exist.');
+        $response = (new ResponseBuilder())->build('id', $fields);
 
-        (new ResponseBuilder())->build('id', $fields);
+        self::assertSame($fields['classes'], $response->classes);
+        self::assertSame($fields['match'], $response->match);
     }
 
     /** @return iterable<string, array{string, mixed}> */
