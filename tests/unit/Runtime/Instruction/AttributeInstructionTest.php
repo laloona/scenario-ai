@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\AttributeInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
@@ -50,7 +51,7 @@ final class AttributeInstructionTest extends TestCase
 
     public function testIncludesSupportedClassDefinitions(): void
     {
-        $text = (new AttributeInstruction())->instruct();
+        $text = (new AttributeInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Available attributes:', $text);
         self::assertStringContainsString('class AsScenario', $text);
@@ -63,7 +64,7 @@ final class AttributeInstructionTest extends TestCase
 
     public function testPrefersSupportedAttributesForRequestedFrameworkBehavior(): void
     {
-        $text = (new AttributeInstruction())->instruct();
+        $text = (new AttributeInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('When the user requests a fresh or reset database, use #[RefreshDatabase] if the framework supports applying it to the generated class.', $text);
         self::assertStringContainsString('When the user requests reusable input values, consider #[Parameter].', $text);
@@ -76,7 +77,7 @@ final class AttributeInstructionTest extends TestCase
         $registry = new SourceCodeRegistry();
         self::assertFalse($registry->hasClass(AsScenario::class));
 
-        (new AttributeInstruction())->instruct();
+        (new AttributeInstruction())->instruct(AdapterMode::Cli);
 
         foreach ([AsScenario::class, AsParameterType::class, ApplyScenario::class, Parameter::class, ParameterTypeCondition::class, RefreshDatabase::class] as $class) {
             self::assertTrue($registry->hasClass($class), $class);

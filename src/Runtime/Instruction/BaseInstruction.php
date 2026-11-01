@@ -11,9 +11,12 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+
 final class BaseInstruction implements Instruction
 {
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         return <<<'INSTRUCTIONS'
 Introduction

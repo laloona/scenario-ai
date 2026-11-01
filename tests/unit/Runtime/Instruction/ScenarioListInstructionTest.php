@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioListInstruction;
 use Stateforge\Scenario\Ai\Tests\Files\ListedScenario;
 use Stateforge\Scenario\Ai\Tests\Files\Project\ProjectParameterType;
@@ -48,7 +49,7 @@ final class ScenarioListInstructionTest extends TestCase
 
     public function testEmptyRegistryReturnsEmptyString(): void
     {
-        self::assertSame('', (new ScenarioListInstruction())->instruct());
+        self::assertSame('', (new ScenarioListInstruction())->instruct(AdapterMode::Cli));
     }
 
     public function testListsScenarioMetadataOnceDespiteNameAlias(): void
@@ -60,7 +61,7 @@ final class ScenarioListInstructionTest extends TestCase
             [],
         ));
 
-        $text = (new ScenarioListInstruction())->instruct();
+        $text = (new ScenarioListInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringStartsWith('Existing Scenarios' . PHP_EOL, $text);
         self::assertStringContainsString('Registered Scenarios' . PHP_EOL . PHP_EOL, $text);
@@ -82,7 +83,7 @@ final class ScenarioListInstructionTest extends TestCase
             ],
         ));
 
-        $text = (new ScenarioListInstruction())->instruct();
+        $text = (new ScenarioListInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('name: enabled, description: Enable feature, type: Boolean, required: yes, repeatable: no, default: true', $text);
         self::assertStringContainsString('name: labels, description: Labels, type: String, required: no, repeatable: yes, default: ["first","second"]', $text);
@@ -97,7 +98,7 @@ final class ScenarioListInstructionTest extends TestCase
             [],
         ));
 
-        $text = (new ScenarioListInstruction())->instruct();
+        $text = (new ScenarioListInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Follow the mandatory pre-generation decision and response rules when evaluating existing Scenarios.', $text);
         self::assertStringContainsString('Prefer reusing existing Scenarios when the framework supports the intended reuse.', $text);

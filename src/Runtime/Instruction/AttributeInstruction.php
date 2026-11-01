@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Core\Attribute\ApplyScenario;
 use Stateforge\Scenario\Core\Attribute\AsParameterType;
 use Stateforge\Scenario\Core\Attribute\AsScenario;
@@ -21,7 +23,7 @@ use const PHP_EOL;
 
 final class AttributeInstruction implements Instruction
 {
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         return <<<INSTRUCTION
 Framework Attribute Rules
@@ -45,6 +47,6 @@ INSTRUCTION . PHP_EOL . PHP_EOL .
                     ParameterTypeCondition::class,
                     RefreshDatabase::class,
                 ],
-            ))->instruct();
+            ))->instruct($mode);
     }
 }

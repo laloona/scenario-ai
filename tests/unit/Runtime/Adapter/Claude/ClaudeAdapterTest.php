@@ -16,23 +16,26 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiAdapter;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiClient;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiConfig;
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAdapter;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeClient;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeConfig;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\ConfigBuilderException;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 
-#[CoversClass(ClaudeAiAdapter::class)]
+#[CoversClass(ClaudeAdapter::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeSkill::class)]
 #[UsesClass(ConfigBuilder::class)]
 #[UsesClass(AdapterConfiguration::class)]
-#[UsesClass(ClaudeAiConfig::class)]
-#[UsesClass(ClaudeAiClient::class)]
+#[UsesClass(ClaudeConfig::class)]
+#[UsesClass(ClaudeClient::class)]
 #[UsesClass(ResponseDecoder::class)]
 #[UsesClass(ResponseBuilder::class)]
 #[UsesClass(MessageBuilder::class)]
@@ -40,26 +43,34 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 #[UsesClass(ConfigBuilderException::class)]
 #[Group('runtime')]
 #[Small]
-final class ClaudeAiAdapterTest extends TestCase
+final class ClaudeAdapterTest extends TestCase
 {
     public function testBuildsClientWithConfiguredOptions(): void
     {
         $instruction = self::createStub(Instruction::class);
-        $client = (new ClaudeAiAdapter())->client(
+        $client = (new ClaudeAdapter())->client(
             new ConfigBuilder(),
-            new AdapterConfiguration('test', null, null, [
+            new AdapterConfiguration(AdapterMode::All, 'test', null, null, [
                 'apiKey' => 'test-key', 'apiEndpoint' => 'https://example.test/ai', 'model' => 'test-model',
             ]),
             $instruction,
         );
 
-        self::assertInstanceOf(ClaudeAiClient::class, $client);
+        self::assertInstanceOf(ClaudeClient::class, $client);
     }
 
     public function testRejectsMissingRequiredConfiguration(): void
     {
         $this->expectException(ConfigBuilderException::class);
 
-        (new ClaudeAiAdapter())->client(new ConfigBuilder(), new AdapterConfiguration('test', null, null, []), self::createStub(Instruction::class));
+        (new ClaudeAdapter())->client(new ConfigBuilder(), new AdapterConfiguration(AdapterMode::All, 'test', null, null, []), self::createStub(Instruction::class));
     }
+    public function testBuildsSkillWithoutApiConfiguration(): void
+    {
+        self::assertInstanceOf(
+            \Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeSkill::class,
+            (new ClaudeAdapter())->skill(new AdapterConfiguration(AdapterMode::Skill, 'test', null, null, []), self::createStub(Instruction::class)),
+        );
+    }
+
 }

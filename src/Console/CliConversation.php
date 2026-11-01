@@ -48,7 +48,7 @@ final class CliConversation
             $output->warn('To get better results, configure your project doc, that the AI knows better what to do.');
         }
 
-        $ai = Ai::start($context);
+        $ai = Ai::conversation($context);
 
         $prompt = $output->ask(
             'Please describe the scenario or parameter type.',

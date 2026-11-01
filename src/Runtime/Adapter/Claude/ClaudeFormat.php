@@ -11,7 +11,7 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter\Claude;
 
-final class ClaudeAiFormat
+final class ClaudeFormat
 {
     /**
      * @return array<string, mixed>

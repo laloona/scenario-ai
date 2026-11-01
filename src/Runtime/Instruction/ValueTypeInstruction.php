@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\BooleanType;
 use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\FloatType;
 use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\IntegerType;
@@ -18,7 +20,7 @@ use Stateforge\Scenario\Core\Runtime\Metadata\ValueType\StringType;
 
 final class ValueTypeInstruction implements Instruction
 {
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         return (new ClassInstruction(
             'Some class definitions',
@@ -28,6 +30,6 @@ final class ValueTypeInstruction implements Instruction
                 IntegerType::class,
                 StringType::class,
             ],
-        ))->instruct();
+        ))->instruct($mode);
     }
 }

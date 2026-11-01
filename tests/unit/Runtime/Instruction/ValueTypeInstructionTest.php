@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ValueTypeInstruction;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
@@ -44,7 +45,7 @@ final class ValueTypeInstructionTest extends TestCase
 
     public function testIncludesSupportedClassDefinitions(): void
     {
-        $text = (new ValueTypeInstruction())->instruct();
+        $text = (new ValueTypeInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Some class definitions:', $text);
         self::assertStringContainsString('class BooleanType', $text);

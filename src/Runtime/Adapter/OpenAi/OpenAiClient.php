@@ -16,12 +16,13 @@ use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -48,7 +49,7 @@ final class OpenAiClient implements AiClient
         $payload = [
             'model' => $this->config->model,
             'store' => false,
-            'instructions' => $this->instruction->instruct(),
+            'instructions' => $this->instruction->instruct(AdapterMode::Cli),
             'input' => $this->messageBuilder->build($request, $audits),
             'text' => (new OpenAiFormat())->format(),
         ];

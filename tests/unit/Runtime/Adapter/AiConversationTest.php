@@ -22,6 +22,8 @@ use RuntimeException;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Contract\AiContext;
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Contract\Validator;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiConversation;
@@ -30,13 +32,12 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Exception\AllClassesProvidedException;
 use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
-use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 
 #[CoversClass(AiConversation::class)]
 #[UsesClass(Configuration::class)]
@@ -99,7 +100,7 @@ final class AiConversationTest extends TestCase
                 return $second;
             },
         );
-        $adapterConfiguration = new AdapterConfiguration('test', null, null, []);
+        $adapterConfiguration = new AdapterConfiguration(AdapterMode::All, 'test', null, null, []);
         $adapter = $this->createMock(AiAdapter::class);
         $adapter->expects(self::exactly(2))->method('client')
             ->with(self::isInstanceOf(ConfigBuilder::class), $adapterConfiguration, $instruction)
@@ -350,7 +351,7 @@ final class AiConversationTest extends TestCase
             null,
             false,
             $limit,
-            new AdapterConfiguration('test', null, null, []),
+            new AdapterConfiguration(AdapterMode::All, 'test', null, null, []),
         ), $registry);
     }
 }

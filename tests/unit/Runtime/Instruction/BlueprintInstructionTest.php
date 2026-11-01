@@ -15,6 +15,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
@@ -39,7 +40,7 @@ final class BlueprintInstructionTest extends FilesystemTestCase
         $text = (new BlueprintInstruction(
             new ScenarioBlueprintInstruction($scenario, []),
             new ParameterBlueprintInstruction($parameter, null),
-        ))->instruct();
+        ))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Use only the blueprint corresponding to the selected generation type.', $text);
         self::assertSame(1, substr_count($text, PHP_EOL . 'Namespace Rules' . PHP_EOL));

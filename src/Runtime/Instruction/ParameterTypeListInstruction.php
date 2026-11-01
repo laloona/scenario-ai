@@ -12,6 +12,8 @@
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
 use ReflectionClass;
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Core\ParameterType;
 use Stateforge\Scenario\Core\Runtime\Metadata\Parameter\ParameterTypeRegistry;
 use function count;
@@ -29,7 +31,7 @@ final class ParameterTypeListInstruction implements Instruction
     ) {
     }
 
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         $instruction = <<<INSTRUCTION
 Existing Parameter Types

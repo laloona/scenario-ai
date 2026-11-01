@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BaseInstruction;
 use function json_decode;
 use function preg_match_all;
@@ -29,7 +30,7 @@ final class BaseInstructionTest extends TestCase
 {
     public function testIncludesFrameworkAndGenerationTypeRules(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Generate PHP code compatible with PHP ^8.2.', $text);
         self::assertStringContainsString('If code generation is required, generate exactly one PHP class.', $text);
@@ -41,7 +42,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testRequiresEvaluatingExistingImplementationsBeforeGeneratingCode(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertMatchesRegularExpression(
             '/Step 1: Determine the Request[\s\S]*'
@@ -59,7 +60,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testRequiresVerifiedProjectInformationAndPermissionForSourceAccess(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Only consider implementations compatible with the requested generation type.', $text);
         self::assertStringContainsString('Compare requested functionality against documented behavior, not class names alone.', $text);
@@ -71,7 +72,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testCompatibleImplementationCompletesTheRequestWithoutConfirmationOrGeneration(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Reuse suitable existing implementations automatically.', $text);
         self::assertStringContainsString('Do not ask the user whether an existing implementation should be reused.', $text);
@@ -86,7 +87,7 @@ final class BaseInstructionTest extends TestCase
     #[DataProvider('lineEndings')]
     public function testDefinesValidJsonExamplesForAutomaticReuseAndAllFiveResponseStates(string $lineEnding): void
     {
-        $text = str_replace("\r\n", "\n", (new BaseInstruction())->instruct());
+        $text = str_replace("\r\n", "\n", (new BaseInstruction())->instruct(AdapterMode::Cli));
         $text = str_replace("\n", $lineEnding, $text);
         self::assertSame(6, preg_match_all('/^\{\r?\n.*?^\}/ms', $text, $matches));
 
@@ -114,7 +115,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testRequiresExclusiveResponseStatesAndCompatibleMatch(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('The five response states are mutually exclusive.', $text);
         self::assertStringContainsString('Exactly one response state MUST be selected per response.', $text);
@@ -135,7 +136,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testPreservesOriginalRequirementsAcrossConfirmationsAndIndependentTasks(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Confirmation messages MUST NOT replace the original implementation requirements.', $text);
         self::assertStringContainsString('Only modify the original requirements when the user explicitly requests a change.', $text);
@@ -146,7 +147,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testQuestionLimitDoesNotAuthorizeIncompleteOrSpeculativeCode(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Ask only one specific clarification question per response.', $text);
         self::assertStringContainsString('Reaching a clarification question limit MUST NOT authorize speculative code generation.', $text);
@@ -155,7 +156,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testUnavailableInformationCanEndTheTaskWithoutPlaceholderCode(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Response state 5: Unable to fulfill request', $text);
         self::assertStringContainsString('This response indicates that no valid implementation could be produced.', $text);
@@ -164,7 +165,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testInitialGenerationRequestAutomaticallyReusesAnExistingFunctionalMatch(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('The user’s initial request to create or generate code MUST NOT bypass the existing implementation check.', $text);
         self::assertStringContainsString('An existing implementation that fully satisfies the request MUST be returned in “match” automatically.', $text);
@@ -175,7 +176,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testExplicitNewImplementationRequestBypassesReuseWithoutChangingRequirements(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('The existing implementation check MUST precede code generation unless the user explicitly requires a new implementation.', $text);
         self::assertStringContainsString('Generate a new class fulfilling the requested requirements.', $text);
@@ -186,7 +187,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testReuseRequiresFullCompatibilityAndExcludesContradictoryBehavior(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Compare each implementation’s documented functionality with ALL requirements of the user’s request.', $text);
         self::assertStringContainsString('A suitable match requires full functional compatibility, not merely semantic similarity.', $text);
@@ -196,7 +197,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testSourceRequestsDependOnWhetherCompatibilityIsEstablishedUncertainOrExcluded(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('If the description explicitly confirms full compatibility, return the implementation in “match” without requesting its source code.', $text);
         self::assertStringContainsString('If compatibility is uncertain, request the class definition before deciding.', $text);
@@ -205,7 +206,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testDoesNotRequireAConfirmationQuestionForSuitableExistingImplementations(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringNotContainsString('Ask whether the user wants to use the existing implementation or generate a new one.', $text);
         self::assertStringNotContainsString('Do not set “match” while waiting for confirmation.', $text);
@@ -215,7 +216,7 @@ final class BaseInstructionTest extends TestCase
 
     public function testReusesAvailableDefinitionsInsteadOfRequestingThemAgain(): void
     {
-        $text = (new BaseInstruction())->instruct();
+        $text = (new BaseInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Before requesting the source code of a potentially compatible implementation, check whether its complete class definition is already available.', $text);
         self::assertStringContainsString('If the class definition is available, evaluate its compatibility directly without requesting it again.', $text);

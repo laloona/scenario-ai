@@ -23,26 +23,27 @@ use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiClient;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiConfig;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiFormat;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeClient;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeConfig;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeFormat;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use function json_decode;
 use function json_encode;
 use const JSON_THROW_ON_ERROR;
 
-#[CoversClass(ClaudeAiClient::class)]
-#[UsesClass(ClaudeAiConfig::class)]
-#[UsesClass(ClaudeAiFormat::class)]
+#[CoversClass(ClaudeClient::class)]
+#[UsesClass(ClaudeConfig::class)]
+#[UsesClass(ClaudeFormat::class)]
 #[UsesClass(AiAudit::class)]
 #[UsesClass(AiRequest::class)]
 #[UsesClass(AiResponse::class)]
@@ -53,7 +54,7 @@ use const JSON_THROW_ON_ERROR;
 #[UsesClass(MessageStringBuilder::class)]
 #[Group('runtime')]
 #[Small]
-final class ClaudeAiClientTest extends TestCase
+final class ClaudeClientTest extends TestCase
 {
     #[DataProvider('historyProvider')]
     public function testSendsConfiguredRequestAndDecodesResponse(bool $withHistory): void
@@ -72,7 +73,7 @@ final class ClaudeAiClientTest extends TestCase
                 self::assertSame('Test instructions', $payload['system']);
                 self::assertSame(1024, $payload['max_tokens']);
                 self::assertSame(['type' => 'ephemeral'], $payload['cache_control']);
-                self::assertSame((new ClaudeAiFormat())->format(), $payload['output_config']);
+                self::assertSame((new ClaudeFormat())->format(), $payload['output_config']);
                 $expected = $withHistory ? [
                     ['role' => 'user', 'content' => 'Initial prompt'],
                     ['role' => 'assistant', 'content' => json_encode(['php' => null, 'type' => null, 'question' => 'Which state?', 'classes' => [], 'match' => null], JSON_THROW_ON_ERROR)],
@@ -177,11 +178,11 @@ final class ClaudeAiClientTest extends TestCase
         return json_encode(['id' => 'answer-id', 'stop_reason' => 'end_turn', 'content' => [null, ['type' => 'tool_use'], ['type' => 'text', 'text' => 123], ['type' => 'text', 'text' => $text]]], JSON_THROW_ON_ERROR);
     }
 
-    private function client(HttpClient $http): ClaudeAiClient
+    private function client(HttpClient $http): ClaudeClient
     {
-        $instruction = self::createStub(Instruction::class);
-        $instruction->method('instruct')->willReturn('Test instructions');
+        $instruction = $this->createMock(Instruction::class);
+        $instruction->expects(self::once())->method('instruct')->with(AdapterMode::Cli)->willReturn('Test instructions');
 
-        return new ClaudeAiClient(new ClaudeAiConfig('test-key', 'https://example.test/ai', 'test-model', 'test-version', 1024), $http, new MessageBuilder(new MessageStringBuilder()), $instruction, new ResponseDecoder(new ResponseBuilder()));
+        return new ClaudeClient(new ClaudeConfig('test-key', 'https://example.test/ai', 'test-model', 'test-version', 1024), $http, new MessageBuilder(new MessageStringBuilder()), $instruction, new ResponseDecoder(new ResponseBuilder()));
     }
 }

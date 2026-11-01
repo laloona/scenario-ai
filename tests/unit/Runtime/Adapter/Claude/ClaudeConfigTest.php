@@ -15,16 +15,16 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiConfig;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeConfig;
 
-#[CoversClass(ClaudeAiConfig::class)]
+#[CoversClass(ClaudeConfig::class)]
 #[Group('runtime')]
 #[Small]
-final class ClaudeAiConfigTest extends TestCase
+final class ClaudeConfigTest extends TestCase
 {
     public function testStoresApiKeyAndDefaultOptions(): void
     {
-        $config = new ClaudeAiConfig('test-key');
+        $config = new ClaudeConfig('test-key');
 
         self::assertSame('test-key', $config->apiKey);
         self::assertSame('https://api.anthropic.com/v1/messages', $config->apiEndpoint);
@@ -35,7 +35,7 @@ final class ClaudeAiConfigTest extends TestCase
 
     public function testAllowsCustomOptions(): void
     {
-        $config = new ClaudeAiConfig('test-key', 'https://example.test/ai', 'test-model', 'test-version', 1024);
+        $config = new ClaudeConfig('test-key', 'https://example.test/ai', 'test-model', 'test-version', 1024);
 
         self::assertSame('test-key', $config->apiKey);
         self::assertSame('https://example.test/ai', $config->apiEndpoint);

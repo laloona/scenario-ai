@@ -17,6 +17,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use ReflectionClass;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\AttributeInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BaseInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
@@ -88,7 +89,7 @@ final class GeneralInstructionsTest extends FilesystemTestCase
             $withProjectDoc ? $this->testDirectory . '/project' : null,
             null,
             $allowProjectInformation,
-        ))->instruct();
+        ))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('If code generation is required, generate exactly one PHP class.', $text);
         self::assertStringContainsString('Available attributes:', $text);

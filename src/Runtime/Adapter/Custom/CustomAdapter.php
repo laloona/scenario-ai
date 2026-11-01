@@ -14,12 +14,13 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter\Custom;
 use InvalidArgumentException;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Contract\AiClient;
+use Stateforge\Scenario\Ai\Contract\AiSkill;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
 use Stateforge\Scenario\Ai\Runtime\Exception\AdapterClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Exception\MissingAdapterClassException;
 use Stateforge\Scenario\Ai\Runtime\Exception\MissingAdapterPathException;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\ClassFinder;
 use function class_exists;
@@ -34,6 +35,24 @@ final class CustomAdapter implements AiAdapter
         AdapterConfiguration $adapterConfiguration,
         Instruction $instruction,
     ): AiClient {
+        return $this->adapter($adapterConfiguration)->client(
+            $configBuilder,
+            $adapterConfiguration,
+            $instruction,
+        );
+    }
+    public function skill(
+        AdapterConfiguration $adapterConfiguration,
+        Instruction $instruction,
+    ): AiSkill {
+        return $this->adapter($adapterConfiguration)->skill(
+            $adapterConfiguration,
+            $instruction,
+        );
+    }
+
+    private function adapter(AdapterConfiguration $adapterConfiguration): AiAdapter
+    {
         if ($adapterConfiguration->path === null) {
             throw new MissingAdapterPathException();
         }
@@ -55,10 +74,6 @@ final class CustomAdapter implements AiAdapter
             );
         }
 
-        return (new $class())->client(
-            $configBuilder,
-            $adapterConfiguration,
-            $instruction,
-        );
+        return new $class();
     }
 }

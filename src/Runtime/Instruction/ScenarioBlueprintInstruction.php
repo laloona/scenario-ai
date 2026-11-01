@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Value\SuiteValue;
 use Stateforge\Scenario\Core\Runtime\NamespaceResolver;
 use function count;
@@ -28,7 +30,7 @@ final class ScenarioBlueprintInstruction implements Instruction
     ) {
     }
 
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         $instructions = <<<'INSTRUCTIONS'
 Scenario Rules

@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Stateforge\Scenario\Ai\Runtime\Instruction;
+namespace Stateforge\Scenario\Ai\Contract;
 
-interface Instruction
+interface AiSkill
 {
-    public function instruct(): string;
+    public function generate(): ?string;
 }

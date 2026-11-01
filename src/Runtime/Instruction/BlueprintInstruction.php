@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use const PHP_EOL;
 
 final class BlueprintInstruction implements Instruction
@@ -21,7 +23,7 @@ final class BlueprintInstruction implements Instruction
     ) {
     }
 
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         return <<<'INSTRUCTIONS'
 Blueprint Rules
@@ -61,7 +63,7 @@ Namespace Rules
 - The final namespace MUST be identical to the original blueprint namespace after literal substitution of %nameSpace%.
 - Before returning generated PHP code, verify that the namespace matches this substitution exactly.
 INSTRUCTIONS . PHP_EOL . PHP_EOL .
-        $this->scenarioBlueprintInstruction->instruct() . PHP_EOL . PHP_EOL .
-        $this->parameterBlueprintInstruction->instruct() . PHP_EOL . PHP_EOL;
+        $this->scenarioBlueprintInstruction->instruct($mode) . PHP_EOL . PHP_EOL .
+        $this->parameterBlueprintInstruction->instruct($mode) . PHP_EOL . PHP_EOL;
     }
 }

@@ -15,17 +15,17 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiFormat;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeFormat;
 use function array_keys;
 
-#[CoversClass(ClaudeAiFormat::class)]
+#[CoversClass(ClaudeFormat::class)]
 #[Group('runtime')]
 #[Small]
-final class ClaudeAiFormatTest extends TestCase
+final class ClaudeFormatTest extends TestCase
 {
     public function testDeclaresStrictStructuredResponseSchema(): void
     {
-        $result = (new ClaudeAiFormat())->format();
+        $result = (new ClaudeFormat())->format();
         self::assertIsArray($result['format']);
         $format = $result['format'];
         self::assertSame('json_schema', $format['type']);

@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\ClassFileDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
@@ -57,7 +58,7 @@ final class ClassInstructionTest extends TestCase
 
         self::assertSame(
             'Available classes: ' . PHP_EOL . PHP_EOL . PHP_EOL . $projectSource . PHP_EOL . $packageSource . PHP_EOL,
-            (new ClassInstruction('Available classes', [ProjectParameterType::class, PackageParameterType::class]))->instruct(),
+            (new ClassInstruction('Available classes', [ProjectParameterType::class, PackageParameterType::class]))->instruct(AdapterMode::Cli),
         );
     }
 
@@ -65,7 +66,7 @@ final class ClassInstructionTest extends TestCase
     {
         self::assertSame(
             'Class definitions: ' . PHP_EOL . PHP_EOL . PHP_EOL,
-            (new ClassInstruction('Class definitions', []))->instruct(),
+            (new ClassInstruction('Class definitions', []))->instruct(AdapterMode::Cli),
         );
     }
 
@@ -74,7 +75,7 @@ final class ClassInstructionTest extends TestCase
         $this->expectException(ClassFileDoesNotExistException::class);
         $this->expectExceptionMessage('class file for class "stdClass" does not exist.');
 
-        (new ClassInstruction('Class definitions', [stdClass::class]))->instruct();
+        (new ClassInstruction('Class definitions', [stdClass::class]))->instruct(AdapterMode::Cli);
     }
 
     public function testRegistersClassDefinitionsWhenConstructed(): void

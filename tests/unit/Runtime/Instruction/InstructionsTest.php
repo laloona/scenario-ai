@@ -12,10 +12,12 @@
 namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Instruction;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instructions;
 use const PHP_EOL;
 
@@ -26,19 +28,28 @@ final class InstructionsTest extends TestCase
 {
     public function testEmptyInstructionsReturnEmptyString(): void
     {
-        self::assertSame('', (new Instructions())->instruct());
+        self::assertSame('', (new Instructions())->instruct(AdapterMode::Cli));
     }
 
-    public function testConcatenatesInstructionsInInsertionOrder(): void
+    #[DataProvider('modeProvider')]
+    public function testConcatenatesInstructionsInInsertionOrder(AdapterMode $mode): void
     {
         $first = $this->createMock(Instruction::class);
-        $first->expects(self::once())->method('instruct')->willReturn('First');
+        $first->expects(self::once())->method('instruct')->with($mode)->willReturn('First');
         $second = $this->createMock(Instruction::class);
-        $second->expects(self::once())->method('instruct')->willReturn('Second');
+        $second->expects(self::once())->method('instruct')->with($mode)->willReturn('Second');
         $instructions = new Instructions();
         $instructions->add($first);
         $instructions->add($second);
 
-        self::assertSame('First' . PHP_EOL . PHP_EOL . 'Second' . PHP_EOL . PHP_EOL, $instructions->instruct());
+        self::assertSame('First' . PHP_EOL . PHP_EOL . 'Second' . PHP_EOL . PHP_EOL, $instructions->instruct($mode));
     }
+    /** @return iterable<string, array{AdapterMode}> */
+    public static function modeProvider(): iterable
+    {
+        foreach (AdapterMode::cases() as $mode) {
+            yield $mode->value => [$mode];
+        }
+    }
+
 }

@@ -14,23 +14,25 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter\Claude;
 use GuzzleHttp\Client as GuzzleClient;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Contract\AiClient;
+use Stateforge\Scenario\Ai\Contract\AiSkill;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 
-final class ClaudeAiAdapter implements AiAdapter
+final class ClaudeAdapter implements AiAdapter
 {
     public function client(
         ConfigBuilder $configBuilder,
         AdapterConfiguration $adapterConfiguration,
         Instruction $instruction,
     ): AiClient {
-        return new ClaudeAiClient(
-            $configBuilder->build(ClaudeAiConfig::class, $adapterConfiguration->vars),
+        return new ClaudeClient(
+            $configBuilder->build(ClaudeConfig::class, $adapterConfiguration->vars),
             new GuzzleClient(),
             new MessageBuilder(
                 new MessageStringBuilder(),
@@ -41,6 +43,15 @@ final class ClaudeAiAdapter implements AiAdapter
             ),
             $instruction,
             new ResponseDecoder(new ResponseBuilder()),
+        );
+    }
+
+    public function skill(
+        AdapterConfiguration $adapterConfiguration,
+        Instruction $instruction,
+    ): AiSkill {
+        return new ClaudeSkill(
+            new FileBuilder($instruction),
         );
     }
 }

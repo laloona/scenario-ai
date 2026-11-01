@@ -16,12 +16,13 @@ use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use function hash;
 use function is_array;
 use function is_string;
@@ -50,7 +51,7 @@ final class GeminiClient implements AiClient
     {
         $payload = [
             'systemInstruction' => [
-                'parts' => [['text' => $this->instruction->instruct()]],
+                'parts' => [['text' => $this->instruction->instruct(AdapterMode::Cli)]],
             ],
             'contents' => $this->messageBuilder->build($request, $audits),
             'generationConfig' => (new GeminiFormat())->format(),

@@ -17,8 +17,8 @@ use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Stateforge\Scenario\Ai\Contract\Validator;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
-use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
 
 #[CoversClass(Validators::class)]

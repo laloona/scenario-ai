@@ -11,6 +11,7 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Validation;
 
+use Stateforge\Scenario\Ai\Contract\Validator;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 
 final class Validators implements Validator

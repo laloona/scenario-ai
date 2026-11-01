@@ -12,12 +12,10 @@
 namespace Stateforge\Scenario\Ai\Contract;
 
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
-use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 
 interface AiContext
 {
-    public function instruction(AiRequest $request): Instruction;
+    public function instruction(?AiRequest $request): Instruction;
 
     public function validator(): Validator;
 }

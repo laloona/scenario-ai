@@ -15,6 +15,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterImplementationInstruction;
 
 #[CoversClass(ParameterImplementationInstruction::class)]
@@ -24,7 +25,7 @@ final class ParameterImplementationInstructionTest extends TestCase
 {
     public function testRequiresCompleteCompatibleCastingAndValueTypeInstances(): void
     {
-        $text = (new ParameterImplementationInstruction())->instruct();
+        $text = (new ParameterImplementationInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('The cast() method MUST implement the requested validation and conversion behavior.', $text);
         self::assertStringContainsString('The cast() method MUST return a value compatible with its declared return type.', $text);
@@ -37,7 +38,7 @@ final class ParameterImplementationInstructionTest extends TestCase
 
     public function testRequiresMissingInformationInsteadOfPlaceholderImplementations(): void
     {
-        $text = (new ParameterImplementationInstruction())->instruct();
+        $text = (new ParameterImplementationInstruction())->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Both cast() and valueType() MUST contain complete implementations.', $text);
         self::assertStringContainsString('Never replace required validation or conversion logic with placeholder comments.', $text);

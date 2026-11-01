@@ -12,8 +12,8 @@
 namespace Stateforge\Scenario\Ai\Tests\Unit\Console;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-
 use PHPUnit\Framework\Attributes\DataProvider;
+
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -22,6 +22,8 @@ use Stateforge\Scenario\Ai\Console\CliConversation;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Contract\AiContext;
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Contract\Validator;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiConversation;
@@ -29,6 +31,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
@@ -39,7 +42,6 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\FinalValidationInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\GeneralInstructions;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterImplementationInstruction;
@@ -59,7 +61,6 @@ use Stateforge\Scenario\Ai\Runtime\Validation\ClassValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\CodeValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\InheritanceValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\SyntaxValidator;
-use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
 use Stateforge\Scenario\Ai\Tests\Files\SharedProjectClass;
 use Stateforge\Scenario\Ai\Tests\Unit\Console\Command\CommandTestCase;
@@ -438,7 +439,7 @@ final class CliConversationTest extends CommandTestCase
             $projectDoc,
             false,
             $limit,
-            new AdapterConfiguration('local-test', null, null, []),
+            new AdapterConfiguration(AdapterMode::All, 'local-test', null, null, []),
         ));
     }
 

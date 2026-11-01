@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use ReflectionClass;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\ConfigurationBuilder;
 use Stateforge\Scenario\Ai\Runtime\Exception\NoConfigException;
@@ -54,7 +55,7 @@ final class ConfigurationBuilderTest extends FilesystemTestCase
     {
         file_put_contents($this->testDirectory . '/' . $filename, <<<'XML'
 <scenario-ai projectDoc="docs/project" maxQuestions="7">
-    <adapter type="custom" class="App\CustomAdapter" path="src/Adapter">
+    <adapter mode="all" type="custom" class="App\CustomAdapter" path="src/Adapter">
         <var name="apiKey">test-key</var>
         <var name="endpoint">https://example.test/?a=1&amp;b=2</var>
     </adapter>
@@ -66,6 +67,7 @@ XML);
         self::assertSame('docs/project', $configuration->projectDoc);
         self::assertSame(7, $configuration->maxQuestions);
         self::assertSame('custom', $configuration->adapter->adapter);
+        self::assertSame(AdapterMode::All, $configuration->adapter->mode);
         self::assertSame('App\CustomAdapter', $configuration->adapter->class);
         self::assertSame('src/Adapter', $configuration->adapter->path);
         self::assertSame([
@@ -82,7 +84,7 @@ XML);
 
     public function testBuildUsesDefaultsForMissingOptionalValues(): void
     {
-        $this->writeConfiguration('<scenario-ai><adapter type="openai" /></scenario-ai>');
+        $this->writeConfiguration('<scenario-ai><adapter mode="all" type="openai" /></scenario-ai>');
 
         $configuration = $this->builder()->build();
 
@@ -98,7 +100,7 @@ XML);
     #[DataProvider('projectPermissionProvider')]
     public function testBuildParsesProjectInformationPermission(string $value, bool $expected): void
     {
-        $this->writeConfiguration('<scenario-ai allowProjectInformation="' . $value . '"><adapter type="openai" /></scenario-ai>');
+        $this->writeConfiguration('<scenario-ai allowProjectInformation="' . $value . '"><adapter mode="all" type="openai" /></scenario-ai>');
 
         self::assertSame($expected, $this->builder()->build()->allowProjectInformation);
     }
@@ -112,7 +114,7 @@ XML);
     #[DataProvider('questionLimitProvider')]
     public function testBuildHandlesQuestionLimits(string $configured, int $expected): void
     {
-        $this->writeConfiguration('<scenario-ai maxQuestions="' . $configured . '"><adapter type="openai" /></scenario-ai>');
+        $this->writeConfiguration('<scenario-ai maxQuestions="' . $configured . '"><adapter mode="all" type="openai" /></scenario-ai>');
 
         self::assertSame($expected, $this->builder()->build()->maxQuestions);
     }
@@ -153,11 +155,13 @@ XML);
     public static function invalidXmlProvider(): array
     {
         return [
-            'invalid project permission' => ['<scenario-ai allowProjectInformation="invalid"><adapter type="openai" /></scenario-ai>'],
+            'invalid project permission' => ['<scenario-ai allowProjectInformation="invalid"><adapter mode="all" type="openai" /></scenario-ai>'],
             'missing adapter' => ['<scenario-ai />'],
-            'missing adapter type' => ['<scenario-ai><adapter /></scenario-ai>'],
-            'invalid question limit' => ['<scenario-ai maxQuestions="invalid"><adapter type="openai" /></scenario-ai>'],
-            'duplicate variable names' => ['<scenario-ai><adapter type="openai"><var name="key">first</var><var name="key">second</var></adapter></scenario-ai>'],
+            'missing adapter type' => ['<scenario-ai><adapter mode="all" /></scenario-ai>'],
+            'missing adapter mode' => ['<scenario-ai><adapter type="openai" /></scenario-ai>'],
+            'invalid adapter mode' => ['<scenario-ai><adapter mode="unknown" type="openai" /></scenario-ai>'],
+            'invalid question limit' => ['<scenario-ai maxQuestions="invalid"><adapter mode="all" type="openai" /></scenario-ai>'],
+            'duplicate variable names' => ['<scenario-ai><adapter mode="all" type="openai"><var name="key">first</var><var name="key">second</var></adapter></scenario-ai>'],
         ];
     }
 
@@ -182,4 +186,19 @@ XML);
             new XMLParser(__DIR__ . '/../../../xsd/scenario-ai.xsd'),
         );
     }
+    #[DataProvider('adapterModeProvider')]
+    public function testParsesAdapterMode(AdapterMode $mode): void
+    {
+        $this->writeConfiguration('<scenario-ai><adapter mode="' . $mode->value . '" type="openai" /></scenario-ai>');
+        self::assertSame($mode, $this->builder()->build()->adapter->mode);
+    }
+
+    /** @return iterable<string, array{AdapterMode}> */
+    public static function adapterModeProvider(): iterable
+    {
+        foreach (AdapterMode::cases() as $mode) {
+            yield $mode->value => [$mode];
+        }
+    }
+
 }

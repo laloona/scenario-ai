@@ -18,7 +18,14 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use ReflectionClass;
+
+use Stateforge\Scenario\Ai\Contract\AiContext;
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
+use Stateforge\Scenario\Ai\Runtime\Adapter\AiConversation;
+use Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\ConfigurationBuilder;
@@ -34,6 +41,15 @@ use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
 #[CoversClass(Ai::class)]
+#[UsesClass(AdapterRegistry::class)]
+#[UsesClass(AiConversation::class)]
+#[UsesClass(FileBuilder::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiSkill::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiAdapter::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiSkill::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiAdapter::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeSkill::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAdapter::class)]
 #[UsesClass(ConfigurationBuilder::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(AdapterConfiguration::class)]
@@ -47,11 +63,13 @@ final class AiTest extends FilesystemTestCase
         parent::setUp();
         (new ReflectionClass(Application::class))->getProperty('rootDir')->setValue(null, $this->testDirectory);
         (new ReflectionClass(Ai::class))->getProperty('config')->setValue(null, null);
+        (new ReflectionClass(Ai::class))->getProperty('registry')->setValue(null, null);
     }
 
     protected function tearDown(): void
     {
         (new ReflectionClass(Ai::class))->getProperty('config')->setValue(null, null);
+        (new ReflectionClass(Ai::class))->getProperty('registry')->setValue(null, null);
         (new ReflectionClass(Application::class))->getProperty('rootDir')->setValue(null, null);
         parent::tearDown();
     }
@@ -127,6 +145,62 @@ final class AiTest extends FilesystemTestCase
 
     private function configurationXml(int $questions): string
     {
-        return '<scenario-ai vendorSchemaMarker="vendor" projectDoc="docs/project" maxQuestions="' . $questions . '"><adapter type="openai"><var name="apiKey">test-key</var></adapter></scenario-ai>';
+        return '<scenario-ai vendorSchemaMarker="vendor" projectDoc="docs/project" maxQuestions="' . $questions . '"><adapter mode="all" type="openai"><var name="apiKey">test-key</var></adapter></scenario-ai>';
     }
+    public function testCreatesConversationWithCustomOrDefaultContextWithoutApiCalls(): void
+    {
+        (new ReflectionClass(Ai::class))->getProperty('config')->setValue(
+            null,
+            new Configuration(null, false, 3, new AdapterConfiguration(AdapterMode::Cli, 'openai', null, null, [])),
+        );
+        $context = $this->createMock(AiContext::class);
+        $context->expects(self::never())->method('instruction');
+        $context->expects(self::never())->method('validator');
+
+        self::assertInstanceOf(AiConversation::class, Ai::conversation($context));
+        self::assertInstanceOf(AiConversation::class, Ai::conversation(null));
+    }
+
+    #[DataProvider('skillProvider')]
+    public function testUsesConfiguredProviderToGenerateSkillWithoutApiCredentials(string $provider, string $directory): void
+    {
+        (new ReflectionClass(Ai::class))->getProperty('config')->setValue(
+            null,
+            new Configuration(null, false, 3, new AdapterConfiguration(AdapterMode::Skill, $provider, null, null, [])),
+        );
+        $instruction = $this->createMock(Instruction::class);
+        $instruction->expects(self::exactly(2))->method('instruct')->with(AdapterMode::Skill)->willReturn('Generated skill');
+        $context = $this->createMock(AiContext::class);
+        $context->expects(self::exactly(2))->method('instruction')->with(null)->willReturn($instruction);
+        $context->expects(self::never())->method('validator');
+        $file = $this->testDirectory . DIRECTORY_SEPARATOR . $directory . DIRECTORY_SEPARATOR . 'skills' . DIRECTORY_SEPARATOR . 'stateforge-scenario' . DIRECTORY_SEPARATOR . 'SKILL.md';
+
+        self::assertSame($file, Ai::skill($context));
+        file_put_contents($file, 'Outdated skill');
+        Ai::skill($context);
+        self::assertStringEqualsFile($file, 'Generated skill');
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function skillProvider(): iterable
+    {
+        yield 'claude' => ['claude', '.claude'];
+        yield 'openai' => ['openai', '.agents'];
+        yield 'gemini' => ['gemini', '.agents'];
+    }
+
+    public function testRejectsUnknownSkillProviderBeforeRequestingInstructions(): void
+    {
+        (new ReflectionClass(Ai::class))->getProperty('config')->setValue(
+            null,
+            new Configuration(null, false, 3, new AdapterConfiguration(AdapterMode::Skill, 'unknown', null, null, [])),
+        );
+        $context = $this->createMock(AiContext::class);
+        $context->expects(self::never())->method('instruction');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown adapter "unknown".');
+
+        Ai::skill($context);
+    }
+
 }

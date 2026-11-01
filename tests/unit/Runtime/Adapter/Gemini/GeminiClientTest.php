@@ -23,6 +23,7 @@ use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
@@ -34,8 +35,8 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use function hash;
 use function json_decode;
 use function json_encode;
@@ -203,8 +204,8 @@ final class GeminiClientTest extends TestCase
 
     private function client(HttpClient $http): GeminiClient
     {
-        $instruction = self::createStub(Instruction::class);
-        $instruction->method('instruct')->willReturn('Test instructions');
+        $instruction = $this->createMock(Instruction::class);
+        $instruction->expects(self::once())->method('instruct')->with(AdapterMode::Cli)->willReturn('Test instructions');
 
         return new GeminiClient(
             new GeminiConfig('test-key', 'https://example.test/models/', 'model name'),

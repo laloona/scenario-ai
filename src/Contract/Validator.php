@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Stateforge\Scenario\Ai\Runtime\Validation;
+namespace Stateforge\Scenario\Ai\Contract;
 
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 

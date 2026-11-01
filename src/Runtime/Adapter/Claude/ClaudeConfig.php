@@ -11,7 +11,7 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter\Claude;
 
-final class ClaudeAiConfig
+final class ClaudeConfig
 {
     public function __construct(
         public readonly string $apiKey,

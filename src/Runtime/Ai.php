@@ -14,7 +14,7 @@ namespace Stateforge\Scenario\Ai\Runtime;
 use Stateforge\Scenario\Ai\Contract\AiContext;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiConversation;
-use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAiAdapter;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiAdapter;
 use Stateforge\Scenario\Core\Runtime\Application;
@@ -32,7 +32,7 @@ final class Ai
     {
         if (self::$registry === null) {
             self::$registry = new AdapterRegistry();
-            self::$registry->register('claude', new ClaudeAiAdapter());
+            self::$registry->register('claude', new ClaudeAdapter());
             self::$registry->register('openai', new OpenAiAdapter());
             self::$registry->register('gemini', new GeminiAdapter());
         }
@@ -58,8 +58,21 @@ final class Ai
         return self::$config;
     }
 
-    public static function start(?AiContext $context): AiConversation
+    public static function conversation(?AiContext $context): AiConversation
     {
-        return new AiConversation($context ?? new Context(), self::config(), self::registry());
+        return new AiConversation(
+            $context ?? new Context(),
+            self::config(),
+            self::registry(),
+        );
+    }
+
+    public static function skill(?AiContext $context): ?string
+    {
+        $config = self::config();
+        return self::registry()->get($config->adapter->adapter)->skill(
+            $config->adapter,
+            ($context ?? new Context())->instruction(null),
+        )->generate();
     }
 }

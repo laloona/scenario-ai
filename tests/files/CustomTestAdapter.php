@@ -13,14 +13,30 @@ namespace Stateforge\Scenario\Ai\Tests\Files;
 
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Contract\AiClient;
+use Stateforge\Scenario\Ai\Contract\AiSkill;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 
 final class CustomTestAdapter implements AiAdapter
 {
     public function client(ConfigBuilder $configBuilder, AdapterConfiguration $adapterConfiguration, Instruction $instruction): AiClient
     {
         return new CustomTestClient($configBuilder, $adapterConfiguration, $instruction);
+    }
+    public function skill(AdapterConfiguration $adapterConfiguration, Instruction $instruction): AiSkill
+    {
+        return new class ($adapterConfiguration, $instruction) implements AiSkill {
+            public function __construct(
+                private readonly AdapterConfiguration $configuration,
+                private readonly Instruction $instruction,
+            ) {
+            }
+
+            public function generate(): string
+            {
+                return $this->instruction->instruct($this->configuration->mode);
+            }
+        };
     }
 }

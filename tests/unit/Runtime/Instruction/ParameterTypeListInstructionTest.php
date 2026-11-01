@@ -17,6 +17,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterTypeListInstruction;
 use Stateforge\Scenario\Ai\Tests\Files\PackageParameterType;
 use Stateforge\Scenario\Ai\Tests\Files\Project\ProjectParameterType;
@@ -43,7 +44,7 @@ final class ParameterTypeListInstructionTest extends TestCase
 
     public function testAlwaysListsBuiltInTypes(): void
     {
-        $text = (new ParameterTypeListInstruction(null, false))->instruct();
+        $text = (new ParameterTypeListInstruction(null, false))->instruct(AdapterMode::Cli);
 
         self::assertStringStartsWith('Existing Parameter Types' . PHP_EOL, $text);
         self::assertStringContainsString('Built-in parameter types', $text);
@@ -58,7 +59,7 @@ final class ParameterTypeListInstructionTest extends TestCase
     public function testSeparatesPackageAndProjectTypesAndHonorsPermission(bool $allowed): void
     {
         $this->registerTypes();
-        $text = (new ParameterTypeListInstruction(dirname(__DIR__, 3) . '/files/Project', $allowed))->instruct();
+        $text = (new ParameterTypeListInstruction(dirname(__DIR__, 3) . '/files/Project', $allowed))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString(PHP_EOL . PHP_EOL . 'Package parameter types' . PHP_EOL . PHP_EOL, $text);
         self::assertStringContainsString(PackageParameterType::class . ': Package type description', $text);
@@ -80,7 +81,7 @@ final class ParameterTypeListInstructionTest extends TestCase
     public function testNoProjectDirectoryTreatsRegisteredTypesAsPackageTypes(): void
     {
         $this->registerTypes();
-        $text = (new ParameterTypeListInstruction(null, false))->instruct();
+        $text = (new ParameterTypeListInstruction(null, false))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString(PackageParameterType::class . ': Package type description', $text);
         self::assertStringContainsString(ProjectParameterType::class . ': Project type description', $text);
@@ -90,7 +91,7 @@ final class ParameterTypeListInstructionTest extends TestCase
     public function testMissingProjectDirectoryDoesNotFail(): void
     {
         $this->registerTypes();
-        $text = (new ParameterTypeListInstruction(__DIR__ . '/missing-project-directory', false))->instruct();
+        $text = (new ParameterTypeListInstruction(__DIR__ . '/missing-project-directory', false))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString(PackageParameterType::class . ': Package type description', $text);
         self::assertStringNotContainsString('Project parameter types', $text);
@@ -98,7 +99,7 @@ final class ParameterTypeListInstructionTest extends TestCase
 
     public function testIncludesParameterTypeReuseAndCompatibilityRules(): void
     {
-        $text = (new ParameterTypeListInstruction(null, false))->instruct();
+        $text = (new ParameterTypeListInstruction(null, false))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Follow the mandatory pre-generation decision and response rules when evaluating existing Parameter Types.', $text);
         self::assertStringContainsString('Prefer existing Parameter Types over duplicate implementations.', $text);

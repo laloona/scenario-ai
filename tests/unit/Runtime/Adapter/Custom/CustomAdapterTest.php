@@ -17,13 +17,14 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use ReflectionClass;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Custom\CustomAdapter;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\AdapterClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Exception\MissingAdapterClassException;
 use Stateforge\Scenario\Ai\Runtime\Exception\MissingAdapterPathException;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use Stateforge\Scenario\Ai\Tests\Files\CustomTestAdapter;
 use Stateforge\Scenario\Ai\Tests\Files\CustomTestClient;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
@@ -62,7 +63,7 @@ final class CustomAdapterTest extends FilesystemTestCase
         $fixture = dirname(__DIR__, 4) . '/files/CustomTestAdapter.php';
         file_put_contents($this->testDirectory . '/adapters/adapter.php', '<?php require_once ' . var_export($fixture, true) . ';');
         $builder = new ConfigBuilder();
-        $configuration = new AdapterConfiguration('custom', CustomTestAdapter::class, 'adapters', ['key' => 'value']);
+        $configuration = new AdapterConfiguration(AdapterMode::All, 'custom', CustomTestAdapter::class, 'adapters', ['key' => 'value']);
         $instruction = self::createStub(Instruction::class);
 
         $client = (new CustomAdapter())->client($builder, $configuration, $instruction);
@@ -77,14 +78,14 @@ final class CustomAdapterTest extends FilesystemTestCase
     {
         $this->expectException(MissingAdapterPathException::class);
 
-        (new CustomAdapter())->client(new ConfigBuilder(), new AdapterConfiguration('custom', null, null, []), self::createStub(Instruction::class));
+        (new CustomAdapter())->client(new ConfigBuilder(), new AdapterConfiguration(AdapterMode::All, 'custom', null, null, []), self::createStub(Instruction::class));
     }
 
     public function testRejectsMissingAdapterClass(): void
     {
         $this->expectException(MissingAdapterClassException::class);
 
-        (new CustomAdapter())->client(new ConfigBuilder(), new AdapterConfiguration('custom', null, 'adapters', []), self::createStub(Instruction::class));
+        (new CustomAdapter())->client(new ConfigBuilder(), new AdapterConfiguration(AdapterMode::All, 'custom', null, 'adapters', []), self::createStub(Instruction::class));
     }
 
     public function testRejectsUnknownAdapterClass(): void
@@ -92,7 +93,7 @@ final class CustomAdapterTest extends FilesystemTestCase
         $this->expectException(AdapterClassDoesNotExistException::class);
         $this->expectExceptionMessage('Adapter class "MissingCustomAiAdapter" does not exist');
 
-        (new CustomAdapter())->client(new ConfigBuilder(), new AdapterConfiguration('custom', 'MissingCustomAiAdapter', 'adapters', []), self::createStub(Instruction::class));
+        (new CustomAdapter())->client(new ConfigBuilder(), new AdapterConfiguration(AdapterMode::All, 'custom', 'MissingCustomAiAdapter', 'adapters', []), self::createStub(Instruction::class));
     }
 
     public function testRejectsClassWithoutAdapterInterface(): void
@@ -100,6 +101,25 @@ final class CustomAdapterTest extends FilesystemTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Class "stdClass" must implement AiAdapter.');
 
-        (new CustomAdapter())->client(new ConfigBuilder(), new AdapterConfiguration('custom', 'stdClass', 'adapters', []), self::createStub(Instruction::class));
+        (new CustomAdapter())->client(new ConfigBuilder(), new AdapterConfiguration(AdapterMode::All, 'custom', 'stdClass', 'adapters', []), self::createStub(Instruction::class));
+    }
+    public function testLoadsCustomAdapterAndForwardsSkillArguments(): void
+    {
+        $fixture = dirname(__DIR__, 4) . '/files/CustomTestAdapter.php';
+        file_put_contents($this->testDirectory . '/adapters/adapter.php', '<?php require_once ' . var_export($fixture, true) . ';');
+        $configuration = new AdapterConfiguration(AdapterMode::Skill, 'custom', CustomTestAdapter::class, 'adapters', []);
+        $instruction = $this->createMock(Instruction::class);
+        $instruction->expects(self::once())->method('instruct')->with(AdapterMode::Skill)->willReturn('Custom skill result');
+
+        $skill = (new CustomAdapter())->skill($configuration, $instruction);
+
+        self::assertSame('Custom skill result', $skill->generate());
+    }
+
+    public function testSkillRejectsMissingAdapterPath(): void
+    {
+        $this->expectException(MissingAdapterPathException::class);
+
+        (new CustomAdapter())->skill(new AdapterConfiguration(AdapterMode::Skill, 'custom', null, null, []), self::createStub(Instruction::class));
     }
 }

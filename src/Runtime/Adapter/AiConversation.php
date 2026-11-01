@@ -14,9 +14,9 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 use LogicException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Contract\AiContext;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Exception\ValidatorException;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use function array_key_last;
 use function count;
 

@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\Instruction\ContentNotReadable;
 use function basename;
 use function file_get_contents;
@@ -23,7 +25,7 @@ final class DocumentationInstruction implements Instruction
     {
     }
 
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         $paths = (new DocumentationFinder())->find($this->path);
 

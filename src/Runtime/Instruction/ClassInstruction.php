@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use const PHP_EOL;
@@ -30,7 +32,7 @@ final class ClassInstruction implements Instruction
         }
     }
 
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         return $this->headline . ': ' . PHP_EOL . PHP_EOL .
             (new SourceCodeReader())->read($this->classes);

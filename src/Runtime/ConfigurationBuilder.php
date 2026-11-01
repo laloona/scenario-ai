@@ -74,6 +74,7 @@ final class ConfigurationBuilder
         $path = $adapter->getAttribute('path');
 
         $adapterConfig = new AdapterConfiguration(
+            mode: AdapterMode::from($adapter->getAttribute('mode')),
             adapter: $adapter->getAttribute('type'),
             vars: $vars,
             class: $class === '' ? null : $class,

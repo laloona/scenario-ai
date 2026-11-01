@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use const PHP_EOL;
 
 final class GeneralInstructions implements Instruction
@@ -25,22 +27,22 @@ final class GeneralInstructions implements Instruction
     ) {
     }
 
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         $instruction =
-            (new BaseInstruction())->instruct() . PHP_EOL . PHP_EOL .
-            (new AttributeInstruction())->instruct() . PHP_EOL . PHP_EOL .
-            (new DocumentationInstruction($this->docPath))->instruct() . PHP_EOL . PHP_EOL .
-            (new QuestionLimitInstruction($this->maxQuestions, $this->questionsAsked))->instruct() . PHP_EOL . PHP_EOL .
-            (new ValueTypeInstruction())->instruct() . PHP_EOL . PHP_EOL .
-            (new ParameterTypeListInstruction($this->parameterPath, $this->allowProjectInformation))->instruct() . PHP_EOL . PHP_EOL;
+            (new BaseInstruction())->instruct($mode) . PHP_EOL . PHP_EOL .
+            (new AttributeInstruction())->instruct($mode) . PHP_EOL . PHP_EOL .
+            (new DocumentationInstruction($this->docPath))->instruct($mode) . PHP_EOL . PHP_EOL .
+            (new QuestionLimitInstruction($this->maxQuestions, $this->questionsAsked))->instruct($mode) . PHP_EOL . PHP_EOL .
+            (new ValueTypeInstruction())->instruct($mode) . PHP_EOL . PHP_EOL .
+            (new ParameterTypeListInstruction($this->parameterPath, $this->allowProjectInformation))->instruct($mode) . PHP_EOL . PHP_EOL;
 
         if ($this->allowProjectInformation === true) {
-            $instruction .= (new ScenarioListInstruction())->instruct() . PHP_EOL . PHP_EOL;
+            $instruction .= (new ScenarioListInstruction())->instruct($mode) . PHP_EOL . PHP_EOL;
         }
 
         if ($this->projectDoc !== null) {
-            $instruction .= (new DocumentationInstruction($this->projectDoc))->instruct() . PHP_EOL . PHP_EOL;
+            $instruction .= (new DocumentationInstruction($this->projectDoc))->instruct($mode) . PHP_EOL . PHP_EOL;
         }
 
         return $instruction;

@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Core\Runtime\ScenarioRegistry;
 use function count;
 use function implode;
@@ -21,7 +23,7 @@ use const PHP_EOL;
 
 final class ScenarioListInstruction implements Instruction
 {
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         $scenarios = ScenarioRegistry::getInstance()->all();
         if (count($scenarios) === 0) {

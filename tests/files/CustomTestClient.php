@@ -12,12 +12,12 @@
 namespace Stateforge\Scenario\Ai\Tests\Files;
 
 use Stateforge\Scenario\Ai\Contract\AiClient;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 
 final class CustomTestClient implements AiClient
 {

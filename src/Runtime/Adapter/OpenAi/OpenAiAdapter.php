@@ -14,13 +14,15 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi;
 use GuzzleHttp\Client as GuzzleClient;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Contract\AiClient;
+use Stateforge\Scenario\Ai\Contract\AiSkill;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 
 final class OpenAiAdapter implements AiAdapter
 {
@@ -41,6 +43,15 @@ final class OpenAiAdapter implements AiAdapter
             ),
             $instruction,
             new ResponseDecoder(new ResponseBuilder()),
+        );
+    }
+
+    public function skill(
+        AdapterConfiguration $adapterConfiguration,
+        Instruction $instruction,
+    ): AiSkill {
+        return new OpenAiSkill(
+            new FileBuilder($instruction),
         );
     }
 }

@@ -27,6 +27,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
@@ -185,7 +186,7 @@ final class ContextTest extends TestCase
     }
 
     #[DataProvider('projectDocumentationProvider')]
-    public function testInstructionIncludesConfiguredDocumentationAndBlueprints(?string $projectDoc, bool $allowed): void
+    public function testInstructionIncludesConfiguredDocumentationAndBlueprints(?string $projectDoc, bool $allowed, AdapterMode $mode = AdapterMode::Cli, ?int $counter = 2): void
     {
         $configuration = self::createStub(CoreConfiguration::class);
         $configuration->method('getSuites')->willReturn([
@@ -197,11 +198,11 @@ final class ContextTest extends TestCase
             $projectDoc,
             $allowed,
             7,
-            new AdapterConfiguration('test', null, null, []),
+            new AdapterConfiguration(AdapterMode::All, 'test', null, null, []),
         ));
 
         ScenarioRegistry::getInstance()->register(new ScenarioDefinition('main', ListedScenario::class, new AsScenario('listed', 'Project scenario marker'), []));
-        $instruction = (new Context())->instruction(new AiRequest(null, 'Generate a scenario', 2))->instruct();
+        $instruction = (new Context())->instruction($counter === null ? null : new AiRequest(null, 'Generate a scenario', $counter))->instruct($mode);
 
         $registry = new SourceCodeRegistry();
         foreach ([
@@ -233,7 +234,7 @@ final class ContextTest extends TestCase
         self::assertStringContainsString('The response contains exactly the required five JSON fields.', $instruction);
         self::assertStringContainsString('directory: custom/parameters, namespace: Custom\\Parameters', $instruction);
         self::assertStringContainsString('Maximum clarification questions: 7', $instruction);
-        self::assertStringContainsString('Clarification questions already asked: 2', $instruction);
+        self::assertStringContainsString('Clarification questions already asked: ' . ($counter ?? 0), $instruction);
         if ($allowed) {
             self::assertStringContainsString('Project scenario marker', $instruction);
         } else {
@@ -246,10 +247,10 @@ final class ContextTest extends TestCase
         }
     }
 
-    /** @return array<string, array{?string, bool}> */
+    /** @return array<string, array{?string, bool, 2?: AdapterMode, 3?: ?int}> */
     public static function projectDocumentationProvider(): array
     {
-        return ['without project docs' => [null, false], 'with project docs' => ['project-docs', false], 'allow project information' => [null, true], 'allow with docs' => ['project-docs', true]];
+        return ['without project docs' => [null, false], 'with project docs' => ['project-docs', false], 'allow project information' => [null, true], 'allow with docs' => ['project-docs', true], 'skill without request' => [null, false, AdapterMode::Skill, null], 'cli without request' => [null, false, AdapterMode::Cli, null], 'all without request' => [null, false, AdapterMode::All, null]];
     }
 
     #[DataProvider('generationProvider')]

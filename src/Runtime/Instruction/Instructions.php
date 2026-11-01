@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use const PHP_EOL;
 
 final class Instructions implements Instruction
@@ -25,11 +27,11 @@ final class Instructions implements Instruction
         $this->instructions[] = $instruction;
     }
 
-    public function instruct(): string
+    public function instruct(AdapterMode $mode): string
     {
         $result = '';
         foreach ($this->instructions as $instruction) {
-            $result .= $instruction->instruct() . PHP_EOL . PHP_EOL;
+            $result .= $instruction->instruct($mode) . PHP_EOL . PHP_EOL;
         }
         return $result;
     }

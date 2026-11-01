@@ -15,6 +15,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\Instruction\DirectoryNotFoundException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\DocumentationFinder;
 use Stateforge\Scenario\Ai\Runtime\Instruction\DocumentationInstruction;
@@ -37,19 +38,19 @@ final class DocumentationInstructionTest extends FilesystemTestCase
 
         self::assertSame(
             'Documentation' . PHP_EOL . PHP_EOL . '[a.md]' . PHP_EOL . 'First' . PHP_EOL . PHP_EOL . '[b.md]' . PHP_EOL . 'Second',
-            (new DocumentationInstruction($this->testDirectory))->instruct(),
+            (new DocumentationInstruction($this->testDirectory))->instruct(AdapterMode::Cli),
         );
     }
 
     public function testEmptyDocumentationStillIncludesHeading(): void
     {
-        self::assertSame('Documentation' . PHP_EOL . PHP_EOL, (new DocumentationInstruction($this->testDirectory))->instruct());
+        self::assertSame('Documentation' . PHP_EOL . PHP_EOL, (new DocumentationInstruction($this->testDirectory))->instruct(AdapterMode::Cli));
     }
 
     public function testMissingDirectoryPropagatesException(): void
     {
         $this->expectException(DirectoryNotFoundException::class);
 
-        (new DocumentationInstruction($this->testDirectory . '/missing'))->instruct();
+        (new DocumentationInstruction($this->testDirectory . '/missing'))->instruct(AdapterMode::Cli);
     }
 }

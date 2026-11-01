@@ -14,6 +14,7 @@ namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Instruction;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Value\SuiteValue;
@@ -32,7 +33,7 @@ final class ScenarioBlueprintInstructionTest extends FilesystemTestCase
         $text = (new ScenarioBlueprintInstruction($path, [
             'main' => new SuiteValue('main', 'Main suite', 'scenario/main'),
             'other' => new SuiteValue('other', 'Other suite', 'tests/other'),
-        ]))->instruct();
+        ]))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('name: main, description: Main suite, directory: scenario/main, namespace: Scenario\\Main', $text);
         self::assertStringContainsString('name: other, description: Other suite, directory: tests/other, namespace: Tests\\Other', $text);
@@ -43,7 +44,7 @@ final class ScenarioBlueprintInstructionTest extends FilesystemTestCase
     {
         $path = $this->testDirectory . '/scenario.blueprint';
         file_put_contents($path, 'Empty suites blueprint');
-        $text = (new ScenarioBlueprintInstruction($path, []))->instruct();
+        $text = (new ScenarioBlueprintInstruction($path, []))->instruct(AdapterMode::Cli);
 
         self::assertStringNotContainsString('Available Scenario Suites:', $text);
         self::assertStringContainsString('Empty suites blueprint', $text);

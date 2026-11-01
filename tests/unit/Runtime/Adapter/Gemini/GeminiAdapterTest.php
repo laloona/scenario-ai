@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiClient;
@@ -25,10 +26,12 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\ConfigBuilderException;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 
 #[CoversClass(GeminiAdapter::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder::class)]
+#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiSkill::class)]
 #[UsesClass(ConfigBuilder::class)]
 #[UsesClass(AdapterConfiguration::class)]
 #[UsesClass(GeminiConfig::class)]
@@ -47,7 +50,7 @@ final class GeminiAdapterTest extends TestCase
         $instruction = self::createStub(Instruction::class);
         $client = (new GeminiAdapter())->client(
             new ConfigBuilder(),
-            new AdapterConfiguration('test', null, null, [
+            new AdapterConfiguration(AdapterMode::All, 'test', null, null, [
                 'apiKey' => 'test-key', 'apiEndpoint' => 'https://example.test/ai', 'model' => 'test-model',
             ]),
             $instruction,
@@ -60,6 +63,14 @@ final class GeminiAdapterTest extends TestCase
     {
         $this->expectException(ConfigBuilderException::class);
 
-        (new GeminiAdapter())->client(new ConfigBuilder(), new AdapterConfiguration('test', null, null, []), self::createStub(Instruction::class));
+        (new GeminiAdapter())->client(new ConfigBuilder(), new AdapterConfiguration(AdapterMode::All, 'test', null, null, []), self::createStub(Instruction::class));
     }
+    public function testBuildsSkillWithoutApiConfiguration(): void
+    {
+        self::assertInstanceOf(
+            \Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiSkill::class,
+            (new GeminiAdapter())->skill(new AdapterConfiguration(AdapterMode::Skill, 'test', null, null, []), self::createStub(Instruction::class)),
+        );
+    }
+
 }

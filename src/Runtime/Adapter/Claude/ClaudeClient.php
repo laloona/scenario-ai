@@ -16,12 +16,13 @@ use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
+use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -29,13 +30,13 @@ use function json_encode;
 use function sprintf;
 use const JSON_THROW_ON_ERROR;
 
-final class ClaudeAiClient implements AiClient
+final class ClaudeClient implements AiClient
 {
     public function __construct(
-        private readonly ClaudeAiConfig $config,
-        private readonly HttpClient $httpClient,
-        private readonly MessageBuilder $messageBuilder,
-        private readonly Instruction $instruction,
+        private readonly ClaudeConfig    $config,
+        private readonly HttpClient      $httpClient,
+        private readonly MessageBuilder  $messageBuilder,
+        private readonly Instruction     $instruction,
         private readonly ResponseDecoder $responseDecoder,
     ) {
     }
@@ -51,9 +52,9 @@ final class ClaudeAiClient implements AiClient
             'cache_control' => [
                 'type' => 'ephemeral',
             ],
-            'system' => $this->instruction->instruct(),
+            'system' => $this->instruction->instruct(AdapterMode::Cli),
             'messages' => $this->messageBuilder->build($request, $audits),
-            'output_config' => (new ClaudeAiFormat())->format(),
+            'output_config' => (new ClaudeFormat())->format(),
         ];
 
         return $this->buildResponse(

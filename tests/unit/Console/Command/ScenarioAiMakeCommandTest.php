@@ -29,6 +29,7 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
@@ -259,7 +260,7 @@ final class ScenarioAiMakeCommandTest extends CommandTestCase
             $projectDoc,
             false,
             $limit,
-            new AdapterConfiguration('local-test', null, null, []),
+            new AdapterConfiguration(AdapterMode::All, 'local-test', null, null, []),
         ));
     }
 

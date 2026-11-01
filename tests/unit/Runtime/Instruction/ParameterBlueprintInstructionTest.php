@@ -14,6 +14,7 @@ namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Instruction;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use function file_put_contents;
@@ -28,7 +29,7 @@ final class ParameterBlueprintInstructionTest extends FilesystemTestCase
     {
         $path = $this->testDirectory . '/parameter.blueprint';
         file_put_contents($path, 'Parameter blueprint contents');
-        $text = (new ParameterBlueprintInstruction($path, 'scenario/parameter'))->instruct();
+        $text = (new ParameterBlueprintInstruction($path, 'scenario/parameter'))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('directory: scenario/parameter, namespace: Scenario\\Parameter', $text);
         self::assertStringContainsString('Parameter Type Blueprint: ' . PHP_EOL . 'Parameter blueprint contents', $text);
@@ -38,7 +39,7 @@ final class ParameterBlueprintInstructionTest extends FilesystemTestCase
     {
         $path = $this->testDirectory . '/parameter.blueprint';
         file_put_contents($path, 'Parameter blueprint contents');
-        $text = (new ParameterBlueprintInstruction($path, null))->instruct();
+        $text = (new ParameterBlueprintInstruction($path, null))->instruct(AdapterMode::Cli);
 
         self::assertStringNotContainsString('Configured Parameter Types:', $text);
         self::assertStringContainsString('Parameter blueprint contents', $text);

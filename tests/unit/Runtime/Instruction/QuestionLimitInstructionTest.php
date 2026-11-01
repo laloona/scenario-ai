@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
+use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\QuestionLimitInstruction;
 
 #[CoversClass(QuestionLimitInstruction::class)]
@@ -26,7 +27,7 @@ final class QuestionLimitInstructionTest extends TestCase
     #[DataProvider('questionProvider')]
     public function testIncludesConfiguredLimitAndCurrentCount(int $limit, int $asked): void
     {
-        $text = (new QuestionLimitInstruction($limit, $asked))->instruct();
+        $text = (new QuestionLimitInstruction($limit, $asked))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('Maximum clarification questions: ' . $limit, $text);
         self::assertStringContainsString('Clarification questions already asked: ' . $asked, $text);
@@ -42,7 +43,7 @@ final class QuestionLimitInstructionTest extends TestCase
 
     public function testExhaustedLimitRequiresAnEmptyResultInsteadOfSpeculativeCode(): void
     {
-        $text = (new QuestionLimitInstruction(3, 3))->instruct();
+        $text = (new QuestionLimitInstruction(3, 3))->instruct(AdapterMode::Cli);
 
         self::assertStringContainsString('If the question limit has been reached, do not ask further clarification questions.', $text);
         self::assertStringContainsString('If sufficient information is available, generate a complete implementation.', $text);

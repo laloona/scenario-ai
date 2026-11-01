@@ -13,7 +13,6 @@ namespace Stateforge\Scenario\Ai\Contract;
 
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 
 interface AiAdapter
 {
@@ -22,4 +21,9 @@ interface AiAdapter
         AdapterConfiguration $adapterConfiguration,
         Instruction $instruction,
     ): AiClient;
+
+    public function skill(
+        AdapterConfiguration $adapterConfiguration,
+        Instruction $instruction,
+    ): AiSkill;
 }

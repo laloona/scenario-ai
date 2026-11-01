@@ -17,6 +17,7 @@ final class AdapterConfiguration
      * @param array<string, string> $vars
      */
     public function __construct(
+        public readonly AdapterMode $mode,
         public readonly string $adapter,
         public readonly ?string $class,
         public readonly ?string $path,

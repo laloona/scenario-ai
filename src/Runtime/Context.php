@@ -13,19 +13,19 @@ namespace Stateforge\Scenario\Ai\Runtime;
 
 use LogicException;
 use Stateforge\Scenario\Ai\Contract\AiContext;
+use Stateforge\Scenario\Ai\Contract\Instruction;
+use Stateforge\Scenario\Ai\Contract\Validator;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiRequest;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\FinalValidationInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\GeneralInstructions;
-use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterImplementationInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Validation\ClassValidator;
 use Stateforge\Scenario\Ai\Runtime\Validation\CodeValidator;
-use Stateforge\Scenario\Ai\Runtime\Validation\Validator;
 use Stateforge\Scenario\Ai\Runtime\Validation\Validators;
 use Stateforge\Scenario\Core\Attribute\AsParameterType;
 use Stateforge\Scenario\Core\Attribute\AsScenario;
@@ -38,7 +38,7 @@ use const DIRECTORY_SEPARATOR;
 
 final class Context implements AiContext
 {
-    public function instruction(AiRequest $request): Instruction
+    public function instruction(?AiRequest $request): Instruction
     {
         $config = Application::config();
         if ($config === null) {
@@ -56,7 +56,7 @@ final class Context implements AiContext
             new GeneralInstructions(
                 $path . 'docs',
                 $aiConfig->maxQuestions,
-                $request->counter,
+                $request->counter ?? 0,
                 $aiConfig->projectDoc === null
                     ? null
                     : Application::getRootDir() . DIRECTORY_SEPARATOR . $aiConfig->projectDoc,
