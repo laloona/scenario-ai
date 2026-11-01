@@ -15,6 +15,7 @@ use LogicException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Contract\AiContext;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
+use Stateforge\Scenario\Ai\Runtime\Exception\ResponseException;
 use Stateforge\Scenario\Ai\Runtime\Exception\ValidatorException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\Instruction;
 use function array_key_last;
@@ -64,7 +65,7 @@ final class AiConversation
 
         try {
             $this->context->validator()->validate($response);
-        } catch (ValidatorException $exception) {
+        } catch (ResponseException|ValidatorException $exception) {
             $request = new AiRequest(
                 $response->id,
                 $exception->getMessage(),
