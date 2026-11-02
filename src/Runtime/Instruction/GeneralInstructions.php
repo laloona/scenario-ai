@@ -13,7 +13,6 @@ namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
-use const PHP_EOL;
 
 final class GeneralInstructions implements Instruction
 {
@@ -29,22 +28,26 @@ final class GeneralInstructions implements Instruction
 
     public function instruct(AdapterMode $mode): string
     {
-        $instruction =
-            (new BaseInstruction())->instruct($mode) . PHP_EOL . PHP_EOL .
-            (new AttributeInstruction())->instruct($mode) . PHP_EOL . PHP_EOL .
-            (new DocumentationInstruction($this->docPath))->instruct($mode) . PHP_EOL . PHP_EOL .
-            (new QuestionLimitInstruction($this->maxQuestions, $this->questionsAsked))->instruct($mode) . PHP_EOL . PHP_EOL .
-            (new ValueTypeInstruction())->instruct($mode) . PHP_EOL . PHP_EOL .
-            (new ParameterTypeListInstruction($this->parameterPath, $this->allowProjectInformation))->instruct($mode) . PHP_EOL . PHP_EOL;
+        $instruction = new Instructions();
+        $instruction->add(new BaseInstruction());
+        $instruction->add(new AttributeInstruction());
+        $instruction->add(new DocumentationInstruction($this->docPath));
+        if ($mode->isCli()) {
+            $instruction->add(new QuestionLimitInstruction($this->maxQuestions, $this->questionsAsked));
+        }
+        $instruction->add(new ValueTypeInstruction());
+        $instruction->add(new ParameterTypeListInstruction($this->parameterPath, $this->allowProjectInformation));
 
-        if ($this->allowProjectInformation === true) {
-            $instruction .= (new ScenarioListInstruction())->instruct($mode) . PHP_EOL . PHP_EOL;
+        if ($mode->isSkill()
+            || $this->allowProjectInformation === true) {
+            $instruction->add(new ScenarioListInstruction());
         }
 
-        if ($this->projectDoc !== null) {
-            $instruction .= (new DocumentationInstruction($this->projectDoc))->instruct($mode) . PHP_EOL . PHP_EOL;
+        if ($mode->isCli()
+            && $this->projectDoc !== null) {
+            $instruction->add(new DocumentationInstruction($this->projectDoc));
         }
 
-        return $instruction;
+        return $instruction->instruct($mode);
     }
 }

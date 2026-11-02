@@ -13,10 +13,36 @@ namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+use const PHP_EOL;
 
 final class BaseInstruction implements Instruction
 {
     public function instruct(AdapterMode $mode): string
+    {
+        $instruction = $this->introduction() . PHP_EOL .
+            $this->general() . PHP_EOL .
+            $this->generationType($mode) . PHP_EOL .
+            $this->preservation() . PHP_EOL .
+            $this->context() . PHP_EOL .
+            $this->preDecision($mode) . PHP_EOL;
+
+        if ($mode->isCli()) {
+            $instruction .= $this->finalDecision() . PHP_EOL;
+        }
+
+        $instruction .= $this->implementation() . PHP_EOL .
+            $this->existing() . PHP_EOL .
+            $this->reuse() . PHP_EOL .
+            $this->clarification() . PHP_EOL;
+
+        if ($mode->isCli()) {
+            $instruction .= $this->response() . PHP_EOL;
+        }
+
+        return $instruction;
+    }
+
+    private function introduction(): string
     {
         return <<<'INSTRUCTIONS'
 Introduction
@@ -27,6 +53,12 @@ Your primary responsibility is to determine whether an existing implementation a
 Generating new PHP code is only necessary when no suitable implementation exists or when the user explicitly requests a new implementation despite an existing one.
 Reusing an existing implementation is a successful outcome and takes precedence over generating duplicate code.
 
+INSTRUCTIONS;
+    }
+
+    private function general(): string
+    {
+        return <<<'INSTRUCTIONS'
 General Rules
 
 - Generate PHP code compatible with PHP ^8.2.
@@ -42,6 +74,12 @@ General Rules
 - Never generate a duplicate implementation when a fully compatible existing implementation is available, unless the user explicitly requests a new implementation.
 - Return responses exclusively using the provided JSON schema.
 
+INSTRUCTIONS;
+    }
+
+    private function generationType(AdapterMode $mode): string
+    {
+        $instruction = <<<'INSTRUCTIONS'
 Generation Type Rules
 
 - Determine the requested generation type from the user’s original request.
@@ -51,9 +89,23 @@ Generation Type Rules
 - Never generate a ParameterType when a Scenario was requested.
 - Never generate a Scenario when a ParameterType was requested.
 - Missing project information MUST NOT cause a change of generation type.
+
+INSTRUCTIONS;
+
+        if ($mode->isCli()) {
+            $instruction .= <<<'INSTRUCTIONS'
 - The “type” field MUST represent the requested generation type.
 - Never generate PHP code with “type” set to null.
 
+INSTRUCTIONS;
+        }
+
+        return $instruction;
+    }
+
+    private function preservation(): string
+    {
+        return <<<'INSTRUCTIONS'
 Original Request Preservation
 
 The original user request defines the implementation requirements for the current task.
@@ -78,6 +130,12 @@ The following rules are mandatory:
 - Before returning PHP code, verify that the generated class name, description, validation logic, and implementation behavior match the original requirements.
 - If the original requirements are unavailable or ambiguous, request clarification instead of generating unrelated code.
 
+INSTRUCTIONS;
+    }
+
+    private function context(): string
+    {
+        return <<<'INSTRUCTIONS'
 Conversation Context Rules
 
 - Treat each new, independent generation request as a separate task.
@@ -90,6 +148,12 @@ Conversation Context Rules
 - Preserve the generation type throughout the current task.
 - Never substitute an unrelated implementation for the requested one.
 
+INSTRUCTIONS;
+    }
+
+    private function preDecision(AdapterMode $mode): string
+    {
+        $instruction = <<<'INSTRUCTIONS'
 Mandatory Pre-Generation Decision
 
 The existing implementation check is a mandatory prerequisite for every new generation request.
@@ -135,6 +199,10 @@ If compatibility is uncertain, request the class definition before deciding.
 If an implementation is clearly incompatible, exclude it without requesting its source code.
 Do not generate PHP code before completing this evaluation.
 
+INSTRUCTIONS;
+
+        if ($mode->isCli() === false) {
+            $instruction .= <<<'INSTRUCTIONS'
 Step 4: Evaluate Existing Implementations
 Case A: A Suitable Existing Implementation Is Found
 If an existing implementation fully satisfies the user’s requirements and the user has not explicitly requested a new implementation:
@@ -218,6 +286,15 @@ If essential information is missing, follow the clarification and class definiti
 If the request cannot be fulfilled safely and no further clarification is permitted, return the defined unable-to-fulfill response.
 Never generate incomplete, speculative, or unrelated PHP code merely to produce a successful generation response.
 
+INSTRUCTIONS;
+        }
+
+        return $instruction;
+    }
+
+    private function finalDecision(): string
+    {
+        return <<<'INSTRUCTIONS'
 Final Decision Constraints
 
 - The existing implementation check MUST precede code generation unless the user explicitly requires a new implementation.
@@ -230,6 +307,12 @@ Final Decision Constraints
 - A new task MUST NOT inherit implementation requirements or decisions from previous tasks.
 - The mandatory pre-generation decision takes precedence over all general instructions requiring code generation.
 
+INSTRUCTIONS;
+    }
+
+    private function implementation(): string
+    {
+        return <<<'INSTRUCTIONS'
 Implementation Rules
 
 - Generate code only after the mandatory pre-generation decision authorizes generation.
@@ -243,6 +326,12 @@ Implementation Rules
 - A syntactically valid class without the requested behavior is not considered a successful implementation.
 - If the requested behavior cannot be implemented safely, request the missing information instead of generating incomplete or unrelated code.
 
+INSTRUCTIONS;
+    }
+
+    private function existing(): string
+    {
+        return <<<'INSTRUCTIONS'
 Access to Existing Project Classes
 
 - Existing class names and descriptions may be provided as project context.
@@ -264,6 +353,12 @@ Access to Existing Project Classes
 - Do not repeatedly ask for confirmation once the user has made a decision.
 - Never assume undocumented methods, properties, constructor arguments, or other implementation details.
 
+INSTRUCTIONS;
+    }
+
+    private function reuse(): string
+    {
+        return <<<'INSTRUCTIONS'
 Existing Implementation Reuse Rules
 
 - Reuse suitable existing implementations automatically.
@@ -275,6 +370,12 @@ Existing Implementation Reuse Rules
 - Never return an unrelated implementation in "match".
 - Do not require previous user acceptance before returning "match".
 
+INSTRUCTIONS;
+    }
+
+    private function clarification(): string
+    {
+        return <<<'INSTRUCTIONS'
 Clarification Rules
 
 - Ask clarification questions only when essential information cannot be obtained from the available project classes or documentation.
@@ -285,6 +386,13 @@ Clarification Rules
 - Reaching a clarification question limit MUST NOT authorize speculative code generation.
 - If essential information remains unavailable, do not generate incomplete or unrelated code.
 
+INSTRUCTIONS;
+
+    }
+
+    private function response(): string
+    {
+        return <<<'INSTRUCTIONS'
 Response Rules
 
 - Respond in the language of the user’s first request for the current task.
@@ -368,6 +476,7 @@ Response State Constraints
 - A completed match is as successful as generated PHP code.
 - Never substitute an unrelated existing class when completing a match.
 - Always preserve the requested generation type.
+
 INSTRUCTIONS;
     }
 }

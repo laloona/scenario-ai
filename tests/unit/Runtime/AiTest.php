@@ -18,12 +18,18 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use ReflectionClass;
-
 use Stateforge\Scenario\Ai\Contract\AiContext;
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiConversation;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAdapter;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeSkill;
+
 use Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiAdapter;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiSkill;
+use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiAdapter;
+use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiSkill;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Ai;
@@ -44,12 +50,12 @@ use const PHP_EOL;
 #[UsesClass(AdapterRegistry::class)]
 #[UsesClass(AiConversation::class)]
 #[UsesClass(FileBuilder::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiSkill::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiAdapter::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiSkill::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiAdapter::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeSkill::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAdapter::class)]
+#[UsesClass(GeminiSkill::class)]
+#[UsesClass(GeminiAdapter::class)]
+#[UsesClass(OpenAiSkill::class)]
+#[UsesClass(OpenAiAdapter::class)]
+#[UsesClass(ClaudeSkill::class)]
+#[UsesClass(ClaudeAdapter::class)]
 #[UsesClass(ConfigurationBuilder::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(AdapterConfiguration::class)]

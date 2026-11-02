@@ -16,4 +16,20 @@ enum AdapterMode: string
     case Cli = 'cli';
     case Skill = 'skill';
     case All = 'all';
+
+    public function isCli(): bool
+    {
+        return match ($this) {
+            self::Skill => false,
+            default => true,
+        };
+    }
+
+    public function isSkill(): bool
+    {
+        return match ($this) {
+            self::Cli => false,
+            default => true,
+        };
+    }
 }

@@ -24,6 +24,7 @@ use function file_put_contents;
 use function substr_count;
 use const PHP_EOL;
 
+#[UsesClass(AdapterMode::class)]
 #[CoversClass(BlueprintInstruction::class)]
 #[UsesClass(ScenarioBlueprintInstruction::class)]
 #[UsesClass(ParameterBlueprintInstruction::class)]

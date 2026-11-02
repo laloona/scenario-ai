@@ -15,6 +15,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
@@ -28,6 +29,7 @@ use function dirname;
 use const PHP_EOL;
 
 #[CoversClass(ParameterTypeListInstruction::class)]
+#[UsesClass(AdapterMode::class)]
 #[Group('runtime')]
 #[Small]
 final class ParameterTypeListInstructionTest extends TestCase
@@ -56,14 +58,14 @@ final class ParameterTypeListInstructionTest extends TestCase
     }
 
     #[DataProvider('projectPermissionProvider')]
-    public function testSeparatesPackageAndProjectTypesAndHonorsPermission(bool $allowed): void
+    public function testSeparatesPackageAndProjectTypesAndHonorsPermission(bool $allowed, AdapterMode $mode, bool $includesProjectTypes): void
     {
         $this->registerTypes();
-        $text = (new ParameterTypeListInstruction(dirname(__DIR__, 3) . '/files/Project', $allowed))->instruct(AdapterMode::Cli);
+        $text = (new ParameterTypeListInstruction(dirname(__DIR__, 3) . '/files/Project', $allowed))->instruct($mode);
 
         self::assertStringContainsString(PHP_EOL . PHP_EOL . 'Package parameter types' . PHP_EOL . PHP_EOL, $text);
         self::assertStringContainsString(PackageParameterType::class . ': Package type description', $text);
-        if ($allowed) {
+        if ($includesProjectTypes) {
             self::assertStringContainsString(PHP_EOL . PHP_EOL . 'Project parameter types' . PHP_EOL . PHP_EOL, $text);
             self::assertStringContainsString(ProjectParameterType::class . ': Project type description', $text);
         } else {
@@ -72,10 +74,10 @@ final class ParameterTypeListInstructionTest extends TestCase
         }
     }
 
-    /** @return array<string, array{bool}> */
+    /** @return array<string, array{bool, AdapterMode, bool}> */
     public static function projectPermissionProvider(): array
     {
-        return ['allowed' => [true], 'not allowed' => [false]];
+        return ['cli allowed' => [true, AdapterMode::Cli, true], 'cli denied' => [false, AdapterMode::Cli, false], 'skill allowed' => [true, AdapterMode::Skill, false], 'skill denied' => [false, AdapterMode::Skill, false], 'all allowed' => [true, AdapterMode::All, true], 'all denied' => [false, AdapterMode::All, false]];
     }
 
     public function testNoProjectDirectoryTreatsRegisteredTypesAsPackageTypes(): void

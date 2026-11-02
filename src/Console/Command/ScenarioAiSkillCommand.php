@@ -21,7 +21,7 @@ final class ScenarioAiSkillCommand extends CliCommand
 {
     public function description(): string
     {
-        return 'Makes a skill for IDE usage.';
+        return 'Generate a skill IDE-ready skill for AI.';
     }
 
     protected function execute(CliInput $input, CliOutput $output): Command

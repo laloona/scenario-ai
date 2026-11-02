@@ -20,7 +20,9 @@ use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeConfig;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeSkill;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
@@ -30,8 +32,8 @@ use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\ConfigBuilderException;
 
 #[CoversClass(ClaudeAdapter::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeSkill::class)]
+#[UsesClass(FileBuilder::class)]
+#[UsesClass(ClaudeSkill::class)]
 #[UsesClass(ConfigBuilder::class)]
 #[UsesClass(AdapterConfiguration::class)]
 #[UsesClass(ClaudeConfig::class)]
@@ -68,7 +70,7 @@ final class ClaudeAdapterTest extends TestCase
     public function testBuildsSkillWithoutApiConfiguration(): void
     {
         self::assertInstanceOf(
-            \Stateforge\Scenario\Ai\Runtime\Adapter\Claude\ClaudeSkill::class,
+            ClaudeSkill::class,
             (new ClaudeAdapter())->skill(new AdapterConfiguration(AdapterMode::Skill, 'test', null, null, []), self::createStub(Instruction::class)),
         );
     }

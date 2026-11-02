@@ -24,6 +24,10 @@ final class QuestionLimitInstruction implements Instruction
 
     public function instruct(AdapterMode $mode): string
     {
+        if ($mode->isSkill()) {
+            return '';
+        }
+
         return <<<INSTRUCTIONS
 Conversation rules:
 

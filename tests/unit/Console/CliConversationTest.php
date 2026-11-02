@@ -77,6 +77,7 @@ use function str_replace;
 use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
+#[UsesClass(AdapterMode::class)]
 #[CoversClass(CliConversation::class)]
 #[UsesClass(Ai::class)]
 #[UsesClass(Context::class)]

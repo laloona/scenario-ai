@@ -18,11 +18,13 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiConfig;
+use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiSkill;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
@@ -30,8 +32,8 @@ use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\ConfigBuilderException;
 
 #[CoversClass(OpenAiAdapter::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiSkill::class)]
+#[UsesClass(FileBuilder::class)]
+#[UsesClass(OpenAiSkill::class)]
 #[UsesClass(ConfigBuilder::class)]
 #[UsesClass(AdapterConfiguration::class)]
 #[UsesClass(OpenAiConfig::class)]
@@ -68,7 +70,7 @@ final class OpenAiAdapterTest extends TestCase
     public function testBuildsSkillWithoutApiConfiguration(): void
     {
         self::assertInstanceOf(
-            \Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiSkill::class,
+            OpenAiSkill::class,
             (new OpenAiAdapter())->skill(new AdapterConfiguration(AdapterMode::Skill, 'test', null, null, []), self::createStub(Instruction::class)),
         );
     }

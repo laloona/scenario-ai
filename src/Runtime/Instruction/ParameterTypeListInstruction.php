@@ -86,7 +86,8 @@ INSTRUCTION;
                 }
             }
 
-            if ($this->useProjectTypes === true
+            if ($mode->isCli()
+                && $this->useProjectTypes === true
                 && count($projectTypes) > 0) {
                 $instruction .= PHP_EOL . 'Project parameter types' . PHP_EOL . PHP_EOL;
                 foreach ($projectTypes as $class => $parameterType) {

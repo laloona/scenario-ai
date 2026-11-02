@@ -62,7 +62,8 @@ Scenario Namespace Rules
 - Do not ask the user to specify a namespace when a suitable configured namespace is available.
 
 INSTRUCTIONS;
-        if (count($this->suites) > 0) {
+        if ($mode->isCli()
+            && count($this->suites) > 0) {
             $resolver = new NamespaceResolver();
             $instructions .= PHP_EOL . '- Available Scenario Suites: ';
             foreach ($this->suites as $suite) {

@@ -90,6 +90,7 @@ use function uniqid;
 use function unlink;
 
 #[CoversClass(Context::class)]
+#[UsesClass(AdapterMode::class)]
 #[UsesClass(Ai::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(AdapterConfiguration::class)]
@@ -228,13 +229,21 @@ final class ContextTest extends TestCase
         self::assertStringContainsString('enum ParameterType: string', $instruction);
         self::assertStringContainsString('Framework documentation marker', $instruction);
         self::assertStringContainsString('Scenario blueprint marker', $instruction);
-        self::assertStringContainsString('name: main, description: Main scenario suite, directory: scenario/main, namespace: Scenario\\Main', $instruction);
+        if ($mode !== AdapterMode::Skill) {
+            self::assertStringContainsString('name: main, description: Main scenario suite, directory: scenario/main, namespace: Scenario\\Main', $instruction);
+        } else {
+            self::assertStringNotContainsString('Available Scenario Suites:', $instruction);
+        }
         self::assertStringContainsString('Parameter blueprint marker', $instruction);
         self::assertMatchesRegularExpression('/Scenario blueprint marker[\s\S]*Parameter blueprint marker[\s\S]*ParameterType implementation rules:[\s\S]*Final Validation/', $instruction);
         self::assertStringContainsString('The response contains exactly the required five JSON fields.', $instruction);
         self::assertStringContainsString('directory: custom/parameters, namespace: Custom\\Parameters', $instruction);
-        self::assertStringContainsString('Maximum clarification questions: 7', $instruction);
-        self::assertStringContainsString('Clarification questions already asked: ' . ($counter ?? 0), $instruction);
+        if ($mode === AdapterMode::Cli) {
+            self::assertStringContainsString('Maximum clarification questions: 7', $instruction);
+            self::assertStringContainsString('Clarification questions already asked: ' . ($counter ?? 0), $instruction);
+        } else {
+            self::assertStringNotContainsString('Conversation rules:', $instruction);
+        }
         if ($allowed) {
             self::assertStringContainsString('Project scenario marker', $instruction);
         } else {

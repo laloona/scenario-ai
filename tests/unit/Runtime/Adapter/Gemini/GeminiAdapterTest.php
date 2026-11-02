@@ -18,9 +18,11 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ConfigBuilder;
+use Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiClient;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiConfig;
+use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiSkill;
 use Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\MessagePartsBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
@@ -30,8 +32,8 @@ use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Exception\ConfigBuilderException;
 
 #[CoversClass(GeminiAdapter::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\FileBuilder::class)]
-#[UsesClass(\Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiSkill::class)]
+#[UsesClass(FileBuilder::class)]
+#[UsesClass(GeminiSkill::class)]
 #[UsesClass(ConfigBuilder::class)]
 #[UsesClass(AdapterConfiguration::class)]
 #[UsesClass(GeminiConfig::class)]
@@ -68,7 +70,7 @@ final class GeminiAdapterTest extends TestCase
     public function testBuildsSkillWithoutApiConfiguration(): void
     {
         self::assertInstanceOf(
-            \Stateforge\Scenario\Ai\Runtime\Adapter\Gemini\GeminiSkill::class,
+            GeminiSkill::class,
             (new GeminiAdapter())->skill(new AdapterConfiguration(AdapterMode::Skill, 'test', null, null, []), self::createStub(Instruction::class)),
         );
     }

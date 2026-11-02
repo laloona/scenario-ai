@@ -14,22 +14,25 @@ namespace Stateforge\Scenario\Ai\Console;
 use Stateforge\Scenario\Ai\Console\Command\ScenarioAiConfigCommand;
 use Stateforge\Scenario\Ai\Console\Command\ScenarioAiMakeCommand;
 use Stateforge\Scenario\Ai\Console\Command\ScenarioAiSkillCommand;
-use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Core\Console\CliApplication as CoreCliApplication;
 use Stateforge\Scenario\Core\Console\CliApplicationExtension;
+use Throwable;
 
 final class CliApplication implements CliApplicationExtension
 {
     public function boot(CoreCliApplication $cli): void
     {
-        $config = Ai::config();
-        $cli->command('ai-config', new ScenarioAiConfigCommand());
-        if ($config->adapter->mode !== AdapterMode::Skill) {
-            $cli->command('ai-make', new ScenarioAiMakeCommand());
-        }
-        if ($config->adapter->mode !== AdapterMode::Cli) {
-            $cli->command('ai-skill', new ScenarioAiSkillCommand());
+        try {
+            $config = Ai::config();
+            if ($config->adapter->mode->isCli()) {
+                $cli->command('ai-make', new ScenarioAiMakeCommand());
+            }
+            if ($config->adapter->mode->isSkill()) {
+                $cli->command('ai-skill', new ScenarioAiSkillCommand());
+            }
+        } catch (Throwable $exception) {
+            $cli->command('ai-config', new ScenarioAiConfigCommand());
         }
     }
 }

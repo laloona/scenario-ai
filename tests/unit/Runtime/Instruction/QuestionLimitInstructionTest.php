@@ -15,11 +15,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\QuestionLimitInstruction;
 
 #[CoversClass(QuestionLimitInstruction::class)]
+#[UsesClass(AdapterMode::class)]
 #[Group('runtime')]
 #[Small]
 final class QuestionLimitInstructionTest extends TestCase
@@ -50,6 +52,13 @@ final class QuestionLimitInstructionTest extends TestCase
         self::assertStringContainsString('If essential information is missing and no further clarification is permitted, return a response with all result fields set to null, except "type", which must preserve the requested generation type, and "classes", which must be an empty array.', $text);
         self::assertStringContainsString('Never generate incomplete or speculative implementations to compensate for missing information.', $text);
         self::assertStringContainsString('Never invent missing project-specific APIs to produce executable code.', $text);
+    }
+
+    public function testSkillAndAllModesOmitConversationLimits(): void
+    {
+        $instruction = new QuestionLimitInstruction(7, 3);
+        self::assertSame('', $instruction->instruct(AdapterMode::Skill));
+        self::assertSame('', $instruction->instruct(AdapterMode::All));
     }
 
 }

@@ -43,6 +43,9 @@ Existing Scenarios
 
 
 INSTRUCTION;
+        if ($mode->isSkill()) {
+            return $instruction;
+        }
 
         $instruction .= 'Registered Scenarios' . PHP_EOL . PHP_EOL;
         $listed = [];

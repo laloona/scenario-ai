@@ -57,7 +57,7 @@ final class ScenarioAiSkillCommandTest extends CommandTestCase
 {
     public function testDescribesSkillGeneration(): void
     {
-        self::assertSame('Makes a skill for IDE usage.', (new ScenarioAiSkillCommand())->description());
+        self::assertSame('Generate a skill IDE-ready skill for AI.', (new ScenarioAiSkillCommand())->description());
     }
 
     #[DataProvider('resultProvider')]

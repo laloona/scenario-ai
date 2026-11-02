@@ -14,6 +14,7 @@ namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Instruction;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
@@ -31,6 +32,7 @@ use function substr_count;
 use const PHP_EOL;
 
 #[CoversClass(ScenarioListInstruction::class)]
+#[UsesClass(AdapterMode::class)]
 #[Group('runtime')]
 #[Small]
 final class ScenarioListInstructionTest extends TestCase
@@ -105,6 +107,19 @@ final class ScenarioListInstructionTest extends TestCase
         self::assertStringContainsString('Request source code only when necessary to verify compatibility.', $text);
         self::assertStringContainsString('Never assume undocumented execution or composition mechanisms.', $text);
         self::assertStringContainsString('If no suitable Scenario exists, generate a new implementation according to the selected blueprint.', $text);
+    }
+
+    public function testSkillAndAllModesKeepReuseRulesWithoutProjectScenarioMetadata(): void
+    {
+        ScenarioRegistry::getInstance()->register(new ScenarioDefinition('main', ListedScenario::class, new AsScenario('listed', 'Private project marker'), []));
+        foreach ([AdapterMode::Skill, AdapterMode::All] as $mode) {
+            $text = (new ScenarioListInstruction())->instruct($mode);
+            self::assertStringContainsString('Existing Scenarios', $text);
+            self::assertStringContainsString('Prefer reusing existing Scenarios', $text);
+            self::assertStringNotContainsString('Registered Scenarios', $text);
+            self::assertStringNotContainsString('Private project marker', $text);
+            self::assertStringNotContainsString(ListedScenario::class, $text);
+        }
     }
 
 }
