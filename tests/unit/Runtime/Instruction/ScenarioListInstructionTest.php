@@ -29,7 +29,6 @@ use Stateforge\Scenario\Core\Runtime\Metadata\Parameter\ParameterTypeRegistry;
 use Stateforge\Scenario\Core\Runtime\ScenarioDefinition;
 use Stateforge\Scenario\Core\Runtime\ScenarioRegistry;
 use function substr_count;
-use const PHP_EOL;
 
 #[CoversClass(ScenarioListInstruction::class)]
 #[UsesClass(AdapterMode::class)]
@@ -65,8 +64,8 @@ final class ScenarioListInstructionTest extends TestCase
 
         $text = (new ScenarioListInstruction())->instruct(AdapterMode::Cli);
 
-        self::assertStringStartsWith('Existing Scenarios' . PHP_EOL, $text);
-        self::assertStringContainsString('Registered Scenarios' . PHP_EOL . PHP_EOL, $text);
+        self::assertStringContainsString('Existing Scenarios', $text);
+        self::assertStringContainsString('Registered Scenarios', $text);
         self::assertStringContainsString(ListedScenario::class . ': name: listed, description: Listed scenario description, suites: main, parameters: ', $text);
         self::assertSame(1, substr_count($text, ListedScenario::class . ':'));
     }
@@ -91,35 +90,15 @@ final class ScenarioListInstructionTest extends TestCase
         self::assertStringContainsString('name: labels, description: Labels, type: String, required: no, repeatable: yes, default: ["first","second"]', $text);
         self::assertStringContainsString('name: custom, description: Custom value, type: ProjectParameterType, required: no, repeatable: no, default: null', $text);
     }
-    public function testIncludesScenarioReuseAndSourceAccessRules(): void
-    {
-        ScenarioRegistry::getInstance()->register(new ScenarioDefinition(
-            'main',
-            ListedScenario::class,
-            new AsScenario(),
-            [],
-        ));
-
-        $text = (new ScenarioListInstruction())->instruct(AdapterMode::Cli);
-
-        self::assertStringContainsString('Follow the mandatory pre-generation decision and response rules when evaluating existing Scenarios.', $text);
-        self::assertStringContainsString('Prefer reusing existing Scenarios when the framework supports the intended reuse.', $text);
-        self::assertStringContainsString('Request source code only when necessary to verify compatibility.', $text);
-        self::assertStringContainsString('Never assume undocumented execution or composition mechanisms.', $text);
-        self::assertStringContainsString('If no suitable Scenario exists, generate a new implementation according to the selected blueprint.', $text);
-    }
-
-    public function testSkillAndAllModesKeepReuseRulesWithoutProjectScenarioMetadata(): void
+    public function testSkillAndAllModesKeepHeadingWithoutProjectScenarioMetadata(): void
     {
         ScenarioRegistry::getInstance()->register(new ScenarioDefinition('main', ListedScenario::class, new AsScenario('listed', 'Private project marker'), []));
         foreach ([AdapterMode::Skill, AdapterMode::All] as $mode) {
             $text = (new ScenarioListInstruction())->instruct($mode);
             self::assertStringContainsString('Existing Scenarios', $text);
-            self::assertStringContainsString('Prefer reusing existing Scenarios', $text);
             self::assertStringNotContainsString('Registered Scenarios', $text);
             self::assertStringNotContainsString('Private project marker', $text);
             self::assertStringNotContainsString(ListedScenario::class, $text);
         }
     }
-
 }

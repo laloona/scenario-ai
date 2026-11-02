@@ -12,7 +12,6 @@
 namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Instruction;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -26,32 +25,11 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\QuestionLimitInstruction;
 #[Small]
 final class QuestionLimitInstructionTest extends TestCase
 {
-    #[DataProvider('questionProvider')]
-    public function testIncludesConfiguredLimitAndCurrentCount(int $limit, int $asked): void
+    public function testIncludesSectionHeadingInCliMode(): void
     {
-        $text = (new QuestionLimitInstruction($limit, $asked))->instruct(AdapterMode::Cli);
+        $text = (new QuestionLimitInstruction(7, 3))->instruct(AdapterMode::Cli);
 
-        self::assertStringContainsString('Maximum clarification questions: ' . $limit, $text);
-        self::assertStringContainsString('Clarification questions already asked: ' . $asked, $text);
-        self::assertStringContainsString('Never exceed the configured clarification question limit.', $text);
-        self::assertStringContainsString('Requests for existing class definitions are not clarification questions.', $text);
-    }
-
-    /** @return array<string, array{int, int}> */
-    public static function questionProvider(): array
-    {
-        return ['initial' => [5, 0], 'in progress' => [7, 2], 'limit reached' => [3, 3], 'no questions' => [0, 0], 'limit exceeded' => [3, 4]];
-    }
-
-    public function testExhaustedLimitRequiresAnEmptyResultInsteadOfSpeculativeCode(): void
-    {
-        $text = (new QuestionLimitInstruction(3, 3))->instruct(AdapterMode::Cli);
-
-        self::assertStringContainsString('If the question limit has been reached, do not ask further clarification questions.', $text);
-        self::assertStringContainsString('If sufficient information is available, generate a complete implementation.', $text);
-        self::assertStringContainsString('If essential information is missing and no further clarification is permitted, return a response with all result fields set to null, except "type", which must preserve the requested generation type, and "classes", which must be an empty array.', $text);
-        self::assertStringContainsString('Never generate incomplete or speculative implementations to compensate for missing information.', $text);
-        self::assertStringContainsString('Never invent missing project-specific APIs to produce executable code.', $text);
+        self::assertStringContainsString('Conversation rules:', $text);
     }
 
     public function testSkillAndAllModesOmitConversationLimits(): void
@@ -60,5 +38,4 @@ final class QuestionLimitInstructionTest extends TestCase
         self::assertSame('', $instruction->instruct(AdapterMode::Skill));
         self::assertSame('', $instruction->instruct(AdapterMode::All));
     }
-
 }

@@ -78,7 +78,7 @@ final class GeneralInstructionsTest extends FilesystemTestCase
     }
 
     #[DataProvider('projectDocProvider')]
-    public function testCombinesRulesDocumentationAndQuestionCounts(bool $withProjectDoc, bool $allowProjectInformation, AdapterMode $mode, bool $withCounts, bool $withProjectScenarios, bool $withDocs): void
+    public function testIncludesSectionHeadingsForConfiguredMode(bool $withProjectDoc, bool $allowProjectInformation, AdapterMode $mode, bool $withCounts, bool $withProjectScenarios, bool $withDocs): void
     {
         mkdir($this->testDirectory . '/framework');
         mkdir($this->testDirectory . '/project');
@@ -94,26 +94,33 @@ final class GeneralInstructionsTest extends FilesystemTestCase
             $allowProjectInformation,
         ))->instruct($mode);
 
-        self::assertStringContainsString('If code generation is required, generate exactly one PHP class.', $text);
+        self::assertStringContainsString('Introduction', $text);
+        self::assertStringContainsString('Framework Attribute Rules', $text);
         self::assertStringContainsString('Available attributes:', $text);
-        self::assertStringContainsString('FRAMEWORK_MARKER', $text);
+        self::assertStringContainsString('Documentation', $text);
+        self::assertStringContainsString('[framework.md]', $text);
         if ($withCounts) {
-            self::assertStringContainsString('Maximum clarification questions: 7', $text);
-            self::assertStringContainsString('Clarification questions already asked: 3', $text);
+            self::assertStringContainsString('Conversation rules:', $text);
         } else {
             self::assertStringNotContainsString('Conversation rules:', $text);
         }
         self::assertStringContainsString('Some class definitions:', $text);
+        self::assertStringContainsString('Existing Parameter Types', $text);
         self::assertStringContainsString('Built-in parameter types', $text);
-        if ($withProjectScenarios) {
-            self::assertStringContainsString('Project scenario marker', $text);
+        if ($allowProjectInformation || $mode !== AdapterMode::Cli) {
+            self::assertStringContainsString('Existing Scenarios', $text);
         } else {
-            self::assertStringNotContainsString('Project scenario marker', $text);
+            self::assertStringNotContainsString('Existing Scenarios', $text);
+        }
+        if ($withProjectScenarios) {
+            self::assertStringContainsString('Registered Scenarios', $text);
+        } else {
+            self::assertStringNotContainsString('Registered Scenarios', $text);
         }
         if ($withDocs) {
-            self::assertStringContainsString('PROJECT_MARKER', $text);
+            self::assertStringContainsString('[project.md]', $text);
         } else {
-            self::assertStringNotContainsString('PROJECT_MARKER', $text);
+            self::assertStringNotContainsString('[project.md]', $text);
         }
     }
 

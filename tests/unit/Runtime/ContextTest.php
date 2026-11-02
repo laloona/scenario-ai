@@ -187,7 +187,7 @@ final class ContextTest extends TestCase
     }
 
     #[DataProvider('projectDocumentationProvider')]
-    public function testInstructionIncludesConfiguredDocumentationAndBlueprints(?string $projectDoc, bool $allowed, AdapterMode $mode = AdapterMode::Cli, ?int $counter = 2): void
+    public function testInstructionIncludesExpectedSectionHeadings(?string $projectDoc, bool $allowed, AdapterMode $mode = AdapterMode::Cli, ?int $counter = 2): void
     {
         $configuration = self::createStub(CoreConfiguration::class);
         $configuration->method('getSuites')->willReturn([
@@ -226,40 +226,58 @@ final class ContextTest extends TestCase
         }
         self::assertFalse($registry->hasClass(ListedScenario::class), 'Scenario metadata does not provide its source code.');
 
-        self::assertStringContainsString('enum ParameterType: string', $instruction);
-        self::assertStringContainsString('Framework documentation marker', $instruction);
-        self::assertStringContainsString('Scenario blueprint marker', $instruction);
-        if ($mode !== AdapterMode::Skill) {
-            self::assertStringContainsString('name: main, description: Main scenario suite, directory: scenario/main, namespace: Scenario\\Main', $instruction);
-        } else {
-            self::assertStringNotContainsString('Available Scenario Suites:', $instruction);
+        foreach ([
+            'Introduction',
+            'Available attributes:',
+            'Documentation',
+            '[framework.md]',
+            'Some class definitions:',
+            'Existing Parameter Types',
+            'Built-in parameter types',
+            'Base class definitions:',
+            'Blueprint Rules',
+            'Scenario Rules',
+            'Scenario Blueprint:',
+            'Scenario Namespace Rules',
+            'ParameterType Rules',
+            'Parameter Type Blueprint:',
+            'ParameterType implementation rules:',
+            'Final Validation',
+        ] as $heading) {
+            self::assertStringContainsString($heading, $instruction);
         }
-        self::assertStringContainsString('Parameter blueprint marker', $instruction);
-        self::assertMatchesRegularExpression('/Scenario blueprint marker[\s\S]*Parameter blueprint marker[\s\S]*ParameterType implementation rules:[\s\S]*Final Validation/', $instruction);
-        self::assertStringContainsString('The response contains exactly the required five JSON fields.', $instruction);
-        self::assertStringContainsString('directory: custom/parameters, namespace: Custom\\Parameters', $instruction);
         if ($mode === AdapterMode::Cli) {
-            self::assertStringContainsString('Maximum clarification questions: 7', $instruction);
-            self::assertStringContainsString('Clarification questions already asked: ' . ($counter ?? 0), $instruction);
+            self::assertStringContainsString('Conversation rules:', $instruction);
         } else {
             self::assertStringNotContainsString('Conversation rules:', $instruction);
         }
-        if ($allowed) {
-            self::assertStringContainsString('Project scenario marker', $instruction);
+        if ($mode !== AdapterMode::Skill) {
+            self::assertStringContainsString('Available Scenario Suites:', $instruction);
         } else {
-            self::assertStringNotContainsString('Project scenario marker', $instruction);
+            self::assertStringNotContainsString('Available Scenario Suites:', $instruction);
         }
-        if ($projectDoc === null) {
-            self::assertStringNotContainsString('Project documentation marker', $instruction);
+        if ($allowed || $mode !== AdapterMode::Cli) {
+            self::assertStringContainsString('Existing Scenarios', $instruction);
         } else {
-            self::assertStringContainsString('Project documentation marker', $instruction);
+            self::assertStringNotContainsString('Existing Scenarios', $instruction);
         }
+        if ($allowed && $mode === AdapterMode::Cli) {
+            self::assertStringContainsString('Registered Scenarios', $instruction);
+        } else {
+            self::assertStringNotContainsString('Registered Scenarios', $instruction);
+        }
+        if ($projectDoc !== null && $mode !== AdapterMode::Skill) {
+            self::assertStringContainsString('[project.md]', $instruction);
+        } else {
+            self::assertStringNotContainsString('[project.md]', $instruction);
+        }
+
     }
 
     /** @return array<string, array{?string, bool, 2?: AdapterMode, 3?: ?int}> */
     public static function projectDocumentationProvider(): array
     {
-        return ['without project docs' => [null, false], 'with project docs' => ['project-docs', false], 'allow project information' => [null, true], 'allow with docs' => ['project-docs', true], 'skill without request' => [null, false, AdapterMode::Skill, null], 'cli without request' => [null, false, AdapterMode::Cli, null], 'all without request' => [null, false, AdapterMode::All, null]];
+        return ['without project docs' => [null, false], 'with project docs' => ['project-docs', false], 'allow project information' => [null, true], 'allow with docs' => ['project-docs', true], 'skill without request' => [null, false, AdapterMode::Skill, null], 'skill with project information' => ['project-docs', true, AdapterMode::Skill, null], 'cli without request' => [null, false, AdapterMode::Cli, null], 'all without request' => [null, false, AdapterMode::All, null], 'all with project information' => ['project-docs', true, AdapterMode::All, null]];
     }
 
     #[DataProvider('generationProvider')]

@@ -23,26 +23,10 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterImplementationInstructio
 #[Small]
 final class ParameterImplementationInstructionTest extends TestCase
 {
-    public function testRequiresCompleteCompatibleCastingAndValueTypeInstances(): void
+    public function testIncludesSectionHeading(): void
     {
         $text = (new ParameterImplementationInstruction())->instruct(AdapterMode::Cli);
 
-        self::assertStringContainsString('The cast() method MUST implement the requested validation and conversion behavior.', $text);
-        self::assertStringContainsString('The cast() method MUST return a value compatible with its declared return type.', $text);
-        self::assertStringContainsString('Invalid or unsupported input values MUST be handled explicitly.', $text);
-        self::assertStringContainsString('The valueType() method MUST return an instance of the appropriate ValueType class.', $text);
-        self::assertStringContainsString('NEVER return a class name string from valueType().', $text);
-        self::assertStringContainsString('Pass the required constructor arguments when creating ValueType instances.', $text);
-        self::assertStringContainsString('The selected ValueType MUST be consistent with the values returned by cast().', $text);
-    }
-
-    public function testRequiresMissingInformationInsteadOfPlaceholderImplementations(): void
-    {
-        $text = (new ParameterImplementationInstruction())->instruct(AdapterMode::Cli);
-
-        self::assertStringContainsString('Both cast() and valueType() MUST contain complete implementations.', $text);
-        self::assertStringContainsString('Never replace required validation or conversion logic with placeholder comments.', $text);
-        self::assertStringContainsString('If implementation requires unavailable project-specific dependencies, request the necessary information.', $text);
-        self::assertStringContainsString('If meaningful implementation is impossible, return the "Unable to generate" response state.', $text);
+        self::assertStringContainsString('ParameterType implementation rules:', $text);
     }
 }

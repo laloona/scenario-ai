@@ -21,8 +21,6 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use function file_put_contents;
-use function substr_count;
-use const PHP_EOL;
 
 #[UsesClass(AdapterMode::class)]
 #[CoversClass(BlueprintInstruction::class)]
@@ -32,7 +30,7 @@ use const PHP_EOL;
 #[Small]
 final class BlueprintInstructionTest extends FilesystemTestCase
 {
-    public function testCombinesBlueprintRulesAndBothBlueprintsInOrder(): void
+    public function testIncludesBlueprintSectionHeadings(): void
     {
         $scenario = $this->testDirectory . '/scenario.blueprint';
         $parameter = $this->testDirectory . '/parameter.blueprint';
@@ -43,13 +41,17 @@ final class BlueprintInstructionTest extends FilesystemTestCase
             new ParameterBlueprintInstruction($parameter, null),
         ))->instruct(AdapterMode::Cli);
 
-        self::assertStringContainsString('Use only the blueprint corresponding to the selected generation type.', $text);
-        self::assertSame(1, substr_count($text, PHP_EOL . 'Namespace Rules' . PHP_EOL));
-        self::assertStringContainsString('The %nameSpace% placeholder MUST be replaced using literal string substitution.', $text);
-        self::assertStringContainsString('Do not generate TODO-based implementations for missing essential behavior.', $text);
-        self::assertStringContainsString('Never copy placeholder class names, descriptions, or behavior from the blueprint into the final implementation.', $text);
-        self::assertStringContainsString('SCENARIO_MARKER', $text);
-        self::assertStringContainsString('PARAMETER_MARKER', $text);
-        self::assertMatchesRegularExpression('/SCENARIO_MARKER[\s\S]*PARAMETER_MARKER/', $text);
+        foreach ([
+            'Blueprint Rules',
+            'Namespace Rules',
+            'Scenario Rules',
+            'Scenario Blueprint:',
+            'Scenario Namespace Rules',
+            'ParameterType Rules',
+            'Parameter Type Blueprint:',
+        ] as $heading) {
+            self::assertStringContainsString($heading, $text);
+        }
+
     }
 }

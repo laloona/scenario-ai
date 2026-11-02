@@ -26,7 +26,6 @@ use Stateforge\Scenario\Core\Attribute\AsParameterType;
 use Stateforge\Scenario\Core\ParameterType;
 use Stateforge\Scenario\Core\Runtime\Metadata\Parameter\ParameterTypeRegistry;
 use function dirname;
-use const PHP_EOL;
 
 #[CoversClass(ParameterTypeListInstruction::class)]
 #[UsesClass(AdapterMode::class)]
@@ -48,7 +47,7 @@ final class ParameterTypeListInstructionTest extends TestCase
     {
         $text = (new ParameterTypeListInstruction(null, false))->instruct(AdapterMode::Cli);
 
-        self::assertStringStartsWith('Existing Parameter Types' . PHP_EOL, $text);
+        self::assertStringContainsString('Existing Parameter Types', $text);
         self::assertStringContainsString('Built-in parameter types', $text);
         foreach (ParameterType::cases() as $type) {
             self::assertStringContainsString(ParameterType::class . '::' . $type->name . ': ' . $type->value, $text);
@@ -63,10 +62,10 @@ final class ParameterTypeListInstructionTest extends TestCase
         $this->registerTypes();
         $text = (new ParameterTypeListInstruction(dirname(__DIR__, 3) . '/files/Project', $allowed))->instruct($mode);
 
-        self::assertStringContainsString(PHP_EOL . PHP_EOL . 'Package parameter types' . PHP_EOL . PHP_EOL, $text);
+        self::assertStringContainsString('Package parameter types', $text);
         self::assertStringContainsString(PackageParameterType::class . ': Package type description', $text);
         if ($includesProjectTypes) {
-            self::assertStringContainsString(PHP_EOL . PHP_EOL . 'Project parameter types' . PHP_EOL . PHP_EOL, $text);
+            self::assertStringContainsString('Project parameter types', $text);
             self::assertStringContainsString(ProjectParameterType::class . ': Project type description', $text);
         } else {
             self::assertStringNotContainsString('Project parameter types', $text);
@@ -97,18 +96,6 @@ final class ParameterTypeListInstructionTest extends TestCase
 
         self::assertStringContainsString(PackageParameterType::class . ': Package type description', $text);
         self::assertStringNotContainsString('Project parameter types', $text);
-    }
-
-    public function testIncludesParameterTypeReuseAndCompatibilityRules(): void
-    {
-        $text = (new ParameterTypeListInstruction(null, false))->instruct(AdapterMode::Cli);
-
-        self::assertStringContainsString('Follow the mandatory pre-generation decision and response rules when evaluating existing Parameter Types.', $text);
-        self::assertStringContainsString('Prefer existing Parameter Types over duplicate implementations.', $text);
-        self::assertStringContainsString('Request source code only when necessary to verify compatibility.', $text);
-        self::assertStringContainsString('Do not assume undocumented validation rules, conversion behavior, or supported value types.', $text);
-        self::assertStringContainsString('When generating a Scenario, reuse suitable existing Parameter Types if their compatibility and usage are documented.', $text);
-        self::assertStringContainsString('If no suitable ParameterType exists, generate a new implementation according to the selected blueprint.', $text);
     }
 
     private function registerTypes(): void

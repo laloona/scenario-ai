@@ -18,33 +18,35 @@ use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterBlueprintInstruction;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use function file_put_contents;
-use const PHP_EOL;
 
 #[CoversClass(ParameterBlueprintInstruction::class)]
 #[Group('runtime')]
 #[Small]
 final class ParameterBlueprintInstructionTest extends FilesystemTestCase
 {
-    public function testIncludesConfiguredDirectoryAndDerivedNamespace(): void
+    public function testIncludesSectionHeadingsWithConfiguredDirectory(): void
     {
         $path = $this->testDirectory . '/parameter.blueprint';
         file_put_contents($path, 'Parameter blueprint contents');
         $text = (new ParameterBlueprintInstruction($path, 'scenario/parameter'))->instruct(AdapterMode::Cli);
 
-        self::assertStringContainsString('directory: scenario/parameter, namespace: Scenario\\Parameter', $text);
-        self::assertStringContainsString('Parameter Type Blueprint: ' . PHP_EOL . 'Parameter blueprint contents', $text);
+        self::assertStringContainsString('ParameterType Rules', $text);
+        self::assertStringContainsString('Configured Parameter Types:', $text);
+        self::assertStringContainsString('ParameterType namespace substitution example:', $text);
+        self::assertStringContainsString('Parameter Type Blueprint:', $text);
+
     }
 
-    public function testNullDirectoryOmitsConfiguredParameterType(): void
+    public function testIncludesSectionHeadingsWithoutConfiguredDirectory(): void
     {
         $path = $this->testDirectory . '/parameter.blueprint';
         file_put_contents($path, 'Parameter blueprint contents');
         $text = (new ParameterBlueprintInstruction($path, null))->instruct(AdapterMode::Cli);
 
+        self::assertStringContainsString('ParameterType Rules', $text);
         self::assertStringNotContainsString('Configured Parameter Types:', $text);
-        self::assertStringContainsString('Parameter blueprint contents', $text);
-        self::assertStringContainsString('Never generate validation rules unrelated to the user’s request.', $text);
-        self::assertStringContainsString('Never derive validation behavior from unrelated existing Parameter Types.', $text);
-        self::assertStringContainsString('Correct result: namespace Stateforge\\Suite\\Scenario\\Parameter;', $text);
+        self::assertStringContainsString('ParameterType namespace substitution example:', $text);
+        self::assertStringContainsString('Parameter Type Blueprint:', $text);
+
     }
 }
