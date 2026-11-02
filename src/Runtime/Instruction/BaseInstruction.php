@@ -26,7 +26,7 @@ final class BaseInstruction implements Instruction
             $this->context() . PHP_EOL .
             $this->preDecision($mode) . PHP_EOL;
 
-        if ($mode->isCli()) {
+        if ($mode->isCli() === true) {
             $instruction .= $this->finalDecision() . PHP_EOL;
         }
 
@@ -35,7 +35,7 @@ final class BaseInstruction implements Instruction
             $this->reuse() . PHP_EOL .
             $this->clarification() . PHP_EOL;
 
-        if ($mode->isCli()) {
+        if ($mode->isCli() === true) {
             $instruction .= $this->response() . PHP_EOL;
         }
 
@@ -201,7 +201,7 @@ Do not generate PHP code before completing this evaluation.
 
 INSTRUCTIONS;
 
-        if ($mode->isCli() === false) {
+        if ($mode->isCli() === true) {
             $instruction .= <<<'INSTRUCTIONS'
 Step 4: Evaluate Existing Implementations
 Case A: A Suitable Existing Implementation Is Found

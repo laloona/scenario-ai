@@ -71,7 +71,7 @@ final class BaseInstructionTest extends TestCase
             'Response state 5: Unable to fulfill request',
             'Response State Constraints',
         ];
-        $skillHeadings = [
+        $decisionHeadings = [
             'Step 4: Evaluate Existing Implementations',
             'Case A: A Suitable Existing Implementation Is Found',
             'Case B: An Existing Implementation Might Be Suitable',
@@ -80,8 +80,10 @@ final class BaseInstructionTest extends TestCase
             'Step 5: Authorize Code Generation',
         ];
 
-        yield 'cli' => [AdapterMode::Cli, $cliHeadings, $skillHeadings];
-        yield 'skill' => [AdapterMode::Skill, $skillHeadings, $cliHeadings];
-        yield 'all' => [AdapterMode::All, $cliHeadings, $skillHeadings];
+        $cliHeadings = [...$decisionHeadings, ...$cliHeadings];
+
+        yield 'cli' => [AdapterMode::Cli, $cliHeadings, []];
+        yield 'skill' => [AdapterMode::Skill, [], $cliHeadings];
+        yield 'all' => [AdapterMode::All, $cliHeadings, []];
     }
 }
