@@ -45,11 +45,15 @@ final class FinalValidationInstruction implements Instruction
             $rules[] = 'Never include a class in the “classes” response field if its complete definition has already been provided through framework instructions, base class definitions, or previous conversation messages.';
         }
 
-        return <<<Instruction
+        foreach ($rules as $i => $rule) {
+            $rules[$i] = $i . ' ' . $rule;
+        }
+
+        return <<<INSTRUCTION
 Final Validation
 
 Before returning a response, verify the following:
 
-Instruction . implode(PHP_EOL, $rules);
+INSTRUCTION . implode(PHP_EOL, $rules);
     }
 }
