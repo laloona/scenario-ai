@@ -43,7 +43,7 @@ Scenario Rules
 - Prefer executable PHP code over implementation comments.
 - Use only documented framework APIs and known project dependencies.
 - Prefer existing Scenario composition when suitable Scenarios are explicitly available.
-- Request missing project class definitions when necessary.
+
 INSTRUCTIONS;
 
         if ($mode->isCli() === true) {
