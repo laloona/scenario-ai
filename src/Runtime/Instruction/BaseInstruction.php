@@ -66,6 +66,7 @@ General Rules
 - Never invent framework methods, attributes, or interfaces.
 - Never invent application-specific classes, services, repositories, properties, or methods.
 - Do not assume that classes appearing in documentation examples exist in the current project.
+
 INSTRUCTIONS;
 
         if ($mode->isCli() === true) {

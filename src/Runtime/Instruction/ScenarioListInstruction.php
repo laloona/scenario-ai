@@ -36,6 +36,7 @@ Existing Scenarios
 - Follow the mandatory pre-generation decision and response rules when evaluating existing Scenarios.
 - Before generating a Scenario, examine the available Scenarios.
 - Prefer reusing existing Scenarios when the framework supports the intended reuse.
+
 INSTRUCTION;
 
         if ($mode->isCli() === true) {
