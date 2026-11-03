@@ -46,7 +46,7 @@ final class FinalValidationInstruction implements Instruction
         }
 
         foreach ($rules as $i => $rule) {
-            $rules[$i] = ($i+1) . '. ' . $rule;
+            $rules[$i] = ($i + 1) . '. ' . $rule;
         }
 
         return <<<INSTRUCTION
