@@ -36,6 +36,9 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientEmptyContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientHttpException;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
 use function hash;
 use function json_decode;
@@ -43,6 +46,9 @@ use function json_encode;
 use const JSON_THROW_ON_ERROR;
 
 #[CoversClass(GeminiClient::class)]
+#[UsesClass(AiClientContentException::class)]
+#[UsesClass(AiClientEmptyContentException::class)]
+#[UsesClass(AiClientHttpException::class)]
 #[UsesClass(GeminiConfig::class)]
 #[UsesClass(GeminiFormat::class)]
 #[UsesClass(MessagePartsBuilder::class)]
@@ -125,7 +131,7 @@ final class GeminiClientTest extends TestCase
     {
         $http = self::createStub(HttpClient::class);
         $http->method('sendRequest')->willReturn(new Response($status, [], 'API failure'));
-        $this->expectException(RuntimeException::class);
+        $this->expectException(AiClientHttpException::class);
         $this->expectExceptionMessage('Gemini API returned HTTP ' . $status . ': API failure');
 
         $this->client($http)->request(new AiRequest(null, 'Generate', 1), []);
@@ -138,33 +144,34 @@ final class GeminiClientTest extends TestCase
         yield 'server error' => [500];
     }
 
+    /** @param class-string<AiClientContentException|AiClientEmptyContentException> $exceptionClass */
     #[DataProvider('invalidResponses')]
-    public function testRejectsInvalidProviderResponses(string $body, string $message): void
+    public function testRejectsInvalidProviderResponses(string $body, string $message, string $exceptionClass): void
     {
         $http = self::createStub(HttpClient::class);
         $http->method('sendRequest')->willReturn(new Response(200, [], $body));
-        $this->expectException(RuntimeException::class);
+        $this->expectException($exceptionClass);
         $this->expectExceptionMessage($message);
 
         $this->client($http)->request(new AiRequest(null, 'Generate', 1), []);
     }
 
-    /** @return iterable<string, array{string, string}> */
+    /** @return iterable<string, array{string, string, class-string<AiClientContentException|AiClientEmptyContentException>}> */
     public static function invalidResponses(): iterable
     {
-        yield 'non object' => ['null', 'Invalid Gemini response.'];
-        yield 'missing candidates' => ['{}', 'Gemini returned no candidates'];
-        yield 'invalid candidates' => ['{"candidates":false}', 'Gemini returned no candidates'];
-        yield 'empty candidates' => ['{"candidates":[]}', 'Gemini returned no candidates'];
-        yield 'invalid candidate' => ['{"candidates":[null]}', 'Gemini returned no candidates'];
-        yield 'unfinished' => ['{"candidates":[{"finishReason":"MAX_TOKENS"}]}', 'Gemini response was not completed: MAX_TOKENS'];
-        yield 'missing finish reason' => ['{"candidates":[{}]}', 'Gemini response was not completed: unknown'];
-        yield 'invalid finish reason' => ['{"candidates":[{"finishReason":42}]}', 'Gemini response was not completed: unknown'];
-        yield 'missing parts' => ['{"candidates":[{"finishReason":"STOP"}]}', 'Gemini response has no content parts.'];
-        yield 'invalid content' => ['{"candidates":[{"finishReason":"STOP","content":42}]}', 'Gemini response has no content parts.'];
-        yield 'invalid parts' => ['{"candidates":[{"finishReason":"STOP","content":{"parts":42}}]}', 'Gemini response has no content parts.'];
-        yield 'empty parts' => ['{"candidates":[{"finishReason":"STOP","content":{"parts":[]}}]}', 'No output text found in Gemini response.'];
-        yield 'invalid text' => ['{"candidates":[{"finishReason":"STOP","content":{"parts":[{"text":42}]}}]}', 'No output text found in Gemini response.'];
+        yield 'non object' => ['null', 'Invalid Gemini API response.', AiClientContentException::class];
+        yield 'missing candidates' => ['{}', 'Gemini API returned no candidates (possibly blocked).', AiClientContentException::class];
+        yield 'invalid candidates' => ['{"candidates":false}', 'Gemini API returned no candidates (possibly blocked).', AiClientContentException::class];
+        yield 'empty candidates' => ['{"candidates":[]}', 'Gemini API returned no candidates (possibly blocked).', AiClientContentException::class];
+        yield 'invalid candidate' => ['{"candidates":[null]}', 'Gemini API returned no candidates (possibly blocked).', AiClientContentException::class];
+        yield 'unfinished' => ['{"candidates":[{"finishReason":"MAX_TOKENS"}]}', 'Gemini API response was not completed: MAX_TOKENS', AiClientContentException::class];
+        yield 'missing finish reason' => ['{"candidates":[{}]}', 'Gemini API response was not completed: unknown', AiClientContentException::class];
+        yield 'invalid finish reason' => ['{"candidates":[{"finishReason":42}]}', 'Gemini API response was not completed: unknown', AiClientContentException::class];
+        yield 'missing parts' => ['{"candidates":[{"finishReason":"STOP"}]}', 'Gemini response has no content parts.', AiClientContentException::class];
+        yield 'invalid content' => ['{"candidates":[{"finishReason":"STOP","content":42}]}', 'Gemini response has no content parts.', AiClientContentException::class];
+        yield 'invalid parts' => ['{"candidates":[{"finishReason":"STOP","content":{"parts":42}}]}', 'Gemini response has no content parts.', AiClientContentException::class];
+        yield 'empty parts' => ['{"candidates":[{"finishReason":"STOP","content":{"parts":[]}}]}', 'No output text found in Gemini API response.', AiClientEmptyContentException::class];
+        yield 'invalid text' => ['{"candidates":[{"finishReason":"STOP","content":{"parts":[{"text":42}]}}]}', 'No output text found in Gemini API response.', AiClientEmptyContentException::class];
     }
 
     public function testRejectsMalformedProviderJson(): void

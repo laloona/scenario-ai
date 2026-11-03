@@ -17,7 +17,7 @@ use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
-use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeFinder;
 use Stateforge\Scenario\Ai\Runtime\Validation\AttributeValidator;

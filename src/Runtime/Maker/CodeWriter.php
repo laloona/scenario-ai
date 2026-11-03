@@ -11,7 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Maker;
 
-use RuntimeException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Maker\DirectoryCreationException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Maker\WriteFileException;
 use function dirname;
 use function file_exists;
 use function file_put_contents;
@@ -27,16 +28,12 @@ final readonly class CodeWriter
         if (is_dir($directory) === false
             && mkdir($directory, 0775, true) === false
             && is_dir($directory) === false) {
-            throw new RuntimeException(
-                sprintf('Could not create directory "%s".', $directory),
-            );
+            throw new DirectoryCreationException($directory);
         }
 
         $path = $this->resolveAvailablePath($path);
         if (file_put_contents($path, $code) === false) {
-            throw new RuntimeException(
-                sprintf('Could not write file "%s".', $path),
-            );
+            throw new WriteFileException($path);
         }
 
         return $path;
@@ -56,7 +53,7 @@ final readonly class CodeWriter
                 $path,
                 $counter++,
             );
-        } while (file_exists($availablePath));
+        } while (file_exists($availablePath) === true);
 
         return $availablePath;
     }

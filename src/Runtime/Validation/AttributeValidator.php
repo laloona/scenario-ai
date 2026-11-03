@@ -11,7 +11,7 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Validation;
 
-use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 
 final readonly class AttributeValidator

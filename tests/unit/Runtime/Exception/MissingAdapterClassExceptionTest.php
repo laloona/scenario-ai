@@ -15,7 +15,8 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
-use Stateforge\Scenario\Ai\Runtime\Exception\MissingAdapterClassException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AdapterException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\MissingAdapterClassException;
 
 #[CoversClass(MissingAdapterClassException::class)]
 #[Group('runtime')]
@@ -30,5 +31,6 @@ final class MissingAdapterClassExceptionTest extends TestCase
             'No class found for custom adapter.',
             $exception->getMessage(),
         );
+        self::assertInstanceOf(AdapterException::class, $exception);
     }
 }

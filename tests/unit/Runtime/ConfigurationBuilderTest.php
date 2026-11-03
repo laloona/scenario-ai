@@ -21,6 +21,7 @@ use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\ConfigurationBuilder;
+use Stateforge\Scenario\Ai\Runtime\Exception\InvalidAdapterConfigurationException;
 use Stateforge\Scenario\Ai\Runtime\Exception\NoConfigException;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use Stateforge\Scenario\Core\Runtime\Application;
@@ -33,6 +34,7 @@ use function file_put_contents;
 #[CoversClass(AdapterConfiguration::class)]
 #[CoversClass(Configuration::class)]
 #[UsesClass(NoConfigException::class)]
+#[UsesClass(InvalidAdapterConfigurationException::class)]
 #[Group('runtime')]
 #[Small]
 final class ConfigurationBuilderTest extends FilesystemTestCase
@@ -172,6 +174,22 @@ XML);
         $this->expectExceptionMessage('unable to load configuration xml');
 
         $this->builder()->build();
+    }
+
+    public function testBuildRejectsMissingAdapterWhenSchemaAllowsIt(): void
+    {
+        $schema = $this->testDirectory . '/permissive.xsd';
+        file_put_contents($schema, <<<'XML'
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:element name="scenario-ai" />
+</xsd:schema>
+XML);
+        $this->writeConfiguration('<scenario-ai />');
+        $builder = new ConfigurationBuilder(new ConfigurationFinder(), new XMLParser($schema));
+        $this->expectException(InvalidAdapterConfigurationException::class);
+        $this->expectExceptionMessage('Adapter configuration not found.');
+
+        $builder->build();
     }
 
     private function writeConfiguration(string $xml): void

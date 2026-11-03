@@ -14,7 +14,6 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter\Gemini;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\ResponseInterface;
-use RuntimeException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
@@ -23,6 +22,9 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientEmptyContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientHttpException;
 use function hash;
 use function is_array;
 use function is_string;
@@ -78,46 +80,56 @@ final class GeminiClient implements AiClient
     private function buildResponse(ResponseInterface $response): AiResponse
     {
         if ($response->getStatusCode() >= 400) {
-            throw new RuntimeException(sprintf(
-                'Gemini API returned HTTP %d: %s',
+            throw new AiClientHttpException(
+                'Gemini API',
                 $response->getStatusCode(),
-                $response->getBody(),
-            ));
+                (string) $response->getBody(),
+            );
         }
 
-        $data = json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
-        if (!is_array($data)) {
-            throw new RuntimeException('Invalid Gemini response.');
+        $data = json_decode(
+            (string) $response->getBody(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        if (is_array($data) === false) {
+            throw new AiClientContentException('Invalid Gemini API response.');
         }
 
         $candidates = $data['candidates'] ?? null;
-        if (!is_array($candidates) || !isset($candidates[0]) || !is_array($candidates[0])) {
-            throw new RuntimeException('Gemini returned no candidates (possibly blocked).');
+        if (is_array($candidates) === false
+            || isset($candidates[0]) === false
+            || is_array($candidates[0]) === false) {
+            throw new AiClientContentException('Gemini API returned no candidates (possibly blocked).');
         }
 
         $candidate = $candidates[0];
         if (($candidate['finishReason'] ?? null) !== 'STOP') {
-            throw new RuntimeException(sprintf(
-                'Gemini response was not completed: %s',
-                is_string($candidate['finishReason'] ?? null) ? $candidate['finishReason'] : 'unknown',
+            throw new AiClientContentException(sprintf(
+                'Gemini API response was not completed: %s',
+                is_string($candidate['finishReason'] ?? null) === true ? $candidate['finishReason'] : 'unknown',
             ));
         }
 
         $content = $candidate['content'] ?? null;
-        $parts = is_array($content) ? ($content['parts'] ?? null) : null;
-        if (!is_array($parts)) {
-            throw new RuntimeException('Gemini response has no content parts.');
+        $parts = is_array($content) === true
+            ? ($content['parts'] ?? null)
+            : null;
+        if (is_array($parts) === false) {
+            throw new AiClientContentException('Gemini response has no content parts.');
         }
 
         $text = '';
         foreach ($parts as $part) {
-            if (is_array($part) && is_string($part['text'] ?? null)) {
+            if (is_array($part) === true
+                && is_string($part['text'] ?? null) === true) {
                 $text .= $part['text'];
             }
         }
 
         if ($text === '') {
-            throw new RuntimeException('No output text found in Gemini response.');
+            throw new AiClientEmptyContentException('Gemini API');
         }
 
         // Gemini generateContent does not guarantee an OpenAI-style response ID.

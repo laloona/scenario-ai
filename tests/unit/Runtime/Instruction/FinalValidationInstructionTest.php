@@ -14,11 +14,13 @@ namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Instruction;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Instruction\FinalValidationInstruction;
 
 #[CoversClass(FinalValidationInstruction::class)]
+#[UsesClass(AdapterMode::class)]
 #[Group('runtime')]
 #[Small]
 final class FinalValidationInstructionTest extends TestCase

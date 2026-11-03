@@ -11,7 +11,7 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter\Gemini;
 
-use Stateforge\Scenario\Ai\Runtime\Adapter\MessageContentBuilder;
+use Stateforge\Scenario\Ai\Contract\MessageContentBuilder;
 
 final class MessagePartsBuilder implements MessageContentBuilder
 {

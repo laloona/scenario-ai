@@ -11,16 +11,19 @@
 
 namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Adapter;
 
-use InvalidArgumentException;
-use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AdapterRegistry;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AdapterAlreadyRegisteredException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\UnknownAdapterException;
 
 #[CoversClass(AdapterRegistry::class)]
+#[UsesClass(UnknownAdapterException::class)]
+#[UsesClass(AdapterAlreadyRegisteredException::class)]
 #[Group('runtime')]
 #[Small]
 final class AdapterRegistryTest extends TestCase
@@ -46,7 +49,7 @@ final class AdapterRegistryTest extends TestCase
         try {
             $registry->register('test', self::createStub(AiAdapter::class));
             self::fail('Duplicate registration must fail.');
-        } catch (LogicException $exception) {
+        } catch (AdapterAlreadyRegisteredException $exception) {
             self::assertSame('Adapter "test" is already registered.', $exception->getMessage());
         }
         self::assertSame($original, $registry->get('test'));
@@ -54,7 +57,7 @@ final class AdapterRegistryTest extends TestCase
 
     public function testRejectsUnknownAdapter(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(UnknownAdapterException::class);
         $this->expectExceptionMessage('Unknown adapter "missing".');
 
         (new AdapterRegistry())->get('missing');

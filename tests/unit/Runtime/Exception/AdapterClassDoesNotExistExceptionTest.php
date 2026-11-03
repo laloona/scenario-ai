@@ -15,7 +15,8 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
-use Stateforge\Scenario\Ai\Runtime\Exception\AdapterClassDoesNotExistException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AdapterClassDoesNotExistException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AdapterException;
 use Stateforge\Scenario\Ai\Tests\Files\CustomTestAdapter;
 
 #[CoversClass(AdapterClassDoesNotExistException::class)]
@@ -33,5 +34,6 @@ final class AdapterClassDoesNotExistExceptionTest extends TestCase
             'Adapter class "' . CustomTestAdapter::class . '" does not exist',
             $exception->getMessage(),
         );
+        self::assertInstanceOf(AdapterException::class, $exception);
     }
 }

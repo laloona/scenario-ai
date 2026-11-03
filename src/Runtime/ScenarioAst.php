@@ -17,7 +17,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use Stateforge\Scenario\Ai\Runtime\Exception\ScenarioAstException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ScenarioAstException;
 use function array_pop;
 use function count;
 use function implode;

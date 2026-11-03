@@ -14,7 +14,6 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter\Claude;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\ResponseInterface;
-use RuntimeException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
@@ -23,6 +22,9 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientEmptyContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientHttpException;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -76,11 +78,11 @@ final class ClaudeClient implements AiClient
     private function buildResponse(ResponseInterface $response): AiResponse
     {
         if ($response->getStatusCode() >= 400) {
-            throw new RuntimeException(sprintf(
-                'Claude API returned HTTP %d: %s',
+            throw new AiClientHttpException(
+                'Claude API',
                 $response->getStatusCode(),
-                $response->getBody(),
-            ));
+                (string) $response->getBody(),
+            );
         }
 
         $data = json_decode(
@@ -91,17 +93,17 @@ final class ClaudeClient implements AiClient
         );
 
         if (is_array($data) === false) {
-            throw new RuntimeException('Invalid Claude response.');
+            throw new AiClientContentException('Invalid Claude API response.');
         }
 
         $id = $data['id'] ?? null;
         if (is_string($id) === false) {
-            throw new RuntimeException('Claude response has no valid id.');
+            throw new AiClientContentException('Claude API response has no valid id.');
         }
 
         if (($data['stop_reason'] ?? null) !== 'end_turn') {
-            throw new RuntimeException(sprintf(
-                'Claude generation stopped unexpectedly: %s',
+            throw new AiClientContentException(sprintf(
+                'Claude API generation stopped unexpectedly: %s',
                 is_string($data['stop_reason'] ?? null)
                     ? $data['stop_reason']
                     : 'unknown',
@@ -110,7 +112,7 @@ final class ClaudeClient implements AiClient
 
         $outputs = $data['content'] ?? null;
         if (is_array($outputs) === false) {
-            throw new RuntimeException('Claude response has no valid content.');
+            throw new AiClientContentException('Claude API response has no valid content.');
         }
 
         foreach ($outputs as $output) {
@@ -126,6 +128,6 @@ final class ClaudeClient implements AiClient
             return $this->responseDecoder->decode($id, $output['text']);
         }
 
-        throw new RuntimeException('No output text found in Claude response.');
+        throw new AiClientEmptyContentException('Claude API');
     }
 }

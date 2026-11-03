@@ -40,13 +40,14 @@ ParameterType Rules
 - Never reuse an unrelated class name from previous tasks.
 
 INSTRUCTIONS;
+
         if ($this->parameterDirectory !== null) {
             $instructions .= PHP_EOL . 'Configured Parameter Types: ';
             $instructions .= PHP_EOL . "\t" .
                 '- [ directory: ' . $this->parameterDirectory . ', namespace: ' . (new NamespaceResolver())->toNamespace($this->parameterDirectory) . ' ]';
         }
-        $instructions .= <<<'INSTRUCTIONS'
 
+        $instructions .= <<<'INSTRUCTIONS'
 
 ParameterType namespace substitution example:
 

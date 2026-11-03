@@ -18,9 +18,9 @@ use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
-use Stateforge\Scenario\Ai\Runtime\Exception\InheritanceValidatorException;
-use Stateforge\Scenario\Ai\Runtime\Exception\NoExistingParentClassException;
-use Stateforge\Scenario\Ai\Runtime\Exception\NoInheritanceException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\InheritanceValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\NoExistingParentClassException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\NoInheritanceException;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\Validation\InheritanceValidator;
 

@@ -28,6 +28,7 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\Instructions;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterTypeListInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\QuestionLimitInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioListInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\SkillHeaderInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ValueTypeInstruction;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
@@ -42,6 +43,7 @@ use function file_put_contents;
 use function mkdir;
 
 #[CoversClass(GeneralInstructions::class)]
+#[UsesClass(SkillHeaderInstruction::class)]
 #[UsesClass(AdapterMode::class)]
 #[UsesClass(Instructions::class)]
 #[UsesClass(ScenarioListInstruction::class)]
@@ -94,7 +96,16 @@ final class GeneralInstructionsTest extends FilesystemTestCase
             $allowProjectInformation,
         ))->instruct($mode);
 
-        self::assertStringContainsString('Introduction', $text);
+        if ($mode === AdapterMode::Cli) {
+            self::assertStringStartsWith('Introduction', $text);
+            self::assertStringNotContainsString('name: stateforge-scenario', $text);
+        } else {
+            self::assertMatchesRegularExpression(
+                '/\A---\Rname: stateforge-scenario\Rdescription: \S[^\r\n]*\R---\R+Introduction/',
+                $text,
+            );
+        }
+
         self::assertStringContainsString('Framework Attribute Rules', $text);
         self::assertStringContainsString('Available attributes:', $text);
         self::assertStringContainsString('Documentation', $text);

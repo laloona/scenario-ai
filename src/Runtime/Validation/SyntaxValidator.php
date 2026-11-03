@@ -13,7 +13,7 @@ namespace Stateforge\Scenario\Ai\Runtime\Validation;
 
 use PhpParser\Error;
 use PhpParser\ParserFactory;
-use Stateforge\Scenario\Ai\Runtime\Exception\InvalidGeneratedCodeException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\InvalidGeneratedCodeException;
 
 final class SyntaxValidator
 {

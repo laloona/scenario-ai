@@ -11,10 +11,9 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 
-use InvalidArgumentException;
-use LogicException;
 use Stateforge\Scenario\Ai\Contract\AiAdapter;
-use function sprintf;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AdapterAlreadyRegisteredException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\UnknownAdapterException;
 
 final class AdapterRegistry
 {
@@ -24,9 +23,7 @@ final class AdapterRegistry
     public function register(string $name, AiAdapter $adapter): void
     {
         if (isset($this->adapters[$name])) {
-            throw new LogicException(
-                sprintf('Adapter "%s" is already registered.', $name),
-            );
+            throw new AdapterAlreadyRegisteredException($name);
         }
 
         $this->adapters[$name] = $adapter;
@@ -35,8 +32,6 @@ final class AdapterRegistry
     public function get(string $name): AiAdapter
     {
         return $this->adapters[$name]
-            ?? throw new InvalidArgumentException(
-                sprintf('Unknown adapter "%s".', $name),
-            );
+            ?? throw new UnknownAdapterException($name);
     }
 }

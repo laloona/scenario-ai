@@ -13,32 +13,43 @@ namespace Stateforge\Scenario\Ai\Runtime\Instruction;
 
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+use function implode;
+use const PHP_EOL;
 
 final class FinalValidationInstruction implements Instruction
 {
     public function instruct(AdapterMode $mode): string
     {
+        $rules = [
+                'The response uses the correct generation type.',
+                'The response belongs to the current task.',
+                'The original requirements have been preserved unless explicitly modified.',
+                'The mandatory existing implementation decision has been completed.',
+            ];
+        if ($mode->isCli() === true) {
+            $rules[] = 'The selected response state matches the current conversation state.';
+            $rules[] = 'If “match” is set, the existing implementation fully satisfies ALL requirements of the user and the user has not explicitly requested a new implementation.';
+            $rules[] = 'Before returning “match”, compare the requested functionality and validation conditions with the existing implementation’s documented behavior.';
+            $rules[] = 'An existing implementation MUST NOT be returned in “match” if any behavior contradicts the user’s requirements. Semantic similarity alone is insufficient. For example, past and future date validation are incompatible.';
+            $rules[] = 'If compatibility cannot be established from the available information, request the relevant class definition instead of returning “match”.';
+            $rules[] = 'If “match” is set, “php” is null.';
+        }
+
+        $rules[] = 'If PHP code is generated, generation has been authorized by the mandatory pre-generation decision.';
+        $rules[] = 'If PHP code is generated, it fulfills the original or explicitly modified requirements.';
+        $rules[] = 'The generated class name and description match the implemented functionality.';
+        $rules[] = 'The generated implementation follows the selected blueprint.';
+        if ($mode->isCli() === true) {
+            $rules[] = 'The response contains exactly the required five JSON fields.';
+            $rules[] = 'If class definitions are requested, verify that their complete source code is not already available in the current task context.';
+            $rules[] = 'Never include a class in the “classes” response field if its complete definition has already been provided through framework instructions, base class definitions, or previous conversation messages.';
+        }
+
         return <<<Instruction
 Final Validation
 
 Before returning a response, verify the following:
-1. The response uses the correct generation type.
-2. The response belongs to the current task.
-3. The original requirements have been preserved unless explicitly modified.
-4. The mandatory existing implementation decision has been completed.
-5. The selected response state matches the current conversation state.
-6. If “match” is set, the existing implementation fully satisfies ALL requirements of the user and the user has not explicitly requested a new implementation.
-7. Before returning “match”, compare the requested functionality and validation conditions with the existing implementation’s documented behavior.
-8. An existing implementation MUST NOT be returned in “match” if any behavior contradicts the user’s requirements. Semantic similarity alone is insufficient. For example, past and future date validation are incompatible.
-9. If compatibility cannot be established from the available information, request the relevant class definition instead of returning “match”.
-10. If “match” is set, “php” is null.
-11. If PHP code is generated, generation has been authorized by the mandatory pre-generation decision.
-12. If PHP code is generated, it fulfills the original or explicitly modified requirements.
-13. The generated class name and description match the implemented functionality.
-14. The generated implementation follows the selected blueprint.
-15. The response contains exactly the required five JSON fields.
-16. If class definitions are requested, verify that their complete source code is not already available in the current task context.
-17. Never include a class in the “classes” response field if its complete definition has already been provided through framework instructions, base class definitions, or previous conversation messages.
-Instruction;
+
+Instruction . implode(PHP_EOL, $rules);
     }
 }

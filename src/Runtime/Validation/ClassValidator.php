@@ -13,8 +13,8 @@ namespace Stateforge\Scenario\Ai\Runtime\Validation;
 
 use Stateforge\Scenario\Ai\Contract\Validator;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
-use Stateforge\Scenario\Ai\Runtime\Exception\AllClassesProvidedException;
-use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\AllClassesProvidedException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeRegistry;
 use function class_exists;
 use function count;

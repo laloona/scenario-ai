@@ -11,7 +11,6 @@
 
 namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Adapter;
 
-use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -34,10 +33,11 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\AdapterConfiguration;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
-use Stateforge\Scenario\Ai\Runtime\Exception\AllClassesProvidedException;
-use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
-use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\NoAuditFoundException;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\AllClassesProvidedException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\AttributeValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ClassDoesNotExistException;
 
 #[CoversClass(AiConversation::class)]
 #[UsesClass(Configuration::class)]
@@ -50,6 +50,7 @@ use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
 #[UsesClass(AllClassesProvidedException::class)]
 #[UsesClass(ClassDoesNotExistException::class)]
 #[UsesClass(InvalidJsonResponseException::class)]
+#[UsesClass(NoAuditFoundException::class)]
 #[Group('runtime')]
 #[Small]
 final class AiConversationTest extends TestCase
@@ -57,8 +58,8 @@ final class AiConversationTest extends TestCase
     public function testResponseRequiresPreviousTalk(): void
     {
         $conversation = $this->conversation(self::createStub(AiClient::class));
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('No audit available.');
+        $this->expectException(NoAuditFoundException::class);
+        $this->expectExceptionMessage('No audit found.');
 
         $conversation->response();
     }

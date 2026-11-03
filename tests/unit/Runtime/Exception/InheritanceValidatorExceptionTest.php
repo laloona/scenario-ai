@@ -17,7 +17,8 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Stateforge\Scenario\Ai\Runtime\Exception\InheritanceValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\InheritanceValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ValidatorException;
 
 #[CoversClass(InheritanceValidatorException::class)]
 #[Group('runtime')]
@@ -35,5 +36,6 @@ final class InheritanceValidatorExceptionTest extends TestCase
             'Class "' . RuntimeException::class . '" must extend "' . Exception::class . '" directly or indirectly.',
             $exception->getMessage(),
         );
+        self::assertInstanceOf(ValidatorException::class, $exception);
     }
 }

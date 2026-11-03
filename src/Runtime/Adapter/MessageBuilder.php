@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 
+use Stateforge\Scenario\Ai\Contract\MessageContentBuilder;
+
 use function json_encode;
 use const JSON_THROW_ON_ERROR;
 

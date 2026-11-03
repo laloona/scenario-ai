@@ -21,7 +21,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use Stateforge\Scenario\Ai\Runtime\Exception\ScenarioAstException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ScenarioAstException;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 
 #[CoversClass(ScenarioAst::class)]

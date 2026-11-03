@@ -15,12 +15,14 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Maker\NoDirectoriesGivenException;
 use Stateforge\Scenario\Ai\Runtime\Maker\DirectoryResolver;
 use const DIRECTORY_SEPARATOR;
 
 #[CoversClass(DirectoryResolver::class)]
+#[UsesClass(NoDirectoriesGivenException::class)]
 #[Group('runtime')]
 #[Small]
 final class DirectoryResolverTest extends TestCase
@@ -49,8 +51,8 @@ final class DirectoryResolverTest extends TestCase
 
     public function testRejectsEmptyDirectoryList(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('No directories configured.');
+        $this->expectException(NoDirectoriesGivenException::class);
+        $this->expectExceptionMessage('No directories given to resolve.');
 
         (new DirectoryResolver([], 'Suite'))->resolve('Any');
     }

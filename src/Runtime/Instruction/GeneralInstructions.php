@@ -29,21 +29,24 @@ final class GeneralInstructions implements Instruction
     public function instruct(AdapterMode $mode): string
     {
         $instruction = new Instructions();
+        if ($mode->isSkill() === true) {
+            $instruction->add(new SkillHeaderInstruction());
+        }
         $instruction->add(new BaseInstruction());
         $instruction->add(new AttributeInstruction());
         $instruction->add(new DocumentationInstruction($this->docPath));
-        if ($mode->isCli()) {
+        if ($mode->isCli() === true) {
             $instruction->add(new QuestionLimitInstruction($this->maxQuestions, $this->questionsAsked));
         }
         $instruction->add(new ValueTypeInstruction());
         $instruction->add(new ParameterTypeListInstruction($this->parameterPath, $this->allowProjectInformation));
 
-        if ($mode->isSkill()
+        if ($mode->isSkill() === true
             || $this->allowProjectInformation === true) {
             $instruction->add(new ScenarioListInstruction());
         }
 
-        if ($mode->isCli()
+        if ($mode->isCli() === true
             && $this->projectDoc !== null) {
             $instruction->add(new DocumentationInstruction($this->projectDoc));
         }

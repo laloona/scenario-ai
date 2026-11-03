@@ -11,12 +11,12 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 
-use LogicException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Contract\AiContext;
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
-use Stateforge\Scenario\Ai\Runtime\Exception\ValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\NoAuditFoundException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ValidatorException;
 use function array_key_last;
 use function count;
 
@@ -116,7 +116,7 @@ final class AiConversation
     private function lastAudit(): AiAudit
     {
         if (count($this->audits) === 0) {
-            throw new LogicException('No audit available.');
+            throw new NoAuditFoundException();
         }
 
         return $this->audits[array_key_last($this->audits)];

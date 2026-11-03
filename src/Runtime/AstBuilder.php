@@ -12,7 +12,7 @@
 namespace Stateforge\Scenario\Ai\Runtime;
 
 use PhpParser\ParserFactory;
-use RuntimeException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ScenarioAstBuilderException;
 
 final class AstBuilder
 {
@@ -23,7 +23,7 @@ final class AstBuilder
             ->parse($phpCode);
 
         if ($ast === null) {
-            throw new RuntimeException('Unable to parse PHP code.');
+            throw new ScenarioAstBuilderException();
         }
 
         return new ScenarioAst($ast);

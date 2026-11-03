@@ -17,7 +17,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use Stateforge\Scenario\Ai\Runtime\Exception\InvalidGeneratedCodeException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\InvalidGeneratedCodeException;
 use Stateforge\Scenario\Ai\Runtime\Validation\SyntaxValidator;
 
 #[CoversClass(SyntaxValidator::class)]

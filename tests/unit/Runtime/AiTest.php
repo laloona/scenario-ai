@@ -35,6 +35,7 @@ use Stateforge\Scenario\Ai\Runtime\AdapterMode;
 use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\ConfigurationBuilder;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\UnknownAdapterException;
 use Stateforge\Scenario\Ai\Runtime\Exception\NoConfigException;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use Stateforge\Scenario\Core\Runtime\Application;
@@ -47,6 +48,7 @@ use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
 #[CoversClass(Ai::class)]
+#[UsesClass(UnknownAdapterException::class)]
 #[UsesClass(AdapterRegistry::class)]
 #[UsesClass(AiConversation::class)]
 #[UsesClass(FileBuilder::class)]
@@ -203,7 +205,7 @@ final class AiTest extends FilesystemTestCase
         );
         $context = $this->createMock(AiContext::class);
         $context->expects(self::never())->method('instruction');
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(UnknownAdapterException::class);
         $this->expectExceptionMessage('Unknown adapter "unknown".');
 
         Ai::skill($context);

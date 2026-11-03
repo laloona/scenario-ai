@@ -14,13 +14,15 @@ namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Maker;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
-use RuntimeException;
+use PHPUnit\Framework\Attributes\UsesClass;
+use Stateforge\Scenario\Ai\Runtime\Exception\Maker\DirectoryCreationException;
 use Stateforge\Scenario\Ai\Runtime\Maker\CodeWriter;
 use Stateforge\Scenario\Ai\Tests\Unit\FilesystemTestCase;
 use function file_get_contents;
 use function file_put_contents;
 
 #[CoversClass(CodeWriter::class)]
+#[UsesClass(DirectoryCreationException::class)]
 #[Group('runtime')]
 #[Small]
 final class CodeWriterTest extends FilesystemTestCase
@@ -40,7 +42,7 @@ final class CodeWriterTest extends FilesystemTestCase
     {
         $parent = $this->testDirectory . '/existing-file';
         file_put_contents($parent, 'Original');
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DirectoryCreationException::class);
         $this->expectExceptionMessage('Could not create directory "' . $parent . '/nested".');
 
         // mkdir emits a warning as well as returning false for this expected failure.

@@ -13,12 +13,13 @@ namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime;
 
 use PhpParser\Error;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
-use Stateforge\Scenario\Ai\Runtime\Exception\ScenarioAstException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ScenarioAstException;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 
 #[CoversClass(AstBuilder::class)]
@@ -36,18 +37,43 @@ final class AstBuilderTest extends TestCase
         self::assertSame('App\\Scenario', $ast->getNamespace());
     }
 
-    public function testBuildRejectsInvalidPhp(): void
+    #[DataProvider('invalidPhp')]
+    public function testBuildRejectsInvalidPhp(string $code): void
     {
         $this->expectException(Error::class);
 
-        (new AstBuilder())->build('<?php class {');
+        (new AstBuilder())->build($code);
     }
 
-    public function testEmptyPhpProducesAstWithoutClass(): void
+    #[DataProvider('emptyPhp')]
+    public function testEmptyPhpProducesAstWithoutClass(string $code): void
     {
-        $ast = (new AstBuilder())->build('<?php');
+        $ast = (new AstBuilder())->build($code);
 
         $this->expectException(ScenarioAstException::class);
         $ast->getClass();
     }
+    public function testBuildParsesClassWithoutNamespace(): void
+    {
+        $ast = (new AstBuilder())->build('<?php final class Demo {}');
+
+        self::assertSame('Demo', $ast->getClassName());
+        self::assertSame('', $ast->getNamespace());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidPhp(): iterable
+    {
+        yield 'missing class name' => ['<?php class {'];
+        yield 'invalid function declaration' => ['<?php function broken( {'];
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function emptyPhp(): iterable
+    {
+        yield 'empty input' => [''];
+        yield 'opening tag only' => ['<?php'];
+        yield 'comment only' => ['<?php // No class'];
+    }
+
 }

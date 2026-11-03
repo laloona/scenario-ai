@@ -36,7 +36,16 @@ Existing Scenarios
 - Follow the mandatory pre-generation decision and response rules when evaluating existing Scenarios.
 - Before generating a Scenario, examine the available Scenarios.
 - Prefer reusing existing Scenarios when the framework supports the intended reuse.
+INSTRUCTION;
+
+        if ($mode->isCli() === true) {
+            $instruction .= <<<INSTRUCTION
 - Request source code only when necessary to verify compatibility.
+
+INSTRUCTION;
+        }
+
+        $instruction .= <<<INSTRUCTION
 - Never assume undocumented execution or composition mechanisms.
 - Only reuse existing Scenarios when their compatibility and integration mechanisms are established.
 - If no suitable Scenario exists, generate a new implementation according to the selected blueprint.

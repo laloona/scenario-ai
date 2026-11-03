@@ -39,7 +39,17 @@ Existing Parameter Types
 - Follow the mandatory pre-generation decision and response rules when evaluating existing Parameter Types.
 - Before generating a ParameterType, examine the available Parameter Types.
 - Prefer existing Parameter Types over duplicate implementations.
+
+INSTRUCTION;
+
+        if ($mode->isCli() === true) {
+            $instruction .= <<<INSTRUCTION
 - Request source code only when necessary to verify compatibility.
+
+INSTRUCTION;
+        }
+
+        $instruction .= <<<INSTRUCTION
 - Do not assume undocumented validation rules, conversion behavior, or supported value types.
 - When generating a Scenario, reuse suitable existing Parameter Types if their compatibility and usage are documented.
 - If no suitable ParameterType exists, generate a new implementation according to the selected blueprint.

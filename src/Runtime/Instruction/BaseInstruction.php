@@ -20,7 +20,7 @@ final class BaseInstruction implements Instruction
     public function instruct(AdapterMode $mode): string
     {
         $instruction = $this->introduction() . PHP_EOL .
-            $this->general() . PHP_EOL .
+            $this->general($mode) . PHP_EOL .
             $this->generationType($mode) . PHP_EOL .
             $this->preservation() . PHP_EOL .
             $this->context() . PHP_EOL .
@@ -31,9 +31,9 @@ final class BaseInstruction implements Instruction
         }
 
         $instruction .= $this->implementation() . PHP_EOL .
-            $this->existing() . PHP_EOL .
-            $this->reuse() . PHP_EOL .
-            $this->clarification() . PHP_EOL;
+            $this->existing($mode) . PHP_EOL .
+            $this->reuse($mode) . PHP_EOL .
+            $this->clarification($mode) . PHP_EOL;
 
         if ($mode->isCli() === true) {
             $instruction .= $this->response() . PHP_EOL;
@@ -56,9 +56,9 @@ Reusing an existing implementation is a successful outcome and takes precedence 
 INSTRUCTIONS;
     }
 
-    private function general(): string
+    private function general(AdapterMode $mode): string
     {
-        return <<<'INSTRUCTIONS'
+        $instruction = <<<'INSTRUCTIONS'
 General Rules
 
 - Generate PHP code compatible with PHP ^8.2.
@@ -66,15 +66,45 @@ General Rules
 - Never invent framework methods, attributes, or interfaces.
 - Never invent application-specific classes, services, repositories, properties, or methods.
 - Do not assume that classes appearing in documentation examples exist in the current project.
+INSTRUCTIONS;
+
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - Only reference project-specific classes that are explicitly listed as available or whose definitions have been provided.
+
+INSTRUCTIONS;
+
+        }
+
+        $instruction .= <<<'INSTRUCTIONS'
 - Do not infer class behavior, constructor signatures, or available methods from class names alone.
 - Prefer complete, executable implementations over speculative code.
 - Never replace required behavior with placeholder comments, TODOs, or exceptions.
+
+INSTRUCTIONS;
+
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - If code generation is required, generate exactly one PHP class.
+
+INSTRUCTIONS;
+
+        }
+
+        $instruction .= <<<'INSTRUCTIONS'
 - Never generate a duplicate implementation when a fully compatible existing implementation is available, unless the user explicitly requests a new implementation.
+
+INSTRUCTIONS;
+
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - Return responses exclusively using the provided JSON schema.
 
 INSTRUCTIONS;
+
+        }
+
+        return $instruction;
     }
 
     private function generationType(AdapterMode $mode): string
@@ -92,7 +122,7 @@ Generation Type Rules
 
 INSTRUCTIONS;
 
-        if ($mode->isCli()) {
+        if ($mode->isCli() === true) {
             $instruction .= <<<'INSTRUCTIONS'
 - The “type” field MUST represent the requested generation type.
 - Never generate PHP code with “type” set to null.
@@ -180,7 +210,16 @@ For a new task:
 - Do not inherit previous implementation requirements or decisions.
 For an existing task:
 - Preserve the original requirements and generation type.
+
+INSTRUCTIONS;
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - Continue processing previously requested class definitions or clarifications.
+
+INSTRUCTIONS;
+        }
+
+        $instruction .= <<<'INSTRUCTIONS'
 - Do not restart the task unnecessarily.
 - If the user explicitly changes the requirements, evaluate the updated requirements.
 A previous decision to reuse or generate an implementation does not automatically apply to a new task.
@@ -194,8 +233,28 @@ A suitable match requires full functional compatibility, not merely semantic sim
 Pay particular attention to contradictory conditions, such as past vs. future, minimum vs. maximum, or required vs. forbidden values.
 An implementation MUST NOT be reused if any documented behavior contradicts the user’s requirements.
 A class name alone is not sufficient evidence of compatibility.
+
+INSTRUCTIONS;
+
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 If the description explicitly confirms full compatibility, return the implementation in “match” without requesting its source code.
 If compatibility is uncertain, request the class definition before deciding.
+
+INSTRUCTIONS;
+        }
+
+        if ($mode->isSkill() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
+Inspect the actual project source code to identify existing implementations.
+Search both framework-provided and application-specific classes.
+Read relevant class definitions when compatibility cannot be determined from documentation.
+Ask the user for source code only when the required files are inaccessible.
+
+INSTRUCTIONS;
+        }
+
+        $instruction .= <<<'INSTRUCTIONS'
 If an implementation is clearly incompatible, exclude it without requesting its source code.
 Do not generate PHP code before completing this evaluation.
 
@@ -329,14 +388,26 @@ Implementation Rules
 INSTRUCTIONS;
     }
 
-    private function existing(): string
+    private function existing(AdapterMode $mode): string
     {
-        return <<<'INSTRUCTIONS'
+        $instruction = <<<'INSTRUCTIONS'
 Access to Existing Project Classes
 
+INSTRUCTIONS;
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - Existing class names and descriptions may be provided as project context.
+
+INSTRUCTIONS;
+        }
+
+        $instruction .= <<<'INSTRUCTIONS'
 - Only consider implementations compatible with the requested generation type.
 - Compare requested functionality against documented behavior, not class names alone.
+
+INSTRUCTIONS;
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - Request source code when additional implementation details are necessary to verify compatibility.
 - Do not request source code when the available description already establishes compatibility.
 - Never assume that access to a class name or description grants access to its source code.
@@ -347,6 +418,11 @@ Access to Existing Project Classes
 - Reuse available class definitions when evaluating existing implementations or generating PHP code.
 - Only request class definitions whose source code is not already available and whose implementation details are necessary to fulfill the current request.
 - If access to a class is denied, continue using the available information without inventing missing implementation details.
+
+INSTRUCTIONS;
+        }
+
+        $instruction .= <<<'INSTRUCTIONS'
 - Prefer reusing existing implementations when they satisfy the requirements and their usage is supported by the framework.
 - Never propose an unrelated implementation merely because it appears in the available project information.
 - Never search for another implementation after the user has accepted an existing one.
@@ -354,40 +430,69 @@ Access to Existing Project Classes
 - Never assume undocumented methods, properties, constructor arguments, or other implementation details.
 
 INSTRUCTIONS;
+
+        return $instruction;
     }
 
-    private function reuse(): string
+    private function reuse(AdapterMode $mode): string
     {
-        return <<<'INSTRUCTIONS'
+        $instruction = <<<'INSTRUCTIONS'
 Existing Implementation Reuse Rules
 
 - Reuse suitable existing implementations automatically.
 - Do not ask the user whether an existing implementation should be reused.
+
+INSTRUCTIONS;
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - Return the fully qualified class name in "match" when compatibility is established.
 - Returning "match" is a successful terminal response.
+
+INSTRUCTIONS;
+        }
+
+        $instruction .= <<<'INSTRUCTIONS'
 - Do not generate duplicate PHP code when a suitable implementation exists.
 - Respect explicit user requests to generate a new implementation instead.
+
+INSTRUCTIONS;
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - Never return an unrelated implementation in "match".
 - Do not require previous user acceptance before returning "match".
 
 INSTRUCTIONS;
+        }
+
+        return $instruction;
     }
 
-    private function clarification(): string
+    private function clarification(AdapterMode $mode): string
     {
-        return <<<'INSTRUCTIONS'
+        $instruction = <<<'INSTRUCTIONS'
 Clarification Rules
 
 - Ask clarification questions only when essential information cannot be obtained from the available project classes or documentation.
+
+INSTRUCTIONS;
+
+        if ($mode->isCli() === true) {
+            $instruction .= <<<'INSTRUCTIONS'
 - Prefer requesting relevant class definitions over asking the user to describe an existing implementation.
 - Ask only one specific clarification question per response.
 - Requests for class definitions are not clarification questions.
+
+INSTRUCTIONS;
+        }
+
+        $instruction .= <<<'INSTRUCTIONS'
 - A configured clarification question limit MUST NOT override requirements for correct and complete implementations.
 - Reaching a clarification question limit MUST NOT authorize speculative code generation.
 - If essential information remains unavailable, do not generate incomplete or unrelated code.
 
 INSTRUCTIONS;
 
+        return $instruction;
     }
 
     private function response(): string

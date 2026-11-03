@@ -44,6 +44,16 @@ Scenario Rules
 - Use only documented framework APIs and known project dependencies.
 - Prefer existing Scenario composition when suitable Scenarios are explicitly available.
 - Request missing project class definitions when necessary.
+INSTRUCTIONS;
+
+        if ($mode->isCli() === true) {
+            $instructions .= <<<'INSTRUCTIONS'
+- Request missing project class definitions when necessary.
+
+INSTRUCTIONS;
+        }
+
+        $instructions .= <<<'INSTRUCTIONS'
 - Never invent application-specific APIs to replace missing information.
 - Never generate an empty up() method unless the requested state is fully established through supported Scenario composition.
 - If essential implementation details remain unavailable, request the missing information instead of generating an incomplete Scenario.

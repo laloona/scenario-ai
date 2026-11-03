@@ -36,12 +36,18 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\MessageStringBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientEmptyContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientHttpException;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
 use function json_decode;
 use function json_encode;
 use const JSON_THROW_ON_ERROR;
 
 #[CoversClass(ClaudeClient::class)]
+#[UsesClass(AiClientContentException::class)]
+#[UsesClass(AiClientEmptyContentException::class)]
+#[UsesClass(AiClientHttpException::class)]
 #[UsesClass(ClaudeConfig::class)]
 #[UsesClass(ClaudeFormat::class)]
 #[UsesClass(AiAudit::class)]
@@ -105,7 +111,7 @@ final class ClaudeClientTest extends TestCase
     {
         $http = self::createStub(HttpClient::class);
         $http->method('sendRequest')->willReturn(new Response($status, [], 'API failure'));
-        $this->expectException(RuntimeException::class);
+        $this->expectException(AiClientHttpException::class);
         $this->expectExceptionMessage('Claude API returned HTTP ' . $status . ': API failure');
 
         $this->client($http)->request(new AiRequest(null, 'Generate', 1), []);
@@ -117,31 +123,32 @@ final class ClaudeClientTest extends TestCase
         return ['client error' => [400], 'server error' => [500]];
     }
 
+    /** @param class-string<AiClientContentException|AiClientEmptyContentException> $exceptionClass */
     #[DataProvider('invalidResponseProvider')]
-    public function testRejectsInvalidProviderResponse(string $body, string $message): void
+    public function testRejectsInvalidProviderResponse(string $body, string $message, string $exceptionClass): void
     {
         $http = self::createStub(HttpClient::class);
         $http->method('sendRequest')->willReturn(new Response(200, [], $body));
-        $this->expectException(RuntimeException::class);
+        $this->expectException($exceptionClass);
         $this->expectExceptionMessage($message);
 
         $this->client($http)->request(new AiRequest(null, 'Generate', 1), []);
     }
 
-    /** @return array<string, array{string, string}> */
+    /** @return array<string, array{string, string, class-string<AiClientContentException|AiClientEmptyContentException>}> */
     public static function invalidResponseProvider(): array
     {
         return [
-            'non object' => ['null', 'Invalid Claude response.'],
-            'missing id' => ['{}', 'Claude response has no valid id.'],
-            'invalid id' => ['{"id":42}', 'Claude response has no valid id.'],
-            'missing stop reason' => ['{"id":"id"}', 'Claude generation stopped unexpectedly: unknown'],
-            'invalid stop reason' => ['{"id":"id","stop_reason":42}', 'Claude generation stopped unexpectedly: unknown'],
-            'token limit' => ['{"id":"id","stop_reason":"max_tokens"}', 'Claude generation stopped unexpectedly: max_tokens'],
-            'missing content' => ['{"id":"id","stop_reason":"end_turn"}', 'Claude response has no valid content.'],
-            'invalid content' => ['{"id":"id","stop_reason":"end_turn","content":"wrong"}', 'Claude response has no valid content.'],
-            'empty content' => ['{"id":"id","stop_reason":"end_turn","content":[]}', 'No output text found in Claude response.'],
-            'unusable content' => ['{"id":"id","stop_reason":"end_turn","content":[null,{"type":"tool_use"},{"type":"text","text":42}]}', 'No output text found in Claude response.'],
+            'non object' => ['null', 'Invalid Claude API response.', AiClientContentException::class],
+            'missing id' => ['{}', 'Claude API response has no valid id.', AiClientContentException::class],
+            'invalid id' => ['{"id":42}', 'Claude API response has no valid id.', AiClientContentException::class],
+            'missing stop reason' => ['{"id":"id"}', 'Claude API generation stopped unexpectedly: unknown', AiClientContentException::class],
+            'invalid stop reason' => ['{"id":"id","stop_reason":42}', 'Claude API generation stopped unexpectedly: unknown', AiClientContentException::class],
+            'token limit' => ['{"id":"id","stop_reason":"max_tokens"}', 'Claude API generation stopped unexpectedly: max_tokens', AiClientContentException::class],
+            'missing content' => ['{"id":"id","stop_reason":"end_turn"}', 'Claude API response has no valid content.', AiClientContentException::class],
+            'invalid content' => ['{"id":"id","stop_reason":"end_turn","content":"wrong"}', 'Claude API response has no valid content.', AiClientContentException::class],
+            'empty content' => ['{"id":"id","stop_reason":"end_turn","content":[]}', 'No output text found in Claude API response.', AiClientEmptyContentException::class],
+            'unusable content' => ['{"id":"id","stop_reason":"end_turn","content":[null,{"type":"tool_use"},{"type":"text","text":42}]}', 'No output text found in Claude API response.', AiClientEmptyContentException::class],
         ];
     }
 

@@ -11,9 +11,9 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Validation;
 
-use Stateforge\Scenario\Ai\Runtime\Exception\InheritanceValidatorException;
-use Stateforge\Scenario\Ai\Runtime\Exception\NoExistingParentClassException;
-use Stateforge\Scenario\Ai\Runtime\Exception\NoInheritanceException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\InheritanceValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\NoExistingParentClassException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\NoInheritanceException;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use function class_exists;
 use function is_subclass_of;

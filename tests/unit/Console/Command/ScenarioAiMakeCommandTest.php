@@ -34,7 +34,7 @@ use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Context;
-use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\AttributeValidatorException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ClassInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\FinalValidationInstruction;

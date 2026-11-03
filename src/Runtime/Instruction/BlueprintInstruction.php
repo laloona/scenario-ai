@@ -25,7 +25,7 @@ final class BlueprintInstruction implements Instruction
 
     public function instruct(AdapterMode $mode): string
     {
-        return <<<'INSTRUCTIONS'
+        $instructions = <<<'INSTRUCTIONS'
 Blueprint Rules
 
 - Use only the blueprint corresponding to the selected generation type.
@@ -53,17 +53,29 @@ Generated Code Quality Rules
 Namespace Rules
 
 - The selected blueprint defines the authoritative PHP namespace declaration.
+
+INSTRUCTIONS;
+
+        if ($mode->isCli() === true) {
+            $instructions .= <<<'INSTRUCTIONS'
 - The %nameSpace% placeholder MUST be replaced using literal string substitution.
 - Treat the configured namespace as an opaque string.
 - Copy the configured namespace into the placeholder character by character, preserving every namespace segment and its original order.
+
+INSTRUCTIONS;
+        }
+
+        $instructions .= <<<'INSTRUCTIONS'
 - Do NOT remove namespace segments, even if they appear redundant.
 - Do NOT normalize, simplify, shorten, or restructure the resulting namespace.
 - Preserve every character outside the %nameSpace% placeholder exactly as defined in the blueprint.
 - If no configured namespace is available, choose an appropriate replacement value.
 - The final namespace MUST be identical to the original blueprint namespace after literal substitution of %nameSpace%.
 - Before returning generated PHP code, verify that the namespace matches this substitution exactly.
-INSTRUCTIONS . PHP_EOL . PHP_EOL .
+INSTRUCTIONS . PHP_EOL .
         $this->scenarioBlueprintInstruction->instruct($mode) . PHP_EOL . PHP_EOL .
         $this->parameterBlueprintInstruction->instruct($mode) . PHP_EOL . PHP_EOL;
+
+        return $instructions;
     }
 }

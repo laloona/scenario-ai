@@ -11,7 +11,6 @@
 
 namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime\Maker;
 
-use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -20,6 +19,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use ReflectionClass;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
+use Stateforge\Scenario\Ai\Runtime\Exception\ApplicationConfigNotInitializedException;
 use Stateforge\Scenario\Ai\Runtime\Maker\CodeMaker;
 use Stateforge\Scenario\Ai\Runtime\Maker\CodeWriter;
 use Stateforge\Scenario\Ai\Runtime\Maker\DirectoryResolver;
@@ -34,6 +34,7 @@ use function file_get_contents;
 use const DIRECTORY_SEPARATOR;
 
 #[CoversClass(CodeMaker::class)]
+#[UsesClass(ApplicationConfigNotInitializedException::class)]
 #[UsesClass(AstBuilder::class)]
 #[UsesClass(ScenarioAst::class)]
 #[UsesClass(DirectoryResolver::class)]
@@ -59,7 +60,7 @@ final class CodeMakerTest extends FilesystemTestCase
 
     public function testRequiresInitializedConfiguration(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(ApplicationConfigNotInitializedException::class);
         $this->expectExceptionMessage('Scenario configuration is not initialized.');
 
         (new CodeMaker())->make(GenerationType::Scenario, '<?php class Demo {}');

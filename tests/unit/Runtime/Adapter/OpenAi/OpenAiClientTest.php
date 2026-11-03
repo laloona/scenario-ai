@@ -36,12 +36,18 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi\OpenAiFormat;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientEmptyContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientHttpException;
 use Stateforge\Scenario\Ai\Runtime\Exception\InvalidJsonResponseException;
 use function json_decode;
 use function json_encode;
 use const JSON_THROW_ON_ERROR;
 
 #[CoversClass(OpenAiClient::class)]
+#[UsesClass(AiClientContentException::class)]
+#[UsesClass(AiClientEmptyContentException::class)]
+#[UsesClass(AiClientHttpException::class)]
 #[UsesClass(OpenAiConfig::class)]
 #[UsesClass(OpenAiFormat::class)]
 #[UsesClass(AiAudit::class)]
@@ -106,7 +112,7 @@ final class OpenAiClientTest extends TestCase
     {
         $http = self::createStub(HttpClient::class);
         $http->method('sendRequest')->willReturn(new Response($status, [], 'API failure'));
-        $this->expectException(RuntimeException::class);
+        $this->expectException(AiClientHttpException::class);
         $this->expectExceptionMessage('OpenAI API returned HTTP ' . $status . ': API failure');
 
         $this->client($http)->request(new AiRequest(null, 'Generate', 1), []);
@@ -118,32 +124,33 @@ final class OpenAiClientTest extends TestCase
         return ['client error' => [400], 'server error' => [500]];
     }
 
+    /** @param class-string<AiClientContentException|AiClientEmptyContentException> $exceptionClass */
     #[DataProvider('invalidResponseProvider')]
-    public function testRejectsInvalidProviderResponse(string $body, string $message): void
+    public function testRejectsInvalidProviderResponse(string $body, string $message, string $exceptionClass): void
     {
         $http = self::createStub(HttpClient::class);
         $http->method('sendRequest')->willReturn(new Response(200, [], $body));
-        $this->expectException(RuntimeException::class);
+        $this->expectException($exceptionClass);
         $this->expectExceptionMessage($message);
 
         $this->client($http)->request(new AiRequest(null, 'Generate', 1), []);
     }
 
-    /** @return array<string, array{string, string}> */
+    /** @return array<string, array{string, string, class-string<AiClientContentException|AiClientEmptyContentException>}> */
     public static function invalidResponseProvider(): array
     {
         return [
-            'non object' => ['null', 'Invalid OpenAI response.'],
-            'missing id' => ['{}', 'OpenAI response has no valid id.'],
-            'invalid id' => ['{"id":42}', 'OpenAI response has no valid id.'],
-            'not completed' => ['{"id":"id","status":"incomplete"}', 'OpenAI response was not completed.'],
-            'missing output' => ['{"id":"id","status":"completed"}', 'OpenAI response has no valid output.'],
-            'invalid output' => ['{"id":"id","status":"completed","output":42}', 'OpenAI response has no valid output.'],
-            'empty output' => ['{"id":"id","status":"completed","output":[]}', 'No output text found in OpenAI response.'],
-            'invalid text' => ['{"id":"id","status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":42}]}]}', 'OpenAI output text is invalid.'],
-            'refused' => ['{"id":"id","status":"completed","output":[{"type":"message","content":[{"type":"refusal","refusal":"Not allowed"}]}]}', 'OpenAI refused the request: Not allowed'],
-            'refusal without reason' => ['{"id":"id","status":"completed","output":[{"type":"message","content":[{"type":"refusal"}]}]}', 'OpenAI refused the request: Unknown reason'],
-            'unusable outputs' => ['{"id":"id","status":"completed","output":[null,{"type":"reasoning"},{"type":"message","content":false},{"type":"message","content":[null,{"type":"other"}]}]}', 'No output text found in OpenAI response.'],
+            'non object' => ['null', 'Invalid OpenAI API response.', AiClientContentException::class],
+            'missing id' => ['{}', 'OpenAI API response has no valid id.', AiClientContentException::class],
+            'invalid id' => ['{"id":42}', 'OpenAI API response has no valid id.', AiClientContentException::class],
+            'not completed' => ['{"id":"id","status":"incomplete"}', 'OpenAI API response was not completed.', AiClientContentException::class],
+            'missing output' => ['{"id":"id","status":"completed"}', 'OpenAI API response has no valid output.', AiClientContentException::class],
+            'invalid output' => ['{"id":"id","status":"completed","output":42}', 'OpenAI API response has no valid output.', AiClientContentException::class],
+            'empty output' => ['{"id":"id","status":"completed","output":[]}', 'No output text found in OpenAI API response.', AiClientEmptyContentException::class],
+            'invalid text' => ['{"id":"id","status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":42}]}]}', 'OpenAI API output text is invalid.', AiClientContentException::class],
+            'refused' => ['{"id":"id","status":"completed","output":[{"type":"message","content":[{"type":"refusal","refusal":"Not allowed"}]}]}', 'OpenAI refused the request: Not allowed', AiClientContentException::class],
+            'refusal without reason' => ['{"id":"id","status":"completed","output":[{"type":"message","content":[{"type":"refusal"}]}]}', 'OpenAI refused the request: Unknown reason', AiClientContentException::class],
+            'unusable outputs' => ['{"id":"id","status":"completed","output":[null,{"type":"reasoning"},{"type":"message","content":false},{"type":"message","content":[null,{"type":"other"}]}]}', 'No output text found in OpenAI API response.', AiClientEmptyContentException::class],
         ];
     }
 

@@ -14,8 +14,11 @@ namespace Stateforge\Scenario\Ai\Runtime;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
-use InvalidArgumentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\InvalidAdapterConfigurationException;
+use Stateforge\Scenario\Ai\Runtime\Exception\InvalidAdapterVarsXPathException;
+use Stateforge\Scenario\Ai\Runtime\Exception\InvalidAdapterXPathException;
 use Stateforge\Scenario\Ai\Runtime\Exception\NoConfigException;
+use Stateforge\Scenario\Ai\Runtime\Exception\NoRootXmlException;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\ConfigurationFinder;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\XMLParser;
 use function filter_var;
@@ -47,19 +50,19 @@ final class ConfigurationBuilder
         $xpath = new DOMXPath($document);
         $nodes = $xpath->query('/scenario-ai/adapter');
         if ($nodes === false) {
-            throw new InvalidArgumentException('Invalid adapter XPath expression.');
+            throw new InvalidAdapterXPathException();
         }
 
         $adapter = $nodes->item(0);
         if (!$adapter instanceof DOMElement) {
-            throw new InvalidArgumentException('Adapter configuration not found.');
+            throw new InvalidAdapterConfigurationException();
         }
 
         /** @var array<string, string> $vars */
         $vars = [];
         $varNodes = $xpath->query('var', $adapter);
         if ($varNodes === false) {
-            throw new InvalidArgumentException('Invalid adapter variables XPath expression.');
+            throw new InvalidAdapterVarsXPathException();
         }
 
         foreach ($varNodes as $var) {
@@ -83,7 +86,7 @@ final class ConfigurationBuilder
 
         $root = $document->documentElement;
         if ($root === null) {
-            throw new InvalidArgumentException('XML document has no root element.');
+            throw new NoRootXmlException();
         }
 
         $projectDoc = $root->getAttribute('projectDoc');

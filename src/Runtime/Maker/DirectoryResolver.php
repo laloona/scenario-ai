@@ -11,7 +11,7 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Maker;
 
-use RuntimeException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Maker\NoDirectoriesGivenException;
 use Stateforge\Scenario\Core\Runtime\NamespaceResolver;
 use function array_values;
 use function count;
@@ -38,7 +38,7 @@ final class DirectoryResolver
     public function resolve(string $namespace): string
     {
         if (count($this->directories) === 0) {
-            throw new RuntimeException('No directories configured.');
+            throw new NoDirectoriesGivenException();
         }
 
         $namespace = trim($namespace, '\\');

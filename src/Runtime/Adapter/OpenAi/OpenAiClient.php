@@ -14,7 +14,6 @@ namespace Stateforge\Scenario\Ai\Runtime\Adapter\OpenAi;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface as HttpClient;
 use Psr\Http\Message\ResponseInterface;
-use RuntimeException;
 use Stateforge\Scenario\Ai\Contract\AiClient;
 use Stateforge\Scenario\Ai\Contract\Instruction;
 use Stateforge\Scenario\Ai\Runtime\Adapter\AiAudit;
@@ -23,11 +22,13 @@ use Stateforge\Scenario\Ai\Runtime\Adapter\AiResponse;
 use Stateforge\Scenario\Ai\Runtime\Adapter\MessageBuilder;
 use Stateforge\Scenario\Ai\Runtime\Adapter\ResponseDecoder;
 use Stateforge\Scenario\Ai\Runtime\AdapterMode;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientEmptyContentException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Adapter\AiClientHttpException;
 use function is_array;
 use function is_string;
 use function json_decode;
 use function json_encode;
-use function sprintf;
 use const JSON_THROW_ON_ERROR;
 
 final class OpenAiClient implements AiClient
@@ -72,11 +73,11 @@ final class OpenAiClient implements AiClient
     private function buildResponse(ResponseInterface $response): AiResponse
     {
         if ($response->getStatusCode() >= 400) {
-            throw new RuntimeException(sprintf(
-                'OpenAI API returned HTTP %d: %s',
+            throw new AiClientHttpException(
+                'OpenAI API',
                 $response->getStatusCode(),
-                $response->getBody(),
-            ));
+                (string) $response->getBody(),
+            );
         }
 
         $data = json_decode(
@@ -87,21 +88,21 @@ final class OpenAiClient implements AiClient
         );
 
         if (is_array($data) === false) {
-            throw new RuntimeException('Invalid OpenAI response.');
+            throw new AiClientContentException('Invalid OpenAI API response.');
         }
 
         $id = $data['id'] ?? null;
         if (is_string($id) === false) {
-            throw new RuntimeException('OpenAI response has no valid id.');
+            throw new AiClientContentException('OpenAI API response has no valid id.');
         }
 
         if (($data['status'] ?? null) !== 'completed') {
-            throw new RuntimeException('OpenAI response was not completed.');
+            throw new AiClientContentException('OpenAI API response was not completed.');
         }
 
         $outputs = $data['output'] ?? null;
         if (is_array($outputs) === false) {
-            throw new RuntimeException('OpenAI response has no valid output.');
+            throw new AiClientContentException('OpenAI API response has no valid output.');
         }
 
         foreach ($outputs as $output) {
@@ -125,7 +126,7 @@ final class OpenAiClient implements AiClient
 
                 if (($content['type'] ?? null) === 'refusal') {
                     $reason = $content['refusal'] ?? null;
-                    throw new RuntimeException(
+                    throw new AiClientContentException(
                         'OpenAI refused the request: ' .
                         (is_string($reason) ? $reason : 'Unknown reason'),
                     );
@@ -137,7 +138,7 @@ final class OpenAiClient implements AiClient
 
                 $text = $content['text'] ?? null;
                 if (is_string($text) === false) {
-                    throw new RuntimeException('OpenAI output text is invalid.');
+                    throw new AiClientContentException('OpenAI API output text is invalid.');
                 }
 
                 return $this->responseDecoder->decode(
@@ -147,6 +148,6 @@ final class OpenAiClient implements AiClient
             }
         }
 
-        throw new RuntimeException('No output text found in OpenAI response.');
+        throw new AiClientEmptyContentException('OpenAI API');
     }
 }

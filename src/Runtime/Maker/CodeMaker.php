@@ -11,9 +11,9 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Maker;
 
-use LogicException;
 use Stateforge\Scenario\Ai\Runtime\Adapter\GenerationType;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
+use Stateforge\Scenario\Ai\Runtime\Exception\ApplicationConfigNotInitializedException;
 use Stateforge\Scenario\Core\Runtime\Application;
 use Stateforge\Scenario\Core\Runtime\Application\Configuration\Value\SuiteValue;
 use function array_map;
@@ -31,7 +31,7 @@ final readonly class CodeMaker
 
         $config = Application::config();
         if ($config === null) {
-            throw new LogicException('Scenario configuration is not initialized.');
+            throw new ApplicationConfigNotInitializedException();
         }
 
         $resolver = match ($type) {

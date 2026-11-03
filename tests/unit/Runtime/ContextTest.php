@@ -11,7 +11,6 @@
 
 namespace Stateforge\Scenario\Ai\Tests\Unit\Runtime;
 
-use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -32,8 +31,9 @@ use Stateforge\Scenario\Ai\Runtime\Ai;
 use Stateforge\Scenario\Ai\Runtime\AstBuilder;
 use Stateforge\Scenario\Ai\Runtime\Configuration;
 use Stateforge\Scenario\Ai\Runtime\Context;
-use Stateforge\Scenario\Ai\Runtime\Exception\AttributeValidatorException;
-use Stateforge\Scenario\Ai\Runtime\Exception\ClassDoesNotExistException;
+use Stateforge\Scenario\Ai\Runtime\Exception\ApplicationConfigNotInitializedException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\AttributeValidatorException;
+use Stateforge\Scenario\Ai\Runtime\Exception\Validation\ClassDoesNotExistException;
 use Stateforge\Scenario\Ai\Runtime\Instruction\AttributeInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BaseInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\BlueprintInstruction;
@@ -49,6 +49,7 @@ use Stateforge\Scenario\Ai\Runtime\Instruction\ParameterTypeListInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\QuestionLimitInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioBlueprintInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ScenarioListInstruction;
+use Stateforge\Scenario\Ai\Runtime\Instruction\SkillHeaderInstruction;
 use Stateforge\Scenario\Ai\Runtime\Instruction\ValueTypeInstruction;
 use Stateforge\Scenario\Ai\Runtime\ScenarioAst;
 use Stateforge\Scenario\Ai\Runtime\SourceCodeReader;
@@ -90,6 +91,7 @@ use function uniqid;
 use function unlink;
 
 #[CoversClass(Context::class)]
+#[UsesClass(ApplicationConfigNotInitializedException::class)]
 #[UsesClass(AdapterMode::class)]
 #[UsesClass(Ai::class)]
 #[UsesClass(Configuration::class)]
@@ -102,6 +104,7 @@ use function unlink;
 #[UsesClass(SourceCodeRegistry::class)]
 #[UsesClass(Instructions::class)]
 #[UsesClass(GeneralInstructions::class)]
+#[UsesClass(SkillHeaderInstruction::class)]
 #[UsesClass(ScenarioListInstruction::class)]
 #[UsesClass(ParameterTypeListInstruction::class)]
 #[UsesClass(BaseInstruction::class)]
@@ -180,7 +183,7 @@ final class ContextTest extends TestCase
 
     public function testInstructionRequiresInitializedCoreConfiguration(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(ApplicationConfigNotInitializedException::class);
         $this->expectExceptionMessage('Scenario configuration is not initialized.');
 
         (new Context())->instruction(new AiRequest(null, 'Generate a scenario', 2));

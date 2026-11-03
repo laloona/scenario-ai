@@ -11,6 +11,8 @@
 
 namespace Stateforge\Scenario\Ai\Runtime\Adapter;
 
+use Stateforge\Scenario\Ai\Contract\MessageContentBuilder;
+
 final class MessageStringBuilder implements MessageContentBuilder
 {
     public function buildContent(string $content): mixed
