@@ -137,6 +137,8 @@ For the interactive generator, continue using `ai-make`.
 
 Scenario AI separates the responsibilities involved in AI-assisted code generation.
 
+Skill generation uses the available framework documentation and generation instructions to create reusable context for external AI coding agents.
+
 ### Context
 
 The context provides the instructions and validators used during generation.
