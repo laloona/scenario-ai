@@ -27,7 +27,7 @@ The AI helps translate that description into framework-compatible PHP code.
 The Scenario framework provides the structure, conventions, and validation mechanisms.
 The developer remains responsible for reviewing and approving the generated implementation.
 
-**Describe the state. Generate the code. Review the result.**   
+**Describe the state. Generate the code. Review the result.**
 
 ## Features
 
@@ -39,6 +39,7 @@ The developer remains responsible for reviewing and approving the generated impl
 - **Controlled source code access** – The AI can request access to existing PHP classes. Source code is only shared after explicit user confirmation.
 - **Code validation** – Generated PHP code is validated before being saved.
 - **Review before activation** – Generated files remain inactive until reviewed and renamed.
+- **AI skill generation** – Generate a framework-aware skill for use with coding agents.
 - **Extensible AI integration** – Supports custom AI adapters.
 
 ## Requirements
@@ -128,6 +129,20 @@ Generated implementations can include methods such as:
 - `valueType()` – Defines the supported input value type.
 
 As with Scenarios, generated Parameter Types must be reviewed before activation.
+
+## Generating an AI Skill
+
+Scenario AI can also generate a **skill for coding agents**. Unlike the interactive `ai-make` command, which handles a specific generation request, `ai-skill` prepares reusable instructions and framework context that an agent can use when working with Stateforge Scenario.
+
+Run the command in your Scenario project:
+
+```bash
+php vendor/bin/scenario ai-skill
+```
+
+The generated skill is intended to guide agents in creating or reusing Scenarios and Parameter Types. It includes framework conventions and generation blueprints, so an agent can check for an existing compatible implementation before writing new code.
+
+For the interactive generator, continue using `ai-make`.
 
 ## Architecture
 
@@ -245,4 +260,5 @@ Framework-specific integration layers may be provided separately.
 - [Configuration](docs/configuration.md)
 - [Interactive Conversation](docs/conversation.md)
 - [Code Generation Process](docs/generation.md)
+- [AI Skill Generation](docs/skill.md)
 - [AI Providers](docs/providers.md)

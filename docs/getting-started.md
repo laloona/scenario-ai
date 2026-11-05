@@ -71,7 +71,7 @@ For example:
     projectDoc="mydocs"
     allowProjectInformation="true"
 >
-    <adapter type="openai">
+    <adapter mode="all" type="openai">
         <var name="apiKey">YOUR_OPENAI_API_KEY</var>
     </adapter>
 </scenario-ai>
@@ -81,7 +81,11 @@ Replace `YOUR_OPENAI_API_KEY` with your own API key.
 
 **Important:** Never commit real API keys or other credentials to a public repository. Keep configuration files containing credentials outside version control.
 
-## Usage
+## AI Code Generation
+
+Scenario AI provides two ways to assist with creating Scenarios and Parameter Types: interactive code generation and skill generation for AI coding agents.
+
+### Interactive Code Generation
 
 Start the interactive AI code generator:
 
@@ -103,6 +107,22 @@ Scenario AI analyzes the request and checks whether an existing implementation a
 
 If additional information is required, the AI may ask follow-up questions or request access to existing application classes.
 
+### AI Skill Generation
+
+Generate a skill for AI coding agents:
+
+```bash
+php vendor/bin/scenario ai-skill
+```
+
+Scenario AI generates a `SKILL.md` file containing instructions for AI coding agents.
+
+The generated skill includes framework documentation, available Scenarios and Parameter Types, relevant class definitions, and code generation rules.
+
+AI coding agents can use this information to understand the Stateforge Scenario framework, identify existing implementations, and generate compatible Scenarios or Parameter Types directly within the project.
+
+Unlike interactive code generation, skill generation does not start an AI conversation or generate PHP code directly. Instead, it provides the necessary context and instructions for external AI coding agents.
+
 ---
 
 ## Next Steps
@@ -110,4 +130,5 @@ If additional information is required, the AI may ask follow-up questions or req
 - [Configuration](configuration.md)
 - [Interactive Conversation](conversation.md)
 - [Code Generation Process](generation.md)
+- [AI Skill Generation](skill.md)
 - [AI Providers](providers.md)
