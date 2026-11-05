@@ -37,7 +37,7 @@ Generating a skill does not itself create, review, or activate a PHP implementat
 ## Using the Result
 
 1. Run `ai-skill` in the intended Scenario project.
-2Test the agent with both a request requiring a new implementation and a request that an existing implementation already satisfies.
+2. Test the agent with both a request requiring a new implementation and a request that an existing implementation already satisfies.
 
 ## Security and Review
 
