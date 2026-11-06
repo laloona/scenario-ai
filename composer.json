@@ -1,7 +1,7 @@
 {
   "name": "stateforge/scenario-ai",
-  "description": "Implementation to generate scenario classes with AI.",
-  "type": "symfony-bundle",
+  "description": "AI-assisted generation of Scenarios, Parameter Types, and coding agent skills.",
+  "type": "library",
   "keywords": [
     "testing",
     "phpunit",
@@ -9,8 +9,8 @@
     "scenario",
     "state",
     "test-data",
-    "symfony",
-    "ai"
+    "ai",
+    "code-generation"
   ],
   "license": "BSD-3-Clause",
   "authors": [
@@ -29,7 +29,7 @@
     "php": ">=8.2",
     "guzzlehttp/guzzle": "^7.8",
     "nikic/php-parser": "^5.9",
-    "stateforge/scenario-core": "~1.2"
+    "stateforge/scenario-core": "^1.2.3"
   },
   "autoload": {
     "psr-4": {
@@ -44,7 +44,7 @@
       "tests/files"
     ]
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "prefer-stable": true,
   "config": {
     "sort-packages": true,
@@ -58,15 +58,8 @@
     "tomasvotruba/type-coverage": "^2.2"
   },
   "extra": {
-    "symfony": {
-      "bundles": {
-        "Stateforge\\Scenario\\Symfony\\ScenarioBundle": [
-          "all"
-        ]
-      }
-    },
     "branch-alias": {
-      "dev-main": "1.0-dev"
+      "dev-main": "1.1-dev"
     }
   }
 }
