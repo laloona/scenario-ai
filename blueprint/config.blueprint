@@ -1,7 +1,7 @@
 <scenario-ai xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="vendor/stateforge/scenario-ai/xsd/scenario-ai.xsd"
 >
-    <adapter mode="cli" type="openai">
+    <adapter mode="all" type="openai">
         <var name="token"></var>
     </adapter>
 </scenario-ai>
